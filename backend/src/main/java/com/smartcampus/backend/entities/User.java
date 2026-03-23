@@ -33,7 +33,7 @@ public class User implements UserDetails {
 
     private String role;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Booking> bookings = new ArrayList<>();
 
     // ---------------- UserDetails Methods ----------------
