@@ -21,5 +21,5 @@ public class ResourceDTO {
     private String windows;
     private String status;
     private String resourceImageUrl;
-    private List<Booking> bookings = new ArrayList<>();
+    private List<BookingDTO> bookings;
 }
