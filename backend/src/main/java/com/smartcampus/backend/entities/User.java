@@ -44,7 +44,7 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Booking> bookings = new ArrayList<>();
 
-    @Enumerated
+    @Enumerated(EnumType.STRING)
     private AuthProvider authProvide;
 
 
