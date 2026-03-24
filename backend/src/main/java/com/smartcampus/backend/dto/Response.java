@@ -3,8 +3,9 @@ package com.smartcampus.backend.dto;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.nimbusds.jose.util.Resource;
-import com.smartcampus.backend.entities.User;
+import com.smartcampus.backend.dto.BookingDTO;
+import com.smartcampus.backend.dto.ResourceDTO;
+import com.smartcampus.backend.dto.UserDTO;
 
 import lombok.Data;
 
