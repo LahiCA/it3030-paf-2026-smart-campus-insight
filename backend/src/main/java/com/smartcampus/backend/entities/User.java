@@ -34,6 +34,8 @@ public class User implements UserDetails {
     @NotBlank(message = "Name is required")
     private String name;
 
+    
+
     @NotBlank(message = "Password is required")
     private String password;
 
