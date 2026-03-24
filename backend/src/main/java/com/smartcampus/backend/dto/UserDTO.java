@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import com.smartcampus.backend.entities.Booking;
+import com.smartcampus.backend.dto.BookingDTO;
 
 import lombok.Data;
 
