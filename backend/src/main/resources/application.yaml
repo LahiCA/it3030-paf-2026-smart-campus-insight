@@ -2,6 +2,5 @@ spring:
   application:
     name: backend
 
-server:
-  port: 8080
-
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration

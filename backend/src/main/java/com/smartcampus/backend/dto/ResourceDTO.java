@@ -1,9 +1,9 @@
 package com.smartcampus.backend.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.smartcampus.backend.entities.Booking;
+import com.smartcampus.backend.dto.BookingDTO;
 
-import java.util.ArrayList;
+
 import java.util.List;
 
 import lombok.Data;
@@ -21,5 +21,5 @@ public class ResourceDTO {
     private String windows;
     private String status;
     private String resourceImageUrl;
-    private List<Booking> bookings = new ArrayList<>();
+    private List<BookingDTO> bookings;
 }
