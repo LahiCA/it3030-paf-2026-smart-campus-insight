@@ -9,7 +9,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
-@EnableWebSecuirty 
+@EnableWebSecurity
 public class SecurityConfig {
 
     @Bean
@@ -17,7 +17,7 @@ public class SecurityConfig {
         httpSecurity
             .csrf(AbstractHttpConfigurer :: disable)
             .cors(Customizer.withDefaults())
-            .authorizeHttpRequests(requsets -> requests
+            .authorizeHttpRequests(requsets -> requsets
                 .requestMatchers("/register", "/login/**", "/logout").permitAll()
                 .anyRequest().authenticated())
             .oauth2Login(oauth2 -> oauth2
