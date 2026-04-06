@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import ResourceCard from '../components/resources/ResourceCard'
-import ResourceFormModal from '../components/resources/ResourceFormModal'
+import ResourceCard from ' ../component/ResourceCard'
+import ResourceFormModal from '../component/ResourceFormModal'
 import axios from 'axios'
 
 const ResourceListPage = () => {
