@@ -6,6 +6,7 @@ import ResourceListPage from './pages/ResourceList'
 import AboutUs from './pages/AboutUs'
 import ResourceList from './pages/ResourceList'
 import ContactUs from './pages/ContactUs'
+import AdminDashboard from './pages/AdminDashboard'
 
 const App = () => {
   return (
@@ -18,6 +19,7 @@ const App = () => {
           <Route path="/about" element={<AboutUs />} />
           <Route path="/facilities" element={<ResourceList />} />
           <Route path="/contact" element={<ContactUs />} />
+          <Route path="/admindashboard" element={<AdminDashboard />} />
         </Routes>
       </div>
     </div>
