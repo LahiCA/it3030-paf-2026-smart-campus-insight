@@ -83,6 +83,8 @@ public class Resource {
     private String windows;
     private String status;
     private String resourceImageUrl;
+
+    @OneToMany(mappedBy = "resource", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Booking> bookings = new ArrayList<>();
 
     @Override
