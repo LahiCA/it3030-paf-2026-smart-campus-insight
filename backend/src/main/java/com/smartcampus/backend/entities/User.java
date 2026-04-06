@@ -3,6 +3,7 @@ package com.smartcampus.backend.entities;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.time.LocalDateTime;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -11,8 +12,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
-@Data 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "users")
 public class User implements UserDetails {
@@ -31,7 +36,24 @@ public class User implements UserDetails {
     @NotBlank(message = "Password is required")
     private String password;
 
-    private String role;
+    /**
+     * User role: USER, ADMIN, TECHNICIAN, MANAGER
+     * Default is USER unless email is in ADMIN_EMAILS
+     */
+    @Column(nullable = false)
+    private String role = "USER";
+
+    /**
+     * Timestamp when the user account was created
+     */
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    /**
+     * Timestamp when the user account was last updated
+     */
+    @Column(nullable = false)
+    private LocalDateTime updatedAt = LocalDateTime.now();
 
     @OneToMany(mappedBy = "user")
     private List<Booking> bookings = new ArrayList<>();
@@ -41,7 +63,10 @@ public class User implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         // Return the user's role as a GrantedAuthority
-        return List.of(new SimpleGrantedAuthority(role));
+        // IMPORTANT: Spring Security expects "ROLE_" prefix
+        // So "ADMIN" becomes "ROLE_ADMIN" for use in @PreAuthorize("hasRole('ADMIN')")
+        String roleWithPrefix = role.startsWith("ROLE_") ? role : "ROLE_" + role;
+        return List.of(new SimpleGrantedAuthority(roleWithPrefix));
     }
 
     @Override

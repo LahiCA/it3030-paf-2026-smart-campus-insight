@@ -1,0 +1,35 @@
+spring:
+  datasource:
+    # Local MySQL database for development
+    url: jdbc:mysql://localhost:3306/smartcampus?createDatabaseIfNotExist=true
+    username: root
+    password: # Leave empty if no password
+
+  jpa:
+    hibernate:
+      # AUTO: automatically create/update tables (good for development)
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+jwt:
+  # For development, use a simple secret (in production, use env var)
+  secret: dev-secret-key-at-least-32-characters-long-xxxxx
+
+google:
+  client:
+    # Get this from Google Cloud Console
+    # For development, you can test with a specific client ID
+    id: YOUR_DEV_GOOGLE_CLIENT_ID
+
+admin:
+  # For development, make this your test account admin
+  emails: student@example.com,admin@example.com
+
+logging:
+  level:
+    root: INFO
+    com.smartcampus: DEBUG
+    org.springframework.security: DEBUG
