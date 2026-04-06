@@ -2,7 +2,7 @@ package com.smartcampus.backend.services;
 
 import com.smartcampus.backend.dto.ResourceDTO;
 import com.smartcampus.backend.dto.ResourceRequestDTO;
-import com.smartcampus.backend.entities.Resource;
+import com.smartcampus.backend.entities.Resource; // Mongo entity
 import com.smartcampus.backend.enums.ResourceStatus;
 import com.smartcampus.backend.enums.ResourceType;
 import com.smartcampus.backend.exception.ResourceNotFoundException;
@@ -22,15 +22,19 @@ public class ResourceService {
     // GET all with optional filters
     public List<ResourceDTO> getAllResources(ResourceType type, String location,
                                              Integer minCapacity, ResourceStatus status) {
-        return resourceRepository
-                .filterResources(type, location, minCapacity, status)
-                .stream()
+        List<Resource> resources = resourceRepository.findAll();
+
+        return resources.stream()
+                .filter(r -> type == null || r.getType() == type)
+                .filter(r -> location == null || r.getLocation().equalsIgnoreCase(location))
+                .filter(r -> minCapacity == null || (r.getCapacity() != null && r.getCapacity() >= minCapacity))
+                .filter(r -> status == null || r.getStatus() == status)
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
 
     // GET by ID
-    public ResourceDTO getResourceById(Long id) {
+    public ResourceDTO getResourceById(String id) {
         Resource resource = findOrThrow(id);
         return toDTO(resource);
     }
@@ -43,28 +47,28 @@ public class ResourceService {
     }
 
     // PUT — full update
-    public ResourceDTO updateResource(Long id, ResourceRequestDTO dto) {
+    public ResourceDTO updateResource(String id, ResourceRequestDTO dto) {
         Resource resource = findOrThrow(id);
         mapDtoToEntity(dto, resource);
         return toDTO(resourceRepository.save(resource));
     }
 
     // PATCH — status only
-    public ResourceDTO updateStatus(Long id, ResourceStatus status) {
+    public ResourceDTO updateStatus(String id, ResourceStatus status) {
         Resource resource = findOrThrow(id);
         resource.setStatus(status);
         return toDTO(resourceRepository.save(resource));
     }
 
     // DELETE
-    public void deleteResource(Long id) {
+    public void deleteResource(String id) {
         Resource resource = findOrThrow(id);
         resourceRepository.delete(resource);
     }
 
     // ── helpers ────────────────────────────────────────────────
 
-    private Resource findOrThrow(Long id) {
+    private Resource findOrThrow(String id) {
         return resourceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Resource not found with id: " + id));
@@ -76,12 +80,10 @@ public class ResourceService {
         resource.setLocation(dto.getLocation());
         resource.setDescription(dto.getDescription());
         resource.setCapacity(dto.getCapacity());
-        resource.setAvailableFrom(dto.getAvailableFrom());
+        resource.setAvailableFrom(dto.getAvailableFrom()); // Ensure these are Strings in Mongo entity
         resource.setAvailableTo(dto.getAvailableTo());
         resource.setResourceImageUrl(dto.getResourceImageUrl());
-        resource.setStatus(
-                dto.getStatus() != null ? dto.getStatus() : ResourceStatus.ACTIVE
-        );
+        resource.setStatus(dto.getStatus() != null ? dto.getStatus() : ResourceStatus.ACTIVE);
     }
 
     private ResourceDTO toDTO(Resource r) {

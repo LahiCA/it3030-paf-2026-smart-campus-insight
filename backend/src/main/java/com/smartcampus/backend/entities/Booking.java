@@ -2,18 +2,18 @@ package com.smartcampus.backend.entities;
 
 import java.time.LocalDate;
 
-import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
-@Entity
-@Table(name = "boookings")
+@Document(collection = "bookings")
 public class Booking {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
     @NotNull(message = "Check-in date is required")
     private LocalDate checkinDate;
@@ -25,12 +25,10 @@ public class Booking {
     private String attendees;
     private String bookingConfirmationCode;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "user_id")
+    @DBRef
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "resource_id")
+    @DBRef
     private Resource resource;
 
     @Override

@@ -2,13 +2,15 @@ package com.smartcampus.backend.entities;
 
 import com.smartcampus.backend.enums.ResourceStatus;
 import com.smartcampus.backend.enums.ResourceType;
-import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -17,18 +19,15 @@ import java.util.List;
 
 @Getter
 @Setter
-@Entity
-@Table(name = "resources")
+@Document(collection = "resources")
 public class Resource {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
     @NotBlank(message = "Name is required")
     private String name;
 
-    @Enumerated(EnumType.STRING)
     @NotNull(message = "Type is required")
     private ResourceType type;
 
@@ -43,18 +42,17 @@ public class Resource {
 
     private LocalTime availableTo;
 
-    @Enumerated(EnumType.STRING)
     private ResourceStatus status = ResourceStatus.ACTIVE;
 
     private String resourceImageUrl;
 
-    @CreationTimestamp
+    @CreatedDate
     private LocalDateTime createdAt;
 
-    @UpdateTimestamp
+    @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "resource", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @DBRef
     private List<Booking> bookings = new ArrayList<>();
 }
 

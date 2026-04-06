@@ -35,7 +35,7 @@ public class ResourceController {
 
     // GET /api/resources/{id}
     @GetMapping("/{id}")
-    public ResponseEntity<ResourceDTO> getResourceById(@PathVariable Long id) {
+    public ResponseEntity<ResourceDTO> getResourceById(@PathVariable String id) {
         return ResponseEntity.ok(resourceService.getResourceById(id));
     }
 
@@ -54,7 +54,7 @@ public class ResourceController {
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ResourceDTO> updateResource(
-            @PathVariable Long id,
+            @PathVariable String id,
             @Valid @RequestBody ResourceRequestDTO dto) {
 
         return ResponseEntity.ok(resourceService.updateResource(id, dto));
@@ -64,7 +64,7 @@ public class ResourceController {
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ResourceDTO> updateStatus(
-            @PathVariable Long id,
+            @PathVariable String id,
             @RequestParam ResourceStatus status) {
 
         return ResponseEntity.ok(resourceService.updateStatus(id, status));
@@ -73,7 +73,7 @@ public class ResourceController {
     // DELETE /api/resources/{id}  — ADMIN only
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteResource(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteResource(@PathVariable String id) {
         resourceService.deleteResource(id);
         return ResponseEntity.noContent().build();
     }

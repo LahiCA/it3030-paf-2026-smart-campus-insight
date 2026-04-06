@@ -2,22 +2,9 @@ spring:
   application:
     name: backend
 
-  autoconfigure:
-    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
-
-  datasource:
-    url: jdbc:mysql://localhost:3306/smart_campus_db
-    username: root
-    password: yourpassword
-    driver-class-name: com.mysql.cj.jdbc.Driver
-
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/smart_campus_db
 
   web:
     cors:

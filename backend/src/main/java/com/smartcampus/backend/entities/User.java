@@ -4,13 +4,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.smartcampus.backend.enums.AuthProvider;
 
-import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -19,16 +21,13 @@ import lombok.Data;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data 
-@Entity
-@Table(name = "users")
+@Document(collection = "users")
 public class User implements UserDetails {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
     @NotBlank(message = "Email is required")
-    @Column(unique = true)
     private String email;
 
     @NotBlank(message = "Name is required")
@@ -41,10 +40,9 @@ public class User implements UserDetails {
 
     private String role;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @DBRef
     private List<Booking> bookings = new ArrayList<>();
 
-    @Enumerated(EnumType.STRING)
     private AuthProvider authProvide;
 
 

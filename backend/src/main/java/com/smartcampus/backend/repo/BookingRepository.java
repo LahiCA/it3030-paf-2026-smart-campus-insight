@@ -2,13 +2,13 @@ package com.smartcampus.backend.repo;
 
 import java.util.List;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
 import com.smartcampus.backend.entities.Booking;
 
-public interface BookingRepository extends JpaRepository<Booking, Long> {
+public interface BookingRepository extends MongoRepository<Booking, String> {
 
-    List<Booking> findByUserId(Long userId);
-    List<Booking> findByResourceId(Long resourceId);
+    List<Booking> findByUserId(String userId);
+    List<Booking> findByResourceId(String resourceId);
     List<Booking> findByBookingConfirmationCode(String bookingConfirmationCode);
 
 }

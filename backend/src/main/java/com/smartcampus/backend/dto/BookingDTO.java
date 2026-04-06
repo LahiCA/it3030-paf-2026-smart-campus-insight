@@ -8,7 +8,7 @@ import lombok.Data;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BookingDTO {
 
-    private Long id;
+    private String id;
     private String checkinDate;
     private String checkoutDate;
     private String time_range;
