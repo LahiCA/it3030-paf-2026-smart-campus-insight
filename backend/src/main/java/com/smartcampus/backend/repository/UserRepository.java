@@ -30,7 +30,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @return Optional<User> containing the user if found
      */
     Optional<User> findByEmail(String email);
-    
+
     /**
      * Find all users with a specific role
      * More efficient than loading all users and filtering in Java

@@ -31,19 +31,19 @@ import java.util.Map;
  * - DELETE /api/users/{id} — Delete user (ADMIN only)
  * 
  * @PreAuthorize Annotations:
- * - "isAuthenticated()" — Any logged-in user
- * - "hasRole('ADMIN')" — Only ADMIN users
- * - "hasAnyRole('ADMIN', 'MANAGER')" — ADMIN or MANAGER
- * - "#id == authentication.principal.id" — Only their own data
+ *               - "isAuthenticated()" — Any logged-in user
+ *               - "hasRole('ADMIN')" — Only ADMIN users
+ *               - "hasAnyRole('ADMIN', 'MANAGER')" — ADMIN or MANAGER
+ *               - "#id == authentication.principal.id" — Only their own data
  */
 @Slf4j
 @RestController
 @RequestMapping("/api/users")
 public class UserManagementController {
-    
+
     @Autowired
     private UserManagementService userManagementService;
-    
+
     /**
      * Get current authenticated user's information
      * 
@@ -54,12 +54,12 @@ public class UserManagementController {
      * 
      * Response (200 OK):
      * {
-     *   "id": 1,
-     *   "email": "student@example.com",
-     *   "name": "John Doe",
-     *   "role": "USER",
-     *   "createdAt": "2026-04-06T10:00:00",
-     *   "updatedAt": "2026-04-06T11:30:00"
+     * "id": 1,
+     * "email": "student@example.com",
+     * "name": "John Doe",
+     * "role": "USER",
+     * "createdAt": "2026-04-06T10:00:00",
+     * "updatedAt": "2026-04-06T11:30:00"
      * }
      * 
      * Why isAuthenticated():
@@ -70,13 +70,13 @@ public class UserManagementController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserDTO> getCurrentUser(Authentication authentication) {
         log.info("Fetching current user info for: {}", authentication.getName());
-        
+
         // authentication.getName() returns the email (set in JwtAuthenticationFilter)
         UserDTO userDTO = userManagementService.getUserByEmail(authentication.getName());
-        
+
         return ResponseEntity.ok(userDTO);
     }
-    
+
     /**
      * Get a specific user's information by ID
      * 
@@ -101,12 +101,12 @@ public class UserManagementController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
         log.info("Admin fetching user with ID: {}", id);
-        
+
         UserDTO userDTO = userManagementService.getUserById(id);
-        
+
         return ResponseEntity.ok(userDTO);
     }
-    
+
     /**
      * Get all users in the system
      * 
@@ -117,18 +117,18 @@ public class UserManagementController {
      * 
      * Response (200 OK):
      * [
-     *   {
-     *     "id": 1,
-     *     "email": "student1@example.com",
-     *     "name": "John Doe",
-     *     "role": "USER"
-     *   },
-     *   {
-     *     "id": 2,
-     *     "email": "admin@example.com",
-     *     "name": "Admin User",
-     *     "role": "ADMIN"
-     *   }
+     * {
+     * "id": 1,
+     * "email": "student1@example.com",
+     * "name": "John Doe",
+     * "role": "USER"
+     * },
+     * {
+     * "id": 2,
+     * "email": "admin@example.com",
+     * "name": "Admin User",
+     * "role": "ADMIN"
+     * }
      * ]
      * 
      * Use case: Admin dashboard to display user roster
@@ -139,12 +139,12 @@ public class UserManagementController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<UserDTO>> getAllUsers() {
         log.info("Admin fetching all users");
-        
+
         List<UserDTO> users = userManagementService.getAllUsers();
-        
+
         return ResponseEntity.ok(users);
     }
-    
+
     /**
      * Get all users with a specific role
      * 
@@ -166,12 +166,12 @@ public class UserManagementController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<UserDTO>> getUsersByRole(@PathVariable String role) {
         log.info("Admin fetching users with role: {}", role);
-        
+
         List<UserDTO> users = userManagementService.getUsersByRole(role.toUpperCase());
-        
+
         return ResponseEntity.ok(users);
     }
-    
+
     /**
      * Update a user's role
      * 
@@ -186,17 +186,17 @@ public class UserManagementController {
      * 
      * Request Body:
      * {
-     *   "userId": 5,
-     *   "newRole": "TECHNICIAN"
+     * "userId": 5,
+     * "newRole": "TECHNICIAN"
      * }
      * 
      * Response (200 OK):
      * {
-     *   "id": 5,
-     *   "email": "john@example.com",
-     *   "name": "John Doe",
-     *   "role": "TECHNICIAN",    ← Changed from USER
-     *   "updatedAt": "2026-04-06T12:00:00"
+     * "id": 5,
+     * "email": "john@example.com",
+     * "name": "John Doe",
+     * "role": "TECHNICIAN", ← Changed from USER
+     * "updatedAt": "2026-04-06T12:00:00"
      * }
      * 
      * Why PUT vs PATCH:
@@ -204,7 +204,7 @@ public class UserManagementController {
      * PATCH = partial update (would need more context)
      * We use PUT because we're updating a single fixed field
      * 
-     * @param id The user ID (from path)
+     * @param id      The user ID (from path)
      * @param request The new role (from body)
      * @return Updated UserDTO
      */
@@ -213,15 +213,15 @@ public class UserManagementController {
     public ResponseEntity<UserDTO> updateUserRole(
             @PathVariable Long id,
             @Valid @RequestBody UpdateRoleRequest request) {
-        
+
         log.info("Admin updating role for user ID {} to: {}", id, request.getNewRole());
-        
+
         UserDTO updatedUser = userManagementService.updateUserRole(id, request.getNewRole());
-        
+
         // Return 200 OK (not 201 Created) because we updated an existing resource
         return ResponseEntity.ok(updatedUser);
     }
-    
+
     /**
      * Delete a user from the system
      * 
@@ -251,13 +251,13 @@ public class UserManagementController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         log.warn("Admin deleting user with ID: {}", id);
-        
+
         userManagementService.deleteUser(id);
-        
+
         // Return 204 No Content
         return ResponseEntity.noContent().build();
     }
-    
+
     /**
      * Example endpoint: Demonstrate role-based access control
      * This is for learning purposes
@@ -273,11 +273,11 @@ public class UserManagementController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, String>> getDashboard(Authentication authentication) {
         log.info("User accessing dashboard: {}", authentication.getName());
-        
+
         Map<String, String> response = new HashMap<>();
         response.put("message", "Welcome " + authentication.getName());
         response.put("role", authentication.getAuthorities().toString());
-        
+
         return ResponseEntity.ok(response);
     }
 }

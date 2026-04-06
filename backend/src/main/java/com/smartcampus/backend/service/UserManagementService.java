@@ -29,10 +29,10 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class UserManagementService {
-    
+
     @Autowired
     private UserRepository userRepository;
-    
+
     /**
      * Get a user by ID and return as DTO
      * 
@@ -42,16 +42,16 @@ public class UserManagementService {
      */
     public UserDTO getUserById(Long userId) {
         log.debug("Fetching user with ID: {}", userId);
-        
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.error("User not found with ID: {}", userId);
                     return new UserNotFoundException("User not found with ID: " + userId);
                 });
-        
+
         return convertToDTO(user);
     }
-    
+
     /**
      * Get a user by email and return as DTO
      * 
@@ -61,16 +61,16 @@ public class UserManagementService {
      */
     public UserDTO getUserByEmail(String email) {
         log.debug("Fetching user with email: {}", email);
-        
+
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> {
                     log.error("User not found with email: {}", email);
                     return new UserNotFoundException("User not found with email: " + email);
                 });
-        
+
         return convertToDTO(user);
     }
-    
+
     /**
      * Get all users (ADMIN only)
      * Useful for admin dashboard to see all users
@@ -79,13 +79,13 @@ public class UserManagementService {
      */
     public List<UserDTO> getAllUsers() {
         log.info("Fetching all users");
-        
+
         return userRepository.findAll()
                 .stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
-    
+
     /**
      * Get all users with a specific role
      * 
@@ -94,13 +94,13 @@ public class UserManagementService {
      */
     public List<UserDTO> getUsersByRole(String role) {
         log.info("Fetching users with role: {}", role);
-        
+
         return userRepository.findByRole(role)
                 .stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
-    
+
     /**
      * Update a user's role (ADMIN only)
      * 
@@ -111,22 +111,22 @@ public class UserManagementService {
      * 4. Saves to database
      * 5. Returns updated user info
      * 
-     * @param userId The user whose role should be updated
+     * @param userId  The user whose role should be updated
      * @param newRole The new role (USER, ADMIN, TECHNICIAN, MANAGER)
      * @return Updated UserDTO
-     * @throws UserNotFoundException if user doesn't exist
+     * @throws UserNotFoundException    if user doesn't exist
      * @throws IllegalArgumentException if role is invalid
      */
     public UserDTO updateUserRole(Long userId, String newRole) {
         log.info("Updating role for user ID {} to role: {}", userId, newRole);
-        
+
         // Step 1: Find the user
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.error("User not found with ID: {}", userId);
                     return new UserNotFoundException("User not found with ID: " + userId);
                 });
-        
+
         // Step 2: Validate the role using the enum
         try {
             UserRole role = UserRole.fromString(newRole);
@@ -136,19 +136,19 @@ public class UserManagementService {
             throw new IllegalArgumentException(
                     "Invalid role: " + newRole + ". Must be one of: USER, ADMIN, TECHNICIAN, MANAGER");
         }
-        
+
         // Step 3: Update the role
         user.setRole(newRole);
         user.setUpdatedAt(LocalDateTime.now());
-        
+
         // Step 4: Save to database
         user = userRepository.save(user);
         log.info("Role updated successfully for user ID: {}", userId);
-        
+
         // Step 5: Return as DTO
         return convertToDTO(user);
     }
-    
+
     /**
      * Delete a user (ADMIN only - use with caution!)
      * 
@@ -157,23 +157,23 @@ public class UserManagementService {
      */
     public void deleteUser(Long userId) {
         log.warn("Deleting user with ID: {}", userId);
-        
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.error("User not found with ID: {}", userId);
                     return new UserNotFoundException("User not found with ID: " + userId);
                 });
-        
+
         // Prevent deleting yourself
         if (user.getId().equals(userId)) {
             log.warn("Attempted to delete own account");
             throw new IllegalArgumentException("Cannot delete your own account");
         }
-        
+
         userRepository.delete(user);
         log.info("User deleted successfully: {}", userId);
     }
-    
+
     /**
      * Convert a User entity to a UserDTO
      * 

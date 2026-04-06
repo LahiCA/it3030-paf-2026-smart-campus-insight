@@ -14,21 +14,21 @@ import lombok.NoArgsConstructor;
  * 
  * Example request:
  * {
- *   "userId": 5,
- *   "newRole": "TECHNICIAN"
+ * "userId": 5,
+ * "newRole": "TECHNICIAN"
  * }
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateRoleRequest {
-    
+
     /**
      * The ID of the user whose role should be changed
      */
     @NotNull(message = "User ID cannot be null")
     private Long userId;
-    
+
     /**
      * The new role: USER, ADMIN, TECHNICIAN, MANAGER
      */

@@ -58,6 +58,15 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user")
     private List<Booking> bookings = new ArrayList<>();
 
+    /**
+     * All notifications for this user
+     * OneToMany: One user has many notifications
+     * MappedBy: Notification.user is the foreign key
+     * CascadeType.ALL: If user is deleted, delete all their notifications
+     */
+    @OneToMany(mappedBy = "user", cascade = jakarta.persistence.CascadeType.ALL)
+    private List<Notification> notifications = new ArrayList<>();
+
     // ---------------- UserDetails Methods ----------------
 
     @Override

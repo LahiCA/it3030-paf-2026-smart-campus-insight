@@ -20,12 +20,12 @@ import java.time.LocalDateTime;
  * 
  * Example response:
  * {
- *   "id": 1,
- *   "email": "student@example.com",
- *   "name": "John Doe",
- *   "role": "USER",
- *   "createdAt": "2026-04-06T10:00:00",
- *   "updatedAt": "2026-04-06T11:30:00"
+ * "id": 1,
+ * "email": "student@example.com",
+ * "name": "John Doe",
+ * "role": "USER",
+ * "createdAt": "2026-04-06T10:00:00",
+ * "updatedAt": "2026-04-06T11:30:00"
  * }
  */
 @Data
@@ -33,32 +33,32 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class UserDTO {
-    
+
     /**
      * User's unique ID
      */
     private Long id;
-    
+
     /**
      * User's email address
      */
     private String email;
-    
+
     /**
      * User's full name
      */
     private String name;
-    
+
     /**
      * User's role: USER, ADMIN, TECHNICIAN, MANAGER
      */
     private String role;
-    
+
     /**
      * When the account was created
      */
     private LocalDateTime createdAt;
-    
+
     /**
      * When the account was last updated
      */
