@@ -3,7 +3,9 @@ import NavBar from './component/NavBar'
 import { Route, Routes } from 'react-router-dom'
 import Home from './pages/Home'
 import ResourceListPage from './pages/ResourceList'
-
+import AboutUs from './pages/AboutUs'
+import ResourceList from './pages/ResourceList'
+import ContactUs from './pages/ContactUs'
 
 const App = () => {
   return (
@@ -13,6 +15,9 @@ const App = () => {
         <Routes>
           <Route path='/' element={<Home />} />
           <Route path="/resources" element={<ResourceListPage />} />
+          <Route path="/about" element={<AboutUs />} />
+          <Route path="/facilities" element={<ResourceList />} />
+          <Route path="/contact" element={<ContactUs />} />
         </Routes>
       </div>
     </div>

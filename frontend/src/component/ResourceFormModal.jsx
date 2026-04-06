@@ -19,7 +19,7 @@ const EMPTY_FORM = {
   resourceImageUrl: '',
 }
 
-const ResourceForm = ({ resource, onSave, onClose }) => {
+const ResourceFormModal = ({ resource, onSave, onClose }) => {
 
   const [form, setForm]     = useState(EMPTY_FORM)
   const [errors, setErrors] = useState({})
@@ -266,4 +266,4 @@ const ResourceForm = ({ resource, onSave, onClose }) => {
   )
 }
 
-export default ResourceForm
+export default ResourceFormModal
