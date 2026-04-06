@@ -4,7 +4,7 @@ import com.smartcampus.backend.dto.ResourceDTO;
 import com.smartcampus.backend.dto.ResourceRequestDTO;
 import com.smartcampus.backend.enums.ResourceStatus;
 import com.smartcampus.backend.enums.ResourceType;
-import com.smartcampus.backend.service.ResourceService;
+import com.smartcampus.backend.services.ResourceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
