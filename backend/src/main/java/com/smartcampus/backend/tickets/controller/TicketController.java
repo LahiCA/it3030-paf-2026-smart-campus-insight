@@ -83,22 +83,36 @@ public class TicketController {
         String uploadDir = System.getProperty("user.dir") + "/uploads/";
         File dir = new File(uploadDir);
         if (!dir.exists())
-            dir.mkdirs(); // create folder
+            dir.mkdirs();
 
         for (MultipartFile file : files) {
             if (file.isEmpty())
                 continue;
 
+            // Check MIME type
+            String contentType = file.getContentType();
+            if (!contentType.startsWith("image/")) {
+                throw new RuntimeException("Only image files are allowed!");
+            }
+
             String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
             File dest = new File(uploadDir + fileName);
 
-            file.transferTo(dest);
+            try {
+                file.transferTo(dest);
 
-            TicketImage img = new TicketImage();
-            img.setTicketId(id);
-            img.setImagePath(dest.getPath());
+                TicketImage img = new TicketImage();
+                img.setTicketId(id);
+                img.setImagePath(dest.getPath());
 
-            service.saveImage(img); // save to Mongo
+                service.saveImage(img);
+
+            } catch (IOException ex) {
+                // Rollback uploaded files for this request
+                if (dest.exists())
+                    dest.delete();
+                throw new RuntimeException("Failed to upload image: " + ex.getMessage());
+            }
         }
 
         return "Images uploaded successfully";
@@ -126,5 +140,45 @@ public class TicketController {
         } else {
             return "Unknown role!";
         }
+    }
+
+    // EDIT COMMENT
+    @PutMapping("/comments/{commentId}")
+    public Comment editComment(
+            @PathVariable String commentId,
+            @RequestHeader("userId") String userId,
+            @RequestParam String message) {
+
+        return service.updateComment(commentId, userId, message);
+    }
+
+    // DELETE COMMENT only to creator
+    @DeleteMapping("/comments/{commentId}")
+    public String deleteComment(
+            @PathVariable String commentId,
+            @RequestHeader("userId") String userId) {
+
+        service.deleteComment(commentId, userId);
+        return "Comment deleted successfully";
+    }
+
+    // DELETE TICKET
+    @DeleteMapping("/{id}")
+    public String deleteTicket(@PathVariable String id, @RequestHeader("role") String role) {
+        if (!role.equals("ADMIN")) {
+            throw new RuntimeException("Only ADMIN can delete tickets");
+        }
+        service.deleteTicket(id);
+        return "Ticket deleted successfully";
+    }
+
+    // DELETE IMAGE
+    @DeleteMapping("/images/{imageId}")
+    public String deleteImage(@PathVariable String imageId, @RequestHeader("role") String role) {
+        if (!role.equals("ADMIN")) {
+            throw new RuntimeException("Only ADMIN can delete images");
+        }
+        service.deleteImage(imageId);
+        return "Image deleted successfully";
     }
 }

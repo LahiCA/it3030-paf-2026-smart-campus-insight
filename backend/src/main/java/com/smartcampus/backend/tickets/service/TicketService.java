@@ -5,6 +5,7 @@ import com.smartcampus.backend.tickets.repository.*;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.io.File;
 
 @Service
 public class TicketService {
@@ -72,6 +73,60 @@ public class TicketService {
     // GET IMAGES
     public List<TicketImage> getImages(String ticketId) {
         return imageRepo.findByTicketId(ticketId);
+    }
+
+    // Edit comment
+    public Comment updateComment(String commentId, String userId, String newMessage) {
+        Comment comment = commentRepo.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("Comment not found"));
+
+        if (!comment.getUserId().equals(userId)) {
+            throw new RuntimeException("You can only edit your own comments");
+        }
+
+        comment.setMessage(newMessage);
+        return commentRepo.save(comment);
+    }
+
+    // Delete comment
+    public void deleteComment(String commentId, String userId) {
+        Comment comment = commentRepo.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("Comment not found"));
+
+        if (!comment.getUserId().equals(userId)) {
+            throw new RuntimeException("You can only delete your own comments");
+        }
+
+        commentRepo.delete(comment);
+    }
+
+    // Delete ticket
+    public void deleteTicket(String ticketId) {
+        Ticket ticket = ticketRepo.findById(ticketId)
+                .orElseThrow(() -> new RuntimeException("Ticket not found"));
+
+        // Optional: delete related comments and images
+        List<Comment> comments = commentRepo.findByTicketId(ticketId);
+        commentRepo.deleteAll(comments);
+
+        List<TicketImage> images = imageRepo.findByTicketId(ticketId);
+        imageRepo.deleteAll(images);
+
+        ticketRepo.delete(ticket);
+    }
+
+    // Delete image
+    public void deleteImage(String imageId) {
+        TicketImage img = imageRepo.findById(imageId)
+                .orElseThrow(() -> new RuntimeException("Image not found"));
+
+        // Remove file from local storage
+        File file = new File(img.getImagePath());
+        if (file.exists()) {
+            file.delete();
+        }
+
+        imageRepo.delete(img);
     }
 
 }
