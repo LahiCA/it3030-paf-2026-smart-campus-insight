@@ -49,7 +49,24 @@ public class TicketController {
         return service.updateStatus(id, status);
     }
 
-    // ASSIGN TECHNICIAN
+    @PutMapping("/{id}/resolve")
+    public Ticket resolveTicket(@PathVariable String id,
+            @RequestParam String note) {
+        return service.resolveTicket(id, note);
+    }
+
+    // REJECT TICKET
+    @PutMapping("/{id}/reject")
+    public Ticket rejectTicket(@PathVariable String id,
+            @RequestParam String reason,
+            @RequestHeader("role") String role) {
+
+        if (!role.equals("ADMIN")) {
+            throw new RuntimeException("Only ADMIN can reject tickets");
+        }
+
+        return service.rejectTicket(id, reason);
+    }
 
     // ADD COMMENT
     @PostMapping("/{id}/comments")
@@ -181,4 +198,5 @@ public class TicketController {
         service.deleteImage(imageId);
         return "Image deleted successfully";
     }
+
 }

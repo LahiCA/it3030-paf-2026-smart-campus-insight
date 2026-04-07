@@ -19,6 +19,7 @@ public class Ticket {
 
     @NotBlank(message = "Title is required")
     private String title;
+
     @NotBlank(message = "Description is required")
     private String description;
 
@@ -28,10 +29,19 @@ public class Ticket {
     private String status; // OPEN, IN_PROGRESS, RESOLVED, CLOSED, REJECTED
 
     private String resourceId;
+    private String location;
+
+    @NotBlank(message = "CreatedBy is required")
     private String createdBy;
+
     private String assignedTo;
 
+    @NotBlank(message = "Contact details are required")
+    private String contactDetails;
+
     private String resolutionNote;
+
+    private String rejectionReason;
 
     private LocalDateTime createdAt = LocalDateTime.now();
 }

@@ -38,10 +38,23 @@ public class TicketService {
         return ticketRepo.findById(id).orElseThrow();
     }
 
-    // UPDATE STATUS
-    public Ticket updateStatus(String id, String status) {
+    public Ticket updateStatus(String id, String newStatus) {
         Ticket ticket = getTicketById(id);
-        ticket.setStatus(status);
+        String currentStatus = ticket.getStatus();
+
+        // VALID WORKFLOW
+        if (currentStatus.equals("OPEN") && newStatus.equals("IN_PROGRESS")) {
+            // valid
+        } else if (currentStatus.equals("IN_PROGRESS") && newStatus.equals("RESOLVED")) {
+            // valid
+        } else if (currentStatus.equals("RESOLVED") && newStatus.equals("CLOSED")) {
+            // valid
+        } else {
+            throw new RuntimeException("Invalid status transition from "
+                    + currentStatus + " to " + newStatus);
+        }
+
+        ticket.setStatus(newStatus);
         return ticketRepo.save(ticket);
     }
 
@@ -127,6 +140,28 @@ public class TicketService {
         }
 
         imageRepo.delete(img);
+    }
+
+    // Resolve ticket
+    public Ticket resolveTicket(String id, String note) {
+        Ticket ticket = getTicketById(id);
+        ticket.setStatus("RESOLVED");
+        ticket.setResolutionNote(note);
+        return ticketRepo.save(ticket);
+    }
+
+    public Ticket rejectTicket(String id, String reason) {
+        Ticket ticket = getTicketById(id);
+
+        // Optional: only allow reject from OPEN state
+        if (!ticket.getStatus().equals("OPEN")) {
+            throw new RuntimeException("Only OPEN tickets can be rejected");
+        }
+
+        ticket.setStatus("REJECTED");
+        ticket.setRejectionReason(reason);
+
+        return ticketRepo.save(ticket);
     }
 
 }
