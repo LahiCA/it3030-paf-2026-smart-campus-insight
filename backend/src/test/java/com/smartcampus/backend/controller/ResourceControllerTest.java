@@ -67,7 +67,7 @@ class ResourceControllerTest {
         resource.setType(ResourceType.LAB);
         resource.setLocation("Block A");
         resource.setCapacity(30);
-        resource.setStatus(ResourceStatus.AVAILABLE);
+        resource.setStatus(ResourceStatus.ACTIVE);
     }
 
     @Test
@@ -99,10 +99,14 @@ class ResourceControllerTest {
         when(resourceService.createResource(any(Resource.class))).thenReturn(resource);
 
         // When & Then
-        mockMvc.perform(post("/api/resources")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(resource)))
+        mockMvc.perform(multipart("/api/resources")
+                        .file("images", new byte[0])
+                        .param("name", "Test Lab")
+                        .param("type", "LAB")
+                        .param("location", "Block A")
+                        .param("capacity", "30")
+                        .param("status", "ACTIVE")
+                        .with(csrf()))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.name").value("Test Lab"));
     }
@@ -114,10 +118,18 @@ class ResourceControllerTest {
         when(resourceService.updateResource(eq("1"), any(Resource.class))).thenReturn(resource);
 
         // When & Then
-        mockMvc.perform(put("/api/resources/1")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(resource)))
+        mockMvc.perform(multipart("/api/resources/1")
+                        .file("images", new byte[0])
+                        .param("name", "Test Lab")
+                        .param("type", "LAB")
+                        .param("location", "Block A")
+                        .param("capacity", "30")
+                        .param("status", "ACTIVE")
+                        .with(request -> {
+                            request.setMethod("PUT");
+                            return request;
+                        })
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Test Lab"));
     }

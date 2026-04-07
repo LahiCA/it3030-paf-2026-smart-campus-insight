@@ -29,7 +29,7 @@ public class Resource {
     private int capacity;
 
     @Builder.Default
-    private ResourceStatus status = ResourceStatus.AVAILABLE;
+    private ResourceStatus status = ResourceStatus.ACTIVE;
 
     private String description;
 
@@ -53,6 +53,6 @@ public class Resource {
     }
 
     public enum ResourceStatus {
-        AVAILABLE, OCCUPIED, MAINTENANCE, RETIRED
+        ACTIVE, OUT_OF_SERVICE, OCCUPIED, MAINTENANCE, RETIRED
     }
 }

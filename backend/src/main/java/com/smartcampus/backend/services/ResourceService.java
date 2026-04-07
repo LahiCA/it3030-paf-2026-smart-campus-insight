@@ -26,7 +26,7 @@ public class ResourceService {
     }
 
     public List<Resource> getAvailableResources() {
-        return resourceRepository.findByStatus(ResourceStatus.AVAILABLE);
+        return resourceRepository.findByStatus(ResourceStatus.ACTIVE);
     }
 
     public List<Resource> getResourcesByType(ResourceType type) {
@@ -55,7 +55,9 @@ public class ResourceService {
         existing.setCapacity(updatedResource.getCapacity());
         existing.setStatus(updatedResource.getStatus());
         existing.setDescription(updatedResource.getDescription());
-        existing.setImageUrl(updatedResource.getImageUrl());
+        if (updatedResource.getImageUrl() != null) {
+            existing.setImageUrl(updatedResource.getImageUrl());
+        }
 
         existing.onUpdate();   // update timestamp
 

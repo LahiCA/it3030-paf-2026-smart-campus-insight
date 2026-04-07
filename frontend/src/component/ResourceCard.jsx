@@ -1,121 +1,137 @@
-import React from 'react'
+import React from "react"
+import { Building2, MapPin, Users, Pencil, Trash2 } from "lucide-react"
 
-const ICONS = {
-  LECTURE_HALL: '🏛',
-  LAB: '🔬',
-  MEETING_ROOM: '🗓',
-  EQUIPMENT: '🎥',
+const STATUS_STYLES = {
+  ACTIVE: "bg-green-100 text-green-700",
+  OUT_OF_SERVICE: "bg-red-100 text-red-700",
 }
 
-const ICON_BG = {
-  LECTURE_HALL: 'bg-amber-pale',
-  LAB: 'bg-yellow-50',
-  MEETING_ROOM: 'bg-orange-50',
-  EQUIPMENT: 'bg-amber-warm',
-}
+const ResourceCard = ({
+  resources = [],
+  onEdit,
+  onDelete,
+  onToggleStatus,
+  onClick,
+  canManage = false,
+}) => {
 
-const ResourceCard = ({ resources = [], onEdit, onDelete, onToggleStatus }) => {
-
-  const sampleResources = [
-    { id: 1, name: 'Lecture Hall A1', type: 'LECTURE_HALL', location: 'Block A, Floor 1', capacity: 120, status: 'ACTIVE', availableFrom: '08:00', availableTo: '20:00', description: 'Main lecture hall with AV system and tiered seating.' },
-    { id: 2, name: 'Lab B3 — Networks', type: 'LAB', location: 'Block B, Floor 3', capacity: 30, status: 'ACTIVE', availableFrom: '08:00', availableTo: '18:00', description: 'Networking lab with 30 workstations and Cisco equipment.' },
-    { id: 3, name: 'Meeting Room C1', type: 'MEETING_ROOM', location: 'Block C, Floor 1', capacity: 12, status: 'ACTIVE', availableFrom: '09:00', availableTo: '17:00', description: 'Small meeting room with projector and whiteboard.' },
-    { id: 4, name: 'Projector Unit 07', type: 'EQUIPMENT', location: 'AV Store, Block A', capacity: null, status: 'ACTIVE', availableFrom: '08:00', availableTo: '20:00', description: 'Full HD portable projector. Collection from AV store.' },
-    { id: 5, name: 'Lab D1 — IoT', type: 'LAB', location: 'Block D, Floor 1', capacity: 24, status: 'OUT_OF_SERVICE', availableFrom: '08:00', availableTo: '18:00', description: 'IoT lab — currently under maintenance.' },
-    { id: 6, name: 'Camera Kit 03', type: 'EQUIPMENT', location: 'Media Store, Block B', capacity: null, status: 'ACTIVE', availableFrom: '09:00', availableTo: '17:00', description: 'DSLR camera with tripod and accessories.' },
-  ]
-
-  const data = resources.length > 0 ? resources : sampleResources
+  if (!resources.length) {
+    return (
+      <div className="text-center py-10 text-gray-500">
+        <Building2 size={40} className="mx-auto mb-2" />
+        <p>No resources found</p>
+      </div>
+    )
+  }
 
   return (
-    <>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap'); *{ font-family: "Geist", sans-serif; }`}</style>
+    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {resources.map((r) => (
+        <div
+          key={r.id}
+          onClick={() => onClick?.(r)}
+          className="bg-white border rounded-xl shadow-sm hover:shadow-md transition cursor-pointer overflow-hidden"
+        >
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {data.map((resource) => (
-          <div
-            key={resource.id}
-            className="flex items-start p-3 bg-white border border-stone-200 hover:border-amber-gold rounded-xl transition-colors w-full"
-          >
+          {/* IMAGE (your addition 🔥) */}
+          {r.resourceImageUrl ? (
+            <img
+              src={r.resourceImageUrl}
+              alt={r.name}
+              className="w-full h-40 object-cover"
+            />
+          ) : (
+            <div className="h-40 flex items-center justify-center bg-gray-50">
+              <Building2 size={40} className="text-gray-400" />
+            </div>
+          )}
 
-            {/* Icon block */}
-            <div className={`shrink-0 w-22.5 h-22.5 rounded-lg flex items-center justify-center text-4xl ${ICON_BG[resource.type] || 'bg-amber-pale'}`}>
-              {ICONS[resource.type] || '▦'}
+          {/* BODY */}
+          <div className="p-4">
+
+            {/* Top Row */}
+            <div className="flex justify-between items-start mb-2">
+              <h3 className="font-semibold text-gray-800">
+                {r.name}
+              </h3>
+
+              <span
+                className={`text-xs px-2 py-1 rounded-full ${
+                  STATUS_STYLES[r.status] || "bg-gray-100 text-gray-600"
+                }`}
+              >
+                {r.status === "ACTIVE" ? "Active" : "Out of Service"}
+              </span>
             </div>
 
-            {/* Content */}
-            <div className="ml-4 flex-1 min-w-0">
-
-              {/* Top row — name + status */}
-              <div className="flex items-start justify-between gap-2">
-                <p className="text-sm font-medium text-charcoal-950 leading-tight truncate">
-                  {resource.name}
-                </p>
-                <span className={`shrink-0 text-xs font-medium px-2.5 py-0.5 rounded-full ${
-                  resource.status === 'ACTIVE'
-                    ? 'bg-status-active-bg text-status-active-text'
-                    : 'bg-status-oos-bg text-status-oos-text'
-                }`}>
-                  {resource.status === 'ACTIVE' ? 'Active' : 'Out of service'}
-                </span>
+            {/* Meta */}
+            <div className="text-sm text-gray-500 space-y-1">
+              <div className="flex items-center gap-1">
+                <MapPin size={12} /> {r.location}
               </div>
 
-              {/* Location */}
-              <p className="text-xs text-stone-400 mt-0.5 flex items-center gap-1">
-                <span>📍</span> {resource.location}
-              </p>
-
-              {/* Specs row */}
-              <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                <span className="text-xs font-medium bg-amber-pale text-amber-900 px-2 py-0.5 rounded-full">
-                  {resource.type.replace('_', ' ')}
-                </span>
-                {resource.capacity && (
-                  <>
-                    <div className="size-1 rounded-full bg-stone-300" />
-                    <span className="text-xs text-stone-500">👥 {resource.capacity} seats</span>
-                  </>
-                )}
-                <div className="size-1 rounded-full bg-stone-300" />
-                <span className="text-xs text-stone-500">
-                  ⏰ {resource.availableFrom}–{resource.availableTo}
-                </span>
-              </div>
-
-              {/* Description */}
-              {resource.description && (
-                <p className="text-xs text-stone-400 mt-1.5 leading-relaxed line-clamp-2">
-                  {resource.description}
-                </p>
+              {r.capacity && (
+                <div className="flex items-center gap-1">
+                  <Users size={12} /> {r.capacity} seats
+                </div>
               )}
+            </div>
 
-              {/* Action buttons */}
-              <div className="flex items-center gap-2 mt-3 pt-2.5 border-t border-stone-100">
-                <button
-                  onClick={() => onEdit?.(resource)}
-                  className="text-xs font-medium text-charcoal-800 bg-stone-100 hover:bg-stone-200 px-3 py-1.5 rounded-md transition-colors"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => onToggleStatus?.(resource.id)}
-                  className="text-xs font-medium text-charcoal-800 bg-stone-100 hover:bg-stone-200 px-3 py-1.5 rounded-md transition-colors"
-                >
-                  {resource.status === 'ACTIVE' ? 'Mark OOS' : 'Mark Active'}
-                </button>
-                <button
-                  onClick={() => onDelete?.(resource.id)}
-                  className="text-xs font-medium text-status-oos-text bg-status-oos-bg hover:bg-red-200 px-3 py-1.5 rounded-md transition-colors ml-auto"
-                >
-                  Delete
-                </button>
-              </div>
+            {/* Description */}
+            {r.description && (
+              <p className="text-xs text-gray-500 mt-2 line-clamp-2">
+                {r.description}
+              </p>
+            )}
+
+            {/* Footer */}
+            <div className="flex justify-between items-center mt-3">
+
+              {/* Type */}
+              <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">
+                {r.type.replace("_", " ")}
+              </span>
+
+              {/* Admin Actions */}
+              {canManage && (
+                <div className="flex gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onEdit?.(r)
+                    }}
+                    className="p-1.5 bg-gray-100 rounded hover:bg-gray-200"
+                  >
+                    <Pencil size={14} />
+                  </button>
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onToggleStatus?.(r.id)
+                    }}
+                    className="p-1.5 bg-gray-100 rounded hover:bg-gray-200"
+                  >
+                    🔄
+                  </button>
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onDelete?.(r.id)
+                    }}
+                    className="p-1.5 bg-red-100 rounded hover:bg-red-200"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              )}
             </div>
 
           </div>
-        ))}
-      </div>
-    </>
+        </div>
+      ))}
+    </div>
   )
 }
 

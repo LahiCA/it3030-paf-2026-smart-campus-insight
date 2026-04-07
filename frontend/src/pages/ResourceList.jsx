@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import ResourceCard from "../component/ResourceCard";
-import ResourceFormModal from '../component/ResourceFormModal'
+import ResourceForm from '../component/ResourceForm'
 import axios from 'axios'
 
 const ResourceListPage = () => {
@@ -77,14 +77,28 @@ const ResourceListPage = () => {
     setModalOpen(false)
   }
 
-  const handleSave = async (formData) => {
+  const toFormData = (data) => {
+    const formData = new FormData()
+    Object.entries(data || {}).forEach(([key, value]) => {
+      if (value === undefined || value === null) return
+      formData.append(key, value)
+    })
+    return formData
+  }
+
+  const handleSave = async (resourceData) => {
     try {
+      const formData = toFormData(resourceData)
       if (editTarget) {
         // PUT — update existing
-        await axios.put(`/api/resources/${editTarget.id}`, formData)
+        await axios.put(`/api/resources/${editTarget.id}`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        })
       } else {
         // POST — create new
-        await axios.post('/api/resources', formData)
+        await axios.post('/api/resources', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        })
       }
       closeModal()
       fetchResources()
@@ -272,11 +286,19 @@ const ResourceListPage = () => {
 
       {/* Create / Edit modal */}
       {modalOpen && (
-        <ResourceFormModal
-          resource={editTarget}
-          onSave={handleSave}
-          onClose={closeModal}
-        />
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-2xl w-full max-w-2xl p-6 shadow-lg">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">{editTarget ? 'Edit resource' : 'Add resource'}</h2>
+              <button className="text-stone-400 hover:text-charcoal-950" onClick={closeModal}>✕</button>
+            </div>
+            <ResourceForm
+              initial={editTarget}
+              onSubmit={handleSave}
+              onCancel={closeModal}
+            />
+          </div>
+        </div>
       )}
 
     </div>

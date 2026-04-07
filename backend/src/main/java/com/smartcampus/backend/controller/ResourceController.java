@@ -7,6 +7,7 @@ import com.smartcampus.backend.services.ResourceService;
 import com.smartcampus.backend.utils.FileUploadUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -61,15 +62,30 @@ public class ResourceController {
         return ResponseEntity.ok(resourceService.getResourceById(id));
     }
 
-    @PostMapping
-    public ResponseEntity<Resource> createResource(@Valid @RequestBody Resource resource) {
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Resource> createResource(
+            @Valid @ModelAttribute Resource resource,
+            @RequestParam(value = "images", required = false) MultipartFile[] images) throws IOException {
+
+        if (images != null && images.length > 0 && !images[0].isEmpty()) {
+            String fileName = fileUploadUtil.saveFile("resources", images[0]);
+            resource.setImageUrl("/uploads/resources/" + fileName);
+        }
+
         return ResponseEntity.status(201).body(resourceService.createResource(resource));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Resource> updateResource(
             @PathVariable String id,
-            @Valid @RequestBody Resource resource) {
+            @Valid @ModelAttribute Resource resource,
+            @RequestParam(value = "images", required = false) MultipartFile[] images) throws IOException {
+
+        if (images != null && images.length > 0 && !images[0].isEmpty()) {
+            String fileName = fileUploadUtil.saveFile("resources", images[0]);
+            resource.setImageUrl("/uploads/resources/" + fileName);
+        }
+
         return ResponseEntity.ok(resourceService.updateResource(id, resource));
     }
 

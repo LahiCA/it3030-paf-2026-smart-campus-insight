@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import ResourceCard from "../component/ResourceCard"
-import ResourceFormModal from "../component/ResourceFormModal"
+import ResourceForm from '../component/ResourceForm'
 
 import {
   getResources,
@@ -34,9 +34,19 @@ const AdminDashboard = () => {
     fetchResources()
   }, [])
 
+  const toFormData = (data) => {
+    const formData = new FormData()
+    Object.entries(data || {}).forEach(([key, value]) => {
+      if (value === undefined || value === null) return
+      formData.append(key, value)
+    })
+    return formData
+  }
+
   // 🔹 CREATE / UPDATE
-  const handleSave = async (formData) => {
+  const handleSave = async (resourceData) => {
     try {
+      const formData = toFormData(resourceData)
       if (editingResource) {
         await updateResource(editingResource.id, formData)
       } else {
@@ -119,11 +129,19 @@ const AdminDashboard = () => {
 
       {/* Modal */}
       {showModal && (
-        <ResourceFormModal
-          resource={editingResource}
-          onSave={handleSave}
-          onClose={() => setShowModal(false)}
-        />
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-2xl w-full max-w-2xl p-6 shadow-lg">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">{editingResource ? 'Edit resource' : 'Add resource'}</h2>
+              <button className="text-stone-400 hover:text-charcoal-950" onClick={() => setShowModal(false)}>✕</button>
+            </div>
+            <ResourceForm
+              initial={editingResource}
+              onSubmit={handleSave}
+              onCancel={() => setShowModal(false)}
+            />
+          </div>
+        </div>
       )}
     </div>
   )

@@ -38,7 +38,7 @@ class ResourceServiceTest {
         resource.setType(ResourceType.LAB);
         resource.setLocation("Block A");
         resource.setCapacity(30);
-        resource.setStatus(ResourceStatus.AVAILABLE);
+        resource.setStatus(ResourceStatus.ACTIVE);
     }
 
     @Test
