@@ -1,9 +1,11 @@
 package com.smartcampus.backend.tickets.model;
 
 import lombok.*;
+
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-
+import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 
 @Document(collection = "tickets")
@@ -13,9 +15,11 @@ import java.time.LocalDateTime;
 public class Ticket {
 
     @Id
-    private String id;
+    private ObjectId id;
 
+    @NotBlank(message = "Title is required")
     private String title;
+    @NotBlank(message = "Description is required")
     private String description;
 
     private String category;

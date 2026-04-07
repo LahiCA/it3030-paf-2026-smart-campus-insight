@@ -6,6 +6,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import org.springframework.web.multipart.MultipartFile;
+import java.io.File;
+import java.io.IOException;
+import java.util.UUID;
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/tickets")
 @CrossOrigin
@@ -18,8 +24,9 @@ public class TicketController {
     }
 
     // CREATE TICKET
+
     @PostMapping
-    public Ticket create(@RequestBody Ticket ticket) {
+    public Ticket create(@Valid @RequestBody Ticket ticket) {
         return service.createTicket(ticket);
     }
 
@@ -43,11 +50,6 @@ public class TicketController {
     }
 
     // ASSIGN TECHNICIAN
-    @PutMapping("/{id}/assign")
-    public Ticket assign(@PathVariable String id,
-            @RequestParam String techId) {
-        return service.assignTechnician(id, techId);
-    }
 
     // ADD COMMENT
     @PostMapping("/{id}/comments")
@@ -67,5 +69,62 @@ public class TicketController {
     @GetMapping("/{id}/images")
     public List<TicketImage> getImages(@PathVariable String id) {
         return service.getImages(id);
+    }
+
+    // UPLOAD IMAGES
+    @PostMapping("/{id}/upload")
+    public String uploadImages(@PathVariable String id,
+            @RequestParam("files") MultipartFile[] files) throws IOException {
+
+        if (files.length > 3) {
+            return "Max 3 images allowed!";
+        }
+
+        String uploadDir = System.getProperty("user.dir") + "/uploads/";
+        File dir = new File(uploadDir);
+        if (!dir.exists())
+            dir.mkdirs(); // create folder
+
+        for (MultipartFile file : files) {
+            if (file.isEmpty())
+                continue;
+
+            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            File dest = new File(uploadDir + fileName);
+
+            file.transferTo(dest);
+
+            TicketImage img = new TicketImage();
+            img.setTicketId(id);
+            img.setImagePath(dest.getPath());
+
+            service.saveImage(img); // save to Mongo
+        }
+
+        return "Images uploaded successfully";
+    }
+
+    // ROLE SIMULATION
+    @PutMapping("/{id}/assign")
+    public Ticket assign(@PathVariable String id,
+            @RequestParam String techId,
+            @RequestHeader("role") String role) {
+
+        if (!role.equals("ADMIN")) {
+            throw new RuntimeException("Only ADMIN can assign technician");
+        }
+
+        return service.assignTechnician(id, techId);
+    }
+
+    @GetMapping("/test-role")
+    public String testRole(@RequestHeader("role") String role) {
+        if (role.equals("ADMIN")) {
+            return "Welcome, Admin!";
+        } else if (role.equals("USER")) {
+            return "Hello, User!";
+        } else {
+            return "Unknown role!";
+        }
     }
 }

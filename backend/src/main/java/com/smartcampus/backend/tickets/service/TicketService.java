@@ -45,9 +45,12 @@ public class TicketService {
     }
 
     // ASSIGN TECHNICIAN
-    public Ticket assignTechnician(String id, String techId) {
-        Ticket ticket = getTicketById(id);
+    public Ticket assignTechnician(String ticketId, String techId) {
+        Ticket ticket = ticketRepo.findById(ticketId)
+                .orElseThrow(() -> new RuntimeException("Ticket with ID " + ticketId + " not found"));
+
         ticket.setAssignedTo(techId);
+        ticket.setStatus("IN_PROGRESS");
         return ticketRepo.save(ticket);
     }
 
@@ -70,4 +73,5 @@ public class TicketService {
     public List<TicketImage> getImages(String ticketId) {
         return imageRepo.findByTicketId(ticketId);
     }
+
 }

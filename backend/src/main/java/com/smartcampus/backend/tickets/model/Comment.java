@@ -1,6 +1,8 @@
 package com.smartcampus.backend.tickets.model;
 
 import lombok.*;
+
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -13,7 +15,7 @@ import java.time.LocalDateTime;
 public class Comment {
 
     @Id
-    private String id;
+    private ObjectId id;
 
     private String ticketId;
     private String userId;
