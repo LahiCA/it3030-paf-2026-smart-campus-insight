@@ -1,4 +1,4 @@
-package com.smartcampus.backend.entities;
+package com.smartcampus.backend.model;
 
 import java.time.LocalDate;
 

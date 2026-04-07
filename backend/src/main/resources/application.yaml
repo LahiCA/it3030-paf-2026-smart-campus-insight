@@ -4,11 +4,8 @@ spring:
 
   data:
     mongodb:
-      uri: mongodb://localhost:27017/smart_campus_db
+      uri: mongodb+srv://admin_2001:admin1234@cluster0.ceiyn.mongodb.net/smart_campus
 
-  web:
-    cors:
-      allowed-origins: "http://localhost:5173"
 
 server:
   port: 8080

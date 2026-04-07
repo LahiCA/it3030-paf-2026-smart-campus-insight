@@ -1,9 +1,10 @@
 package com.smartcampus.backend.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.smartcampus.backend.entities.Booking;
 import com.smartcampus.backend.enums.ResourceStatus;
 import com.smartcampus.backend.enums.ResourceType;
+import com.smartcampus.backend.model.Booking;
+
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -29,6 +30,6 @@ public class ResourceDTO {
     private LocalTime availableTo;
 
     private ResourceStatus status;
-    private String resourceImageUrl;
+    private List<String> resourceImageUrls;
     private List<Booking> bookings; // Use Booking model instead of DTO
 }

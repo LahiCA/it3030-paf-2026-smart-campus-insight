@@ -1,123 +1,132 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import ResourceCard from "../component/ResourceCard";
-import ResourceFormModal from "../component/ResourceFormModal";
+import React, { useEffect, useState } from "react"
+import ResourceCard from "../component/ResourceCard"
+import ResourceFormModal from "../component/ResourceFormModal"
+
+import {
+  getResources,
+  createResource,
+  updateResource,
+  deleteResource,
+  updateResourceStatus,
+} from "../api/resourceApi"
 
 const AdminDashboard = () => {
-  const [resources, setResources] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editTarget, setEditTarget] = useState(null);
+  const [resources, setResources] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [editingResource, setEditingResource] = useState(null)
 
-  // Fetch all resources
+  // 🔹 FETCH DATA
   const fetchResources = async () => {
-    setLoading(true);
+    setLoading(true)
     try {
-      const res = await axios.get("/api/resources");
-      setResources(res.data);
-      setError(null);
+      const data = await getResources()
+      setResources(data)
     } catch (err) {
-      setError("Failed to load resources");
+      console.error(err)
+      alert("Failed to load resources")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   useEffect(() => {
-    fetchResources();
-  }, []);
+    fetchResources()
+  }, [])
 
-  // Open modal for create/edit
-  const openModal = (resource = null) => {
-    setEditTarget(resource);
-    setModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setEditTarget(null);
-    setModalOpen(false);
-  };
-
-  // Save (create/update) resource
+  // 🔹 CREATE / UPDATE
   const handleSave = async (formData) => {
     try {
-      if (editTarget) {
-        await axios.put(`/api/resources/${editTarget.id}`, formData);
+      if (editingResource) {
+        await updateResource(editingResource.id, formData)
       } else {
-        await axios.post("/api/resources", formData);
+        await createResource(formData)
       }
-      closeModal();
-      fetchResources();
+      setShowModal(false)
+      setEditingResource(null)
+      fetchResources()
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to save resource");
+      alert(err)
     }
-  };
+  }
 
-  // Delete resource
+  // 🔹 DELETE
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this resource?")) return;
+    if (!window.confirm("Delete this resource?")) return
     try {
-      await axios.delete(`/api/resources/${id}`);
-      fetchResources();
+      await deleteResource(id)
+      fetchResources()
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to delete resource");
+      alert(err)
     }
-  };
+  }
 
-  // Toggle status
+  // 🔹 EDIT
+  const handleEdit = (resource) => {
+    setEditingResource(resource)
+    setShowModal(true)
+  }
+
+  // 🔹 STATUS TOGGLE
   const handleToggleStatus = async (id) => {
-    const resource = resources.find((r) => r.id === id);
+    const resource = resources.find(r => r.id === id)
     const newStatus =
-      resource.status === "ACTIVE" ? "OUT_OF_SERVICE" : "ACTIVE";
+      resource.status === "ACTIVE" ? "OUT_OF_SERVICE" : "ACTIVE"
+
     try {
-      await axios.patch(`/api/resources/${id}/status?status=${newStatus}`);
-      fetchResources();
+      await updateResourceStatus(id, newStatus)
+      fetchResources()
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to update status");
+      alert(err)
     }
-  };
+  }
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="p-6">
+
+      {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+        <h1 className="text-2xl font-semibold">Admin Dashboard</h1>
+
         <button
-          onClick={() => openModal()}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          onClick={() => {
+            setEditingResource(null)
+            setShowModal(true)
+          }}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg"
         >
           + Add Resource
         </button>
       </div>
 
+      {/* Loading */}
       {loading && <p>Loading resources...</p>}
-      {error && <p className="text-red-500">{error}</p>}
 
+      {/* Empty state */}
       {!loading && resources.length === 0 && (
-        <p>No resources available</p>
+        <p className="text-gray-500">No resources found</p>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {resources.map((res) => (
-          <ResourceCard
-            key={res.id}
-            resource={res}
-            onEdit={() => openModal(res)}
-            onDelete={() => handleDelete(res.id)}
-            onToggleStatus={() => handleToggleStatus(res.id)}
-          />
-        ))}
-      </div>
+      {/* Resource List */}
+      {!loading && resources.length > 0 && (
+        <ResourceCard
+          resources={resources}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onToggleStatus={handleToggleStatus}
+        />
+      )}
 
-      {modalOpen && (
+      {/* Modal */}
+      {showModal && (
         <ResourceFormModal
-          resource={editTarget}
+          resource={editingResource}
           onSave={handleSave}
-          onClose={closeModal}
+          onClose={() => setShowModal(false)}
         />
       )}
     </div>
-  );
-};
+  )
+}
 
-export default AdminDashboard;
+export default AdminDashboard

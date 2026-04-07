@@ -5,6 +5,7 @@ const RESOURCE_TYPES = [
   { value: 'LAB',           label: 'Lab'          },
   { value: 'MEETING_ROOM',  label: 'Meeting Room' },
   { value: 'EQUIPMENT',     label: 'Equipment'    },
+  { value: 'OTHER',         label: 'Other'        },
 ]
 
 const EMPTY_FORM = {
@@ -16,7 +17,7 @@ const EMPTY_FORM = {
   availableFrom: '08:00',
   availableTo:   '18:00',
   status:        'ACTIVE',
-  resourceImageUrl: '',
+  images:        [],
 }
 
 const ResourceFormModal = ({ resource, onSave, onClose }) => {
@@ -39,7 +40,7 @@ const ResourceFormModal = ({ resource, onSave, onClose }) => {
         availableFrom:    resource.availableFrom    || '08:00',
         availableTo:      resource.availableTo      || '18:00',
         status:           resource.status           || 'ACTIVE',
-        resourceImageUrl: resource.resourceImageUrl || '',
+        images:           [], // Don't pre-fill file inputs for security reasons
       })
     } else {
       setForm(EMPTY_FORM)
@@ -53,6 +54,11 @@ const ResourceFormModal = ({ resource, onSave, onClose }) => {
     setForm((prev) => ({ ...prev, [name]: value }))
     // Clear error on change
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }))
+  }
+
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files)
+    setForm((prev) => ({ ...prev, images: files }))
   }
 
   const validate = () => {
@@ -77,10 +83,22 @@ const ResourceFormModal = ({ resource, onSave, onClose }) => {
     }
     setSaving(true)
     try {
-      await onSave({
-        ...form,
-        capacity: form.capacity ? Number(form.capacity) : null,
+      const formData = new FormData()
+      formData.append('name', form.name)
+      formData.append('type', form.type)
+      formData.append('location', form.location)
+      if (form.description) formData.append('description', form.description)
+      if (form.capacity) formData.append('capacity', form.capacity)
+      if (form.availableFrom) formData.append('availableFrom', form.availableFrom)
+      if (form.availableTo) formData.append('availableTo', form.availableTo)
+      formData.append('status', form.status)
+      
+      // Add images
+      form.images.forEach((image, index) => {
+        formData.append('images', image)
       })
+
+      await onSave(formData)
     } finally {
       setSaving(false)
     }
@@ -97,7 +115,7 @@ const ResourceFormModal = ({ resource, onSave, onClose }) => {
       className="fixed inset-0 bg-charcoal-950/65 flex items-center justify-center z-50 px-4"
       onClick={handleOverlayClick}
     >
-      <div className="bg-white rounded-2xl w-full max-w-[520px] border border-stone-200">
+      <div className="bg-white rounded-2xl w-full max-w-130 border border-stone-200">
 
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-stone-100">
@@ -185,16 +203,26 @@ const ResourceFormModal = ({ resource, onSave, onClose }) => {
             {errors.capacity && <p className="text-xs text-red-500">{errors.capacity}</p>}
           </div>
 
-          {/* Image URL */}
-          <div className="flex flex-col gap-1">
-            <label className="form-label">Image URL</label>
+          {/* Images */}
+          <div className="flex flex-col gap-1 col-span-2">
+            <label className="form-label">Images</label>
             <input
-              name="resourceImageUrl"
-              value={form.resourceImageUrl}
-              onChange={handleChange}
-              placeholder="https://…"
-              className="form-input"
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handleFileChange}
+              className="form-input file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-stone-100 file:text-stone-700 hover:file:bg-stone-200"
             />
+            {form.images.length > 0 && (
+              <p className="text-xs text-stone-500">
+                {form.images.length} image{form.images.length !== 1 ? 's' : ''} selected
+              </p>
+            )}
+            {isEditing && resource.resourceImageUrls && resource.resourceImageUrls.length > 0 && (
+              <p className="text-xs text-stone-500">
+                Current: {resource.resourceImageUrls.length} image{resource.resourceImageUrls.length !== 1 ? 's' : ''} uploaded
+              </p>
+            )}
           </div>
 
           {/* Available from */}

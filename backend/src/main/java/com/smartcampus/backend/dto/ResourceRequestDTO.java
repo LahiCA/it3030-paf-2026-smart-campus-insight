@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.time.LocalTime;
+import java.util.List;
 
 @Data
 public class ResourceRequestDTO {
@@ -32,5 +33,5 @@ public class ResourceRequestDTO {
 
     private ResourceStatus status;
 
-    private String resourceImageUrl;
+    private List<String> resourceImageUrls;
 }

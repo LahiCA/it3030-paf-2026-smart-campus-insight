@@ -39,7 +39,7 @@ const ResourceCard = ({ resources = [], onEdit, onDelete, onToggleStatus }) => {
           >
 
             {/* Icon block */}
-            <div className={`flex-shrink-0 w-[90px] h-[90px] rounded-lg flex items-center justify-center text-4xl ${ICON_BG[resource.type] || 'bg-amber-pale'}`}>
+            <div className={`shrink-0 w-22.5 h-22.5 rounded-lg flex items-center justify-center text-4xl ${ICON_BG[resource.type] || 'bg-amber-pale'}`}>
               {ICONS[resource.type] || '▦'}
             </div>
 
@@ -51,7 +51,7 @@ const ResourceCard = ({ resources = [], onEdit, onDelete, onToggleStatus }) => {
                 <p className="text-sm font-medium text-charcoal-950 leading-tight truncate">
                   {resource.name}
                 </p>
-                <span className={`flex-shrink-0 text-xs font-medium px-2.5 py-0.5 rounded-full ${
+                <span className={`shrink-0 text-xs font-medium px-2.5 py-0.5 rounded-full ${
                   resource.status === 'ACTIVE'
                     ? 'bg-status-active-bg text-status-active-text'
                     : 'bg-status-oos-bg text-status-oos-text'

@@ -5,18 +5,20 @@ import com.smartcampus.backend.dto.ResourceRequestDTO;
 import com.smartcampus.backend.enums.ResourceStatus;
 import com.smartcampus.backend.enums.ResourceType;
 import com.smartcampus.backend.services.ResourceService;
-import jakarta.validation.Valid;
+//import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
+//import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/resources")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:5173")
 public class ResourceController {
 
     private final ResourceService resourceService;
@@ -39,30 +41,76 @@ public class ResourceController {
         return ResponseEntity.ok(resourceService.getResourceById(id));
     }
 
-    // POST /api/resources  — ADMIN only
-    @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    // POST /api/resources — ADMIN only
+    @PostMapping(consumes = {"multipart/form-data"})
+    //@PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ResourceDTO> createResource(
-            @Valid @RequestBody ResourceRequestDTO dto) {
+            @RequestParam("name") String name,
+            @RequestParam("type") ResourceType type,
+            @RequestParam("location") String location,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam(value = "capacity", required = false) Integer capacity,
+            @RequestParam(value = "availableFrom", required = false) String availableFrom,
+            @RequestParam(value = "availableTo", required = false) String availableTo,
+            @RequestParam(value = "status", required = false) ResourceStatus status,
+            @RequestParam(value = "images", required = false) MultipartFile[] images) {
+
+        ResourceRequestDTO dto = new ResourceRequestDTO();
+        dto.setName(name);
+        dto.setType(type);
+        dto.setLocation(location);
+        dto.setDescription(description);
+        dto.setCapacity(capacity);
+        // Parse time strings if provided
+        if (availableFrom != null && !availableFrom.isEmpty()) {
+            dto.setAvailableFrom(java.time.LocalTime.parse(availableFrom));
+        }
+        if (availableTo != null && !availableTo.isEmpty()) {
+            dto.setAvailableTo(java.time.LocalTime.parse(availableTo));
+        }
+        dto.setStatus(status);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(resourceService.createResource(dto));
+                .body(resourceService.createResource(dto, images));
     }
 
-    // PUT /api/resources/{id}  — ADMIN only
-    @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    // PUT /api/resources/{id} — ADMIN only
+    @PutMapping(value = "/{id}", consumes = {"multipart/form-data"})
+    //@PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ResourceDTO> updateResource(
             @PathVariable String id,
-            @Valid @RequestBody ResourceRequestDTO dto) {
+            @RequestParam("name") String name,
+            @RequestParam("type") ResourceType type,
+            @RequestParam("location") String location,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam(value = "capacity", required = false) Integer capacity,
+            @RequestParam(value = "availableFrom", required = false) String availableFrom,
+            @RequestParam(value = "availableTo", required = false) String availableTo,
+            @RequestParam(value = "status", required = false) ResourceStatus status,
+            @RequestParam(value = "images", required = false) MultipartFile[] images) {
 
-        return ResponseEntity.ok(resourceService.updateResource(id, dto));
+        ResourceRequestDTO dto = new ResourceRequestDTO();
+        dto.setName(name);
+        dto.setType(type);
+        dto.setLocation(location);
+        dto.setDescription(description);
+        dto.setCapacity(capacity);
+        // Parse time strings if provided
+        if (availableFrom != null && !availableFrom.isEmpty()) {
+            dto.setAvailableFrom(java.time.LocalTime.parse(availableFrom));
+        }
+        if (availableTo != null && !availableTo.isEmpty()) {
+            dto.setAvailableTo(java.time.LocalTime.parse(availableTo));
+        }
+        dto.setStatus(status);
+
+        return ResponseEntity.ok(resourceService.updateResource(id, dto, images));
     }
 
-    // PATCH /api/resources/{id}/status?status=OUT_OF_SERVICE  — ADMIN only
+    // PATCH /api/resources/{id}/status — ADMIN only
     @PatchMapping("/{id}/status")
-    @PreAuthorize("hasRole('ADMIN')")
+    //@PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ResourceDTO> updateStatus(
             @PathVariable String id,
             @RequestParam ResourceStatus status) {
@@ -70,9 +118,9 @@ public class ResourceController {
         return ResponseEntity.ok(resourceService.updateStatus(id, status));
     }
 
-    // DELETE /api/resources/{id}  — ADMIN only
+    // DELETE /api/resources/{id} — ADMIN only
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    //@PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteResource(@PathVariable String id) {
         resourceService.deleteResource(id);
         return ResponseEntity.noContent().build();

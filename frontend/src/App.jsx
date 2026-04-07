@@ -7,6 +7,7 @@ import AboutUs from './pages/AboutUs'
 import ResourceList from './pages/ResourceList'
 import ContactUs from './pages/ContactUs'
 import AdminDashboard from './pages/AdminDashboard'
+import ResourceDetails from './pages/ResourceDetails'
 
 const App = () => {
   return (
@@ -15,10 +16,10 @@ const App = () => {
       <div className='px-6 md:px-16 lg:px-24 xl:px-32'>
         <Routes>
           <Route path='/' element={<Home />} />
-          <Route path="/resources" element={<ResourceListPage />} />
           <Route path="/about" element={<AboutUs />} />
-          <Route path="/facilities" element={<ResourceList />} />
+          <Route path="/resources" element={<ResourceList />} />
           <Route path="/contact" element={<ContactUs />} />
+          <Route path="/resources/:id" element={<ResourceDetails />} />
           <Route path="/admindashboard" element={<AdminDashboard />} />
         </Routes>
       </div>

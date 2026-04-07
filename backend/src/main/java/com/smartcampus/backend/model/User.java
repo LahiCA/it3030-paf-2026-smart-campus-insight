@@ -1,4 +1,4 @@
-package com.smartcampus.backend.entities;
+package com.smartcampus.backend.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -58,6 +58,11 @@ public class User implements UserDetails {
     public String getUsername() {
         // Use email as the username for login
         return email;
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
     }
 
     @Override

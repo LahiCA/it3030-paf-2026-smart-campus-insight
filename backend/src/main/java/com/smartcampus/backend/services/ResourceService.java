@@ -1,17 +1,14 @@
 package com.smartcampus.backend.services;
 
-import com.smartcampus.backend.dto.ResourceDTO;
-import com.smartcampus.backend.dto.ResourceRequestDTO;
-import com.smartcampus.backend.entities.Resource; // Mongo entity
-import com.smartcampus.backend.enums.ResourceStatus;
-import com.smartcampus.backend.enums.ResourceType;
 import com.smartcampus.backend.exception.ResourceNotFoundException;
+import com.smartcampus.backend.model.Resource;
+import com.smartcampus.backend.model.Resource.ResourceStatus;
+import com.smartcampus.backend.model.Resource.ResourceType;
 import com.smartcampus.backend.repo.ResourceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -19,85 +16,63 @@ public class ResourceService {
 
     private final ResourceRepository resourceRepository;
 
-    // GET all with optional filters
-    public List<ResourceDTO> getAllResources(ResourceType type, String location,
-                                             Integer minCapacity, ResourceStatus status) {
-        List<Resource> resources = resourceRepository.findAll();
-
-        return resources.stream()
-                .filter(r -> type == null || r.getType() == type)
-                .filter(r -> location == null || r.getLocation().equalsIgnoreCase(location))
-                .filter(r -> minCapacity == null || (r.getCapacity() != null && r.getCapacity() >= minCapacity))
-                .filter(r -> status == null || r.getStatus() == status)
-                .map(this::toDTO)
-                .collect(Collectors.toList());
+    public List<Resource> getAllResources() {
+        return resourceRepository.findAll();
     }
 
-    // GET by ID
-    public ResourceDTO getResourceById(String id) {
-        Resource resource = findOrThrow(id);
-        return toDTO(resource);
-    }
-
-    // POST — create
-    public ResourceDTO createResource(ResourceRequestDTO dto) {
-        Resource resource = new Resource();
-        mapDtoToEntity(dto, resource);
-        return toDTO(resourceRepository.save(resource));
-    }
-
-    // PUT — full update
-    public ResourceDTO updateResource(String id, ResourceRequestDTO dto) {
-        Resource resource = findOrThrow(id);
-        mapDtoToEntity(dto, resource);
-        return toDTO(resourceRepository.save(resource));
-    }
-
-    // PATCH — status only
-    public ResourceDTO updateStatus(String id, ResourceStatus status) {
-        Resource resource = findOrThrow(id);
-        resource.setStatus(status);
-        return toDTO(resourceRepository.save(resource));
-    }
-
-    // DELETE
-    public void deleteResource(String id) {
-        Resource resource = findOrThrow(id);
-        resourceRepository.delete(resource);
-    }
-
-    // ── helpers ────────────────────────────────────────────────
-
-    private Resource findOrThrow(String id) {
+    public Resource getResourceById(String id) {
         return resourceRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Resource not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Resource not found with id: " + id));
     }
 
-    private void mapDtoToEntity(ResourceRequestDTO dto, Resource resource) {
-        resource.setName(dto.getName());
-        resource.setType(dto.getType());
-        resource.setLocation(dto.getLocation());
-        resource.setDescription(dto.getDescription());
-        resource.setCapacity(dto.getCapacity());
-        resource.setAvailableFrom(dto.getAvailableFrom()); // Ensure these are Strings in Mongo entity
-        resource.setAvailableTo(dto.getAvailableTo());
-        resource.setResourceImageUrl(dto.getResourceImageUrl());
-        resource.setStatus(dto.getStatus() != null ? dto.getStatus() : ResourceStatus.ACTIVE);
+    public List<Resource> getAvailableResources() {
+        return resourceRepository.findByStatus(ResourceStatus.AVAILABLE);
     }
 
-    private ResourceDTO toDTO(Resource r) {
-        ResourceDTO dto = new ResourceDTO();
-        dto.setId(r.getId());
-        dto.setName(r.getName());
-        dto.setType(r.getType());
-        dto.setLocation(r.getLocation());
-        dto.setDescription(r.getDescription());
-        dto.setCapacity(r.getCapacity());
-        dto.setAvailableFrom(r.getAvailableFrom());
-        dto.setAvailableTo(r.getAvailableTo());
-        dto.setStatus(r.getStatus());
-        dto.setResourceImageUrl(r.getResourceImageUrl());
-        return dto;
+    public List<Resource> getResourcesByType(ResourceType type) {
+        return resourceRepository.findByType(type);
+    }
+
+    public List<Resource> getResourcesByStatusAndType(ResourceStatus status, ResourceType type) {
+        return resourceRepository.findByStatusAndType(status, type);
+    }
+
+    public List<Resource> searchResources(String name) {
+        return resourceRepository.findByNameContainingIgnoreCase(name);
+    }
+
+    public Resource createResource(Resource resource) {
+        resource.onCreate();   // manually set timestamps
+        return resourceRepository.save(resource);
+    }
+
+    public Resource updateResource(String id, Resource updatedResource) {
+        Resource existing = getResourceById(id);
+
+        existing.setName(updatedResource.getName());
+        existing.setType(updatedResource.getType());
+        existing.setLocation(updatedResource.getLocation());
+        existing.setCapacity(updatedResource.getCapacity());
+        existing.setStatus(updatedResource.getStatus());
+        existing.setDescription(updatedResource.getDescription());
+        existing.setImageUrl(updatedResource.getImageUrl());
+
+        existing.onUpdate();   // update timestamp
+
+        return resourceRepository.save(existing);
+    }
+
+    public Resource updateStatus(String id, ResourceStatus status) {
+        Resource resource = getResourceById(id);
+        resource.setStatus(status);
+
+        resource.onUpdate();
+
+        return resourceRepository.save(resource);
+    }
+
+    public void deleteResource(String id) {
+        Resource resource = getResourceById(id);
+        resourceRepository.delete(resource);
     }
 }

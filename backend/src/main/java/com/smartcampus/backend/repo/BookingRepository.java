@@ -3,7 +3,8 @@ package com.smartcampus.backend.repo;
 import java.util.List;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
-import com.smartcampus.backend.entities.Booking;
+
+import com.smartcampus.backend.model.Booking;
 
 public interface BookingRepository extends MongoRepository<Booking, String> {
 
