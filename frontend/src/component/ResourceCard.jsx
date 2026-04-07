@@ -1,9 +1,9 @@
-import React from "react"
-import { Building2, MapPin, Users, Pencil, Trash2 } from "lucide-react"
+import React from 'react'
+import { Building2, MapPin, Users, Pencil, Trash2 } from 'lucide-react'
 
 const STATUS_STYLES = {
-  ACTIVE: "bg-green-100 text-green-700",
-  OUT_OF_SERVICE: "bg-red-100 text-red-700",
+  ACTIVE: 'bg-green-100 text-green-700',
+  OUT_OF_SERVICE: 'bg-red-100 text-red-700',
 }
 
 const ResourceCard = ({
@@ -14,7 +14,6 @@ const ResourceCard = ({
   onClick,
   canManage = false,
 }) => {
-
   if (!resources.length) {
     return (
       <div className="text-center py-10 text-gray-500">
@@ -32,7 +31,6 @@ const ResourceCard = ({
           onClick={() => onClick?.(r)}
           className="bg-white border rounded-xl shadow-sm hover:shadow-md transition cursor-pointer overflow-hidden"
         >
-
           {/* IMAGE (your addition 🔥) */}
           {r.resourceImageUrl ? (
             <img
@@ -48,7 +46,6 @@ const ResourceCard = ({
 
           {/* BODY */}
           <div className="p-4">
-
             {/* Top Row */}
             <div className="flex justify-between items-start mb-2">
               <h3 className="font-semibold text-gray-800">
@@ -57,10 +54,10 @@ const ResourceCard = ({
 
               <span
                 className={`text-xs px-2 py-1 rounded-full ${
-                  STATUS_STYLES[r.status] || "bg-gray-100 text-gray-600"
+                  STATUS_STYLES[r.status] || 'bg-gray-100 text-gray-600'
                 }`}
               >
-                {r.status === "ACTIVE" ? "Active" : "Out of Service"}
+                {r.status === 'ACTIVE' ? 'Active' : 'Out of Service'}
               </span>
             </div>
 
@@ -86,10 +83,9 @@ const ResourceCard = ({
 
             {/* Footer */}
             <div className="flex justify-between items-center mt-3">
-
               {/* Type */}
               <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">
-                {r.type.replace("_", " ")}
+                {r.type.replace('_', ' ')}
               </span>
 
               {/* Admin Actions */}
@@ -127,7 +123,6 @@ const ResourceCard = ({
                 </div>
               )}
             </div>
-
           </div>
         </div>
       ))}
