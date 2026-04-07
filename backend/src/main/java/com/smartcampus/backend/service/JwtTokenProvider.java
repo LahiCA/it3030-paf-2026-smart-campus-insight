@@ -76,15 +76,15 @@ public class JwtTokenProvider {
         // Build the token
         String token = Jwts.builder()
                 // Set the payload claims
-                .claims(claims)
+                .addClaims(claims)
                 // Who issued this token (it's us)
-                .issuer("smartcampus-auth")
+                .setIssuer("smartcampus-auth")
                 // Who this token is for
-                .subject(email)
+                .setSubject(email)
                 // When it was issued
-                .issuedAt(now)
+                .setIssuedAt(now)
                 // When it expires (IMPORTANT: after this, token is invalid)
-                .expiration(expiryDate)
+                .setExpiration(expiryDate)
                 // Sign it with our secret key
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 // Compact it into a string (the actual token you send)
@@ -107,7 +107,7 @@ public class JwtTokenProvider {
                     .setSigningKey(getSigningKey())
                     .build()
                     .parseClaimsJws(token)
-                    .getPayload();
+                    .getBody();
 
             return claims.get("userId", Long.class);
         } catch (JwtException | IllegalArgumentException e) {
@@ -128,7 +128,7 @@ public class JwtTokenProvider {
                     .setSigningKey(getSigningKey())
                     .build()
                     .parseClaimsJws(token)
-                    .getPayload();
+                    .getBody();
 
             return claims.getSubject();
         } catch (JwtException | IllegalArgumentException e) {
@@ -149,7 +149,7 @@ public class JwtTokenProvider {
                     .setSigningKey(getSigningKey())
                     .build()
                     .parseClaimsJws(token)
-                    .getPayload();
+                    .getBody();
 
             return claims.get("role", String.class);
         } catch (JwtException | IllegalArgumentException e) {

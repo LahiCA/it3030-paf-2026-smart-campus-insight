@@ -25,7 +25,7 @@ import { GOOGLE_CLIENT_ID } from '../utils/constants';
  */
 
 const GoogleLoginButton = ({ onSuccess, onError, text = 'signin_with', size = 'large' }) => {
-  const { handleLogin, isAuthenticated } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   /**
@@ -38,7 +38,7 @@ const GoogleLoginButton = ({ onSuccess, onError, text = 'signin_with', size = 'l
       const googleToken = credentialResponse.credential;
 
       // Send token to backend
-      const result = await handleLogin(googleToken);
+      const result = await login(googleToken);
 
       if (result.success) {
         // Call optional callback

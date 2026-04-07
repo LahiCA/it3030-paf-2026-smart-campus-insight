@@ -26,7 +26,7 @@ import './Navbar.css';
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const { user, handleLogout, isAdmin, isTechnician } = useAuth();
+  const { user, logout, isAdmin, isTechnician } = useAuth();
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -42,7 +42,7 @@ const Navbar = () => {
    */
   const handleLogoutClick = async () => {
     if (window.confirm('Are you sure you want to logout?')) {
-      await handleLogout();
+      await logout();
       navigate('/login', { replace: true });
     }
   };

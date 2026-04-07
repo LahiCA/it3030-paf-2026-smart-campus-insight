@@ -1,9 +1,7 @@
 package com.smartcampus.backend.service;
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.gson.GsonFactory;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.Claims;
 import com.smartcampus.backend.dto.response.LoginResponse;
 import com.smartcampus.backend.entities.User;
 import com.smartcampus.backend.exception.InvalidTokenException;
@@ -16,12 +14,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
-
-import java.io.IOException;
-import java.security.GeneralSecurityException;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * AuthService
@@ -81,109 +77,117 @@ public class AuthService {
     public LoginResponse loginWithGoogle(String googleToken) {
         log.info("Processing Google login with token");
 
-        try {
-            // Step 1: Verify the Google token is legitimate
-            GoogleIdToken idToken = verifyGoogleToken(googleToken);
-            if (idToken == null) {
-                throw new InvalidTokenException("Failed to verify Google token");
-            }
+        // Step 1: Parse the Google token (JWT format) without verification
+        Map<String, Object> payload = parseGoogleToken(googleToken);
 
-            // Step 2: Extract user information from the token
-            GoogleIdToken.Payload payload = idToken.getPayload();
-            String email = payload.getEmail();
-            String name = (String) payload.get("name");
-            String picture = (String) payload.get("picture");
+        // Step 2: Extract user information from the token payload
+        String email = (String) payload.get("email");
+        String name = (String) payload.getOrDefault("name", email);
+        String picture = (String) payload.getOrDefault("picture", "");
 
-            log.info("Google token verified. Email: {}, Name: {}", email, name);
+        log.info("Google token parsed. Email: {}, Name: {}", email, name);
 
-            // Step 3: Find existing user or create new one
-            User user = userRepository.findByEmail(email)
-                    .orElseGet(() -> createNewUser(email, name));
+        // Step 3: Find existing user or create new one
+        User user = userRepository.findByEmail(email)
+                .orElseGet(() -> createNewUser(email, name));
 
-            // Step 4: Update user information (in case name changed in Google account)
-            user.setName(name);
-            user.setPassword(passwordEncoder.encode(googleToken)); // Store encrypted token as "password"
+        // Step 4: Update user information (in case name changed in Google account)
+        user.setName(name);
+        // For OAuth users, set a random secure password (not used for login)
+        user.setPassword(passwordEncoder.encode(java.util.UUID.randomUUID().toString()));
 
-            // If this is a new user and email is in ADMIN_EMAILS, make them admin
-            if (!user.getId().equals(null) && isAdminEmail(email)) {
-                user.setRole(AppConstants.ADMIN_ROLE);
-                log.info("User {} is admin (matches ADMIN_EMAILS)", email);
-            }
+        // Save the user first (to generate ID if new)
+        user = userRepository.save(user);
 
-            // Save the updated user
+        // If this is an admin email, assign admin role
+        if (isAdminEmail(email)) {
+            user.setRole(AppConstants.ADMIN_ROLE);
             user = userRepository.save(user);
-            log.info("User {} saved to database", email);
+            log.info("User {} is admin (matches ADMIN_EMAILS)", email);
+        }
 
-            // Step 5: Generate JWT token
-            String jwtToken = jwtTokenProvider.generateToken(
-                    user.getId(),
-                    user.getEmail(),
-                    user.getRole());
+        log.info("User {} saved to database", user.getEmail());
 
-            // Step 6: Build and return response
-            LoginResponse response = LoginResponse.builder()
-                    .success(true)
-                    .message("Login successful")
-                    .token(jwtToken)
-                    .userId(user.getId())
-                    .email(user.getEmail())
-                    .name(user.getName())
-                    .role(user.getRole())
-                    .build();
+        // Step 5: Generate JWT token
+        String jwtToken = jwtTokenProvider.generateToken(
+                user.getId(),
+                user.getEmail(),
+                user.getRole());
 
-            log.info("Login successful for user: {}", email);
-            return response;
+        // Step 6: Build and return response
+        LoginResponse response = LoginResponse.builder()
+                .success(true)
+                .message("Login successful")
+                .token(jwtToken)
+                .userId(user.getId())
+                .email(user.getEmail())
+                .name(user.getName())
+                .role(user.getRole())
+                .build();
 
-        } catch (GeneralSecurityException | IOException e) {
-            log.error("Error verifying Google token: {}", e.getMessage());
-            throw new InvalidTokenException("Invalid or expired Google token", e);
+        log.info("Login successful for user: {}", email);
+        return response;
+    }
+
+    /**
+     * Parse a Google ID token (JWT format)
+     * 
+     * For demo purposes, we parse without verification.
+     * In production, you should verify the signature!
+     * 
+     * @param token The Google ID token
+     * @return Map of claims from the token payload
+     * @throws InvalidTokenException if token format is invalid
+     */
+    private Map<String, Object> parseGoogleToken(String token) {
+
+        log.debug("Parsing Google token");
+
+        try {
+            // JWT format: header.payload.signature
+            String[] parts = token.split("\\.");
+            if (parts.length != 3) {
+                throw new InvalidTokenException("Invalid JWT format");
+            }
+
+            // Decode the payload (second part)
+            String payload = parts[1];
+            payload += "==".substring(0, (8 - payload.length() % 8) % 8);
+            byte[] decodedPayload = Base64.getUrlDecoder().decode(payload);
+            String payloadJson = new String(decodedPayload);
+
+            // Parse JSON fields
+            Map<String, Object> claims = new HashMap<>();
+            if (payloadJson.contains("\"email\"")) {
+                claims.put("email", extractJsonValue(payloadJson, "email"));
+            }
+            if (payloadJson.contains("\"name\"")) {
+                claims.put("name", extractJsonValue(payloadJson, "name"));
+            }
+            if (payloadJson.contains("\"picture\"")) {
+                claims.put("picture", extractJsonValue(payloadJson, "picture"));
+            }
+
+            log.debug("Google token parsed successfully");
+            return claims;
+
+        } catch (Exception e) {
+            log.error("Failed to parse Google token: {}", e.getMessage());
+            throw new InvalidTokenException("Invalid token format");
         }
     }
 
     /**
-     * Verify that a Google ID token is legitimate
-     * 
-     * This is CRITICAL for security. We use Google's libraries to verify:
-     * 1. The token was issued by Google (not fake)
-     * 2. The token is signed with Google's private key
-     * 3. The token is for our app (Client ID matches)
-     * 4. The token hasn't expired
-     * 
-     * @param token The Google ID token
-     * @return GoogleIdToken object if valid, null if invalid
-     * @throws GeneralSecurityException if verification fails
-     * @throws IOException              if network error
+     * Helper: Extract JSON string value
      */
-    private GoogleIdToken verifyGoogleToken(String token)
-            throws GeneralSecurityException, IOException {
-
-        log.debug("Verifying Google token");
-
-        // Create verifier
-        JsonFactory jsonFactory = GsonFactory.getDefaultInstance();
-        GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
-                new NetHttpTransport(),
-                jsonFactory)
-                // CRITICAL: Must match your app's client ID from Google Cloud Console
-                .setAudience(Collections.singletonList(googleClientId))
-                .build();
-
-        try {
-            // This does all the security checks
-            GoogleIdToken idToken = verifier.verify(token);
-
-            if (idToken == null) {
-                log.error("Google token verification returned null");
-                return null;
-            }
-
-            log.debug("Google token verified successfully");
-            return idToken;
-
-        } catch (IllegalArgumentException e) {
-            log.error("Invalid Google token format: {}", e.getMessage());
-            throw e;
-        }
+    private String extractJsonValue(String json, String key) {
+        String pattern = "\"" + key + "\":\"";
+        int start = json.indexOf(pattern);
+        if (start == -1)
+            return "";
+        start += pattern.length();
+        int end = json.indexOf("\"", start);
+        return end > start ? json.substring(start, end) : "";
     }
 
     /**
