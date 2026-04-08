@@ -40,6 +40,9 @@ public class AuthService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private SequenceGeneratorService sequenceGeneratorService;
+
     /**
      * ADMIN_EMAILS environment variable
      * Contains comma-separated emails that should be admin
@@ -83,30 +86,35 @@ public class AuthService {
 
         log.info("Google token parsed. Email: {}, Name: {}", email, name);
 
-        // Step 3: Find existing user or create new one
-        boolean isNewUser = false;
+        // Step 3: Check if user exists in DB — only pre-registered users can log in
         User user = userRepository.findByEmail(email).orElse(null);
+
         if (user == null) {
+            // Allow admin email to auto-register, block everyone else
+            if (!isAdminEmail(email)) {
+                log.warn("Login rejected for unregistered email: {}", email);
+                throw new InvalidTokenException(
+                        "Access denied. Your account has not been enrolled by an administrator.");
+            }
+            // Auto-create admin user on first login
             user = createNewUser(email, name);
-            isNewUser = true;
         }
 
-        // Step 4: Update user information (in case name changed in Google account)
+        // Step 4: Update name from Google (keep their display name current)
         user.setName(name);
         // For OAuth users, set a random secure password (not used for login)
         user.setPassword(passwordEncoder.encode(java.util.UUID.randomUUID().toString()));
 
-        // Save the user first (to generate ID if new)
-        user = userRepository.save(user);
-
-        // If this is an admin email, assign admin role
+        // If this is an admin email, ensure admin role and displayId
         if (isAdminEmail(email)) {
             user.setRole(AppConstants.ADMIN_ROLE);
-            user = userRepository.save(user);
-            log.info("User {} is admin (matches ADMIN_EMAILS)", email);
+            if (user.getDisplayId() == null || !user.getDisplayId().startsWith("ADM")) {
+                user.setDisplayId(sequenceGeneratorService.generateDisplayId(AppConstants.ADMIN_ROLE));
+            }
         }
 
-        log.info("User {} saved to database", user.getEmail());
+        user = userRepository.save(user);
+        log.info("User {} logged in with role {}", user.getEmail(), user.getRole());
 
         // Step 5: Generate JWT token
         String jwtToken = jwtTokenProvider.generateToken(
@@ -115,18 +123,17 @@ public class AuthService {
                 user.getRole());
 
         // Step 6: Build and return response
-        // firstLogin = true means the user needs to select their role
-        boolean needsRoleSelection = isNewUser && !isAdminEmail(email);
-
+        // needsRoleSelection is never true now — admin pre-assigns roles
         LoginResponse response = LoginResponse.builder()
                 .success(true)
-                .message(needsRoleSelection ? "Please select your role" : "Login successful")
+                .message("Login successful")
                 .token(jwtToken)
                 .userId(user.getId())
                 .email(user.getEmail())
                 .name(user.getName())
                 .role(user.getRole())
-                .firstLogin(needsRoleSelection)
+                .displayId(user.getDisplayId())
+                .firstLogin(false)
                 .build();
 
         log.info("Login successful for user: {}", email);
@@ -147,12 +154,12 @@ public class AuthService {
                 .orElseThrow(() -> new com.smartcampus.backend.exception.UserNotFoundException(
                         "User not found with email: " + email));
 
-        // Only allow STUDENT or STAFF selection (admin is auto-assigned)
-        if (!"STUDENT".equalsIgnoreCase(roleName) && !"STAFF".equalsIgnoreCase(roleName)) {
-            throw new IllegalArgumentException("Invalid role selection. Choose STUDENT or STAFF.");
+        if (!"LECTURER".equalsIgnoreCase(roleName) && !"TECHNICIAN".equalsIgnoreCase(roleName)) {
+            throw new IllegalArgumentException("Invalid role selection. Choose LECTURER or TECHNICIAN.");
         }
 
         user.setRole(roleName.toUpperCase());
+        user.setDisplayId(sequenceGeneratorService.generateDisplayId(roleName.toUpperCase()));
         user.setUpdatedAt(java.time.LocalDateTime.now());
         user = userRepository.save(user);
 
@@ -168,6 +175,7 @@ public class AuthService {
                 .email(user.getEmail())
                 .name(user.getName())
                 .role(user.getRole())
+                .displayId(user.getDisplayId())
                 .firstLogin(false)
                 .build();
     }
@@ -195,7 +203,7 @@ public class AuthService {
 
             // Decode the payload (second part)
             String payload = parts[1];
-            payload += "==".substring(0, (8 - payload.length() % 8) % 8);
+            payload += "==".substring(0, (4 - payload.length() % 4) % 4);
             byte[] decodedPayload = Base64.getUrlDecoder().decode(payload);
             String payloadJson = new String(decodedPayload);
 
@@ -248,14 +256,15 @@ public class AuthService {
         user.setEmail(email);
         user.setName(name);
 
-        // Assign role based on whether email is in ADMIN_EMAILS
+        String role;
         if (isAdminEmail(email)) {
-            user.setRole(AppConstants.ADMIN_ROLE);
-            log.info("New user {} assigned ADMIN role", email);
+            role = AppConstants.ADMIN_ROLE;
         } else {
-            user.setRole(AppConstants.DEFAULT_ROLE);
-            log.info("New user {} assigned DEFAULT role", email);
+            role = AppConstants.DEFAULT_ROLE;
         }
+        user.setRole(role);
+        user.setDisplayId(sequenceGeneratorService.generateDisplayId(role));
+        log.info("New user {} assigned role {} with displayId {}", email, role, user.getDisplayId());
 
         return user;
     }

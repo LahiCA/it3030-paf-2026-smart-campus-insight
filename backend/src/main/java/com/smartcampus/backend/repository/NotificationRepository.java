@@ -7,12 +7,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-/**
- * NotificationRepository
- * 
- * Spring Data MongoDB repository for Notification document.
- * Provides CRUD operations plus custom queries.
- */
 @Repository
 public interface NotificationRepository extends MongoRepository<Notification, String> {
 

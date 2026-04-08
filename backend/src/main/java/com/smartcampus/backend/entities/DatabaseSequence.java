@@ -1,25 +1,19 @@
 package com.smartcampus.backend.entities;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-
-import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "bookings")
-public class Booking {
+@Document(collection = "database_sequences")
+public class DatabaseSequence {
 
     @Id
     private String id;
 
-    private String userId;
-
-    private String status = "PENDING";
-
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private long seq;
 }

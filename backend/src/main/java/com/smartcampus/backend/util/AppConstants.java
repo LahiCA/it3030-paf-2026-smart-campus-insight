@@ -21,24 +21,11 @@ public class AppConstants {
      */
     public static final String GOOGLE_JWKS_URL = "https://www.googleapis.com/oauth2/v3/certs";
 
-    /**
-     * Default user role when first registering via Google
-     * Can be overridden if email is in ADMIN_EMAILS
-     */
-    public static final String DEFAULT_ROLE = "USER";
+    public static final String DEFAULT_ROLE = "LECTURER";
 
-    /**
-     * Admin role constant
-     */
     public static final String ADMIN_ROLE = "ADMIN";
 
-    /**
-     * Technician role constant
-     */
     public static final String TECHNICIAN_ROLE = "TECHNICIAN";
 
-    /**
-     * Manager role constant
-     */
-    public static final String MANAGER_ROLE = "MANAGER";
+    public static final String LECTURER_ROLE = "LECTURER";
 }

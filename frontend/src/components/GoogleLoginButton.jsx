@@ -46,8 +46,23 @@ const GoogleLoginButton = ({ onSuccess, onError, text = 'signin_with', size = 'l
           onSuccess(result.user);
         }
 
-        // Redirect based on firstLogin flag
-        const destination = result.firstLogin ? ROUTES.ROLE_SELECTION : '/dashboard';
+        // Redirect based on firstLogin or role
+        let destination;
+        if (result.firstLogin) {
+          destination = ROUTES.ROLE_SELECTION;
+        } else {
+          const role = result.user?.role;
+          if (role === 'ADMIN') {
+            destination = ROUTES.ADMIN_DASHBOARD;
+          } else if (role === 'LECTURER') {
+            destination = ROUTES.LECTURER_DASHBOARD;
+          } else if (role === 'TECHNICIAN') {
+            destination = ROUTES.TECHNICIAN_DASHBOARD;
+          } else {
+            destination = ROUTES.DASHBOARD;
+          }
+        }
+
         setTimeout(() => {
           navigate(destination, { replace: true });
         }, 500);

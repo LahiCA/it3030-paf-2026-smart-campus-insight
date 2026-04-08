@@ -5,18 +5,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.index.Indexed;
 
 import java.time.LocalDateTime;
 
-/**
- * NotificationPreference Document (MongoDB)
- *
- * Stores per-user notification preferences.
- * Each user has one preferences document controlling which notification types
- * they want.
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

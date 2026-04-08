@@ -31,6 +31,7 @@ export const loginWithGoogle = async (googleToken) => {
         email: response.data.email,
         name: response.data.name,
         role: response.data.role,
+        displayId: response.data.displayId,
         firstLogin: response.data.firstLogin
       });
 
@@ -85,6 +86,7 @@ export const completeProfile = async (role) => {
         email: response.data.email,
         name: response.data.name,
         role: response.data.role,
+        displayId: response.data.displayId,
         firstLogin: false
       });
 

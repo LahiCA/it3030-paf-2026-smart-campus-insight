@@ -94,7 +94,7 @@ export const AuthProvider = ({ children }) => {
       if (result.success) {
         setUser(result.user);
         setIsAuthenticated(true);
-        return { success: true, message: result.message, firstLogin: result.firstLogin };
+        return { success: true, message: result.message, firstLogin: result.firstLogin, user: result.user };
       } else {
         setError(result.message);
         return { success: false, message: result.message };

@@ -60,9 +60,14 @@ public class LoginResponse {
     private String name;
 
     /**
-     * The user's role: STUDENT, STAFF, ADMIN, TECHNICIAN, MANAGER
+     * The user's role: ADMIN, LECTURER, TECHNICIAN
      */
     private String role;
+
+    /**
+     * Custom display ID like ADM0001, LEC0001, TEC0001
+     */
+    private String displayId;
 
     /**
      * Whether this is the user's first login (needs role selection)

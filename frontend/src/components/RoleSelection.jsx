@@ -14,17 +14,17 @@ const RoleSelection = () => {
 
   const roles = [
     {
-      id: 'STUDENT',
-      title: 'Student',
-      description: 'I am a student enrolled at the university. I want to book facilities, submit support tickets, and receive campus notifications.',
-      icon: <FaGraduationCap size={40} />,
+      id: 'LECTURER',
+      title: 'Lecturer',
+      description: 'I am a lecturer at the university. I need to manage bookings, oversee facilities, and coordinate with students.',
+      icon: <FaChalkboardTeacher size={40} />,
       color: '#3b82f6',
     },
     {
-      id: 'STAFF',
-      title: 'Staff / Lecturer',
-      description: 'I am a lecturer or staff member. I need to manage bookings, oversee facilities, and coordinate with students.',
-      icon: <FaChalkboardTeacher size={40} />,
+      id: 'TECHNICIAN',
+      title: 'Technician',
+      description: 'I am a technician responsible for maintaining campus facilities, equipment, and infrastructure.',
+      icon: <FaGraduationCap size={40} />,
       color: '#8b5cf6',
     },
   ];
@@ -43,6 +43,7 @@ const RoleSelection = () => {
         setUser({
           ...user,
           role: selectedRole,
+          displayId: result.user?.displayId,
           firstLogin: false,
         });
         setIsAuthenticated(true);

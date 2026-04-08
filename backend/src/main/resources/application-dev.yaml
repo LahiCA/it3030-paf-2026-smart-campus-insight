@@ -1,7 +1,7 @@
 spring:
-  # MongoDB Configuration for development
+  # MongoDB Atlas Configuration for development
   mongodb:
-    uri: "mongodb+srv://smartcampus:K1M7hV9BCf2rMtJK@cluster0.uvbjflr.mongodb.net/smartcampus?retryWrites=true&w=majority"
+    uri: mongodb+srv://admin:Xe6YIrDpEELZjamW@cluster0.k423yz7.mongodb.net/smartcampus-dev?retryWrites=true&w=majority
 
 jwt:
   # For development, use a simple secret (in production, use env var)

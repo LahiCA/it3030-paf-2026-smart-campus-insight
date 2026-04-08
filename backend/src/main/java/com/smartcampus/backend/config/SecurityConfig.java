@@ -12,6 +12,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -104,8 +105,16 @@ public class SecurityConfig {
                                                 // All other endpoints require authentication
                                                 .anyRequest().authenticated())
 
+                                // Return 401 (not 403) for unauthenticated requests
+                                .exceptionHandling(ex -> ex
+                                                .authenticationEntryPoint((request, response, authException) -> {
+                                                        response.setContentType("application/json");
+                                                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                                                        response.getWriter().write(
+                                                                        "{\"success\":false,\"message\":\"Unauthorized - please log in again\",\"statusCode\":401}");
+                                                }))
+
                                 // Add JWT filter before the default UsernamePasswordAuthenticationFilter
-                                // This ensures JWT is validated before any protected endpoint
                                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
                 return http.build();
@@ -132,6 +141,8 @@ public class SecurityConfig {
                                 "http://localhost:3004",
                                 "http://localhost:3005",
                                 "http://localhost:3006",
+                                "http://localhost:3007",
+                                "http://localhost:3008",
                                 "http://localhost:8080"));
 
                 // Allow these HTTP methods

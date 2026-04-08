@@ -16,11 +16,9 @@ export const REFRESH_TOKEN_KEY = 'smartcampus_refresh_token';
 
 // User Roles
 export const ROLES = {
-  STUDENT: 'STUDENT',
-  STAFF: 'STAFF',
   ADMIN: 'ADMIN',
-  TECHNICIAN: 'TECHNICIAN',
-  MANAGER: 'MANAGER'
+  LECTURER: 'LECTURER',
+  TECHNICIAN: 'TECHNICIAN'
 };
 
 // Notification Types
@@ -53,10 +51,14 @@ export const ROUTES = {
   LOGIN: '/login',
   ROLE_SELECTION: '/select-role',
   DASHBOARD: '/dashboard',
+  LECTURER_DASHBOARD: '/lecturer-dashboard',
+  TECHNICIAN_DASHBOARD: '/technician-dashboard',
+  ADMIN_DASHBOARD: '/admin-dashboard',
   NOTIFICATIONS: '/notifications',
   PROFILE: '/profile',
   SETTINGS: '/settings',
   ADMIN_PANEL: '/admin',
+  RESOURCES: '/resources',
   BOOKINGS: '/bookings',
   TICKETS: '/tickets'
 };

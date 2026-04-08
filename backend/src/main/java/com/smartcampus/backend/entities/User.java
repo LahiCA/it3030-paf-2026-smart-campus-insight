@@ -5,8 +5,8 @@ import java.util.List;
 import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,6 +25,12 @@ public class User implements UserDetails {
     @Id
     private String id;
 
+    /**
+     * Custom display ID like ADM0001, LEC0001, TEC0001
+     */
+    @Indexed(unique = true)
+    private String displayId;
+
     @NotBlank(message = "Email is required")
     @Indexed(unique = true)
     private String email;
@@ -36,9 +42,9 @@ public class User implements UserDetails {
     private String password;
 
     /**
-     * User role: USER, ADMIN, TECHNICIAN, MANAGER
+     * User role: ADMIN, LECTURER, TECHNICIAN
      */
-    private String role = "USER";
+    private String role = "LECTURER";
 
     private LocalDateTime createdAt = LocalDateTime.now();
 

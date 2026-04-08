@@ -42,6 +42,9 @@ public class NotificationController {
             Authentication authentication) {
         log.info("Fetching all notifications for user: {}", authentication.getName());
         String userId = extractUserIdFromAuthentication(authentication);
+        if (userId == null) {
+            return ResponseEntity.ok(List.of());
+        }
         List<NotificationDTO> notifications = notificationService.getUserNotifications(userId);
         return ResponseEntity.ok(notifications);
     }
@@ -55,8 +58,12 @@ public class NotificationController {
             Authentication authentication) {
         log.info("Fetching unread count for user: {}", authentication.getName());
         String userId = extractUserIdFromAuthentication(authentication);
-        long unreadCount = notificationService.getUnreadCount(userId);
         Map<String, Long> response = new HashMap<>();
+        if (userId == null) {
+            response.put("unreadCount", 0L);
+            return ResponseEntity.ok(response);
+        }
+        long unreadCount = notificationService.getUnreadCount(userId);
         response.put("unreadCount", unreadCount);
         return ResponseEntity.ok(response);
     }
@@ -71,6 +78,9 @@ public class NotificationController {
             Authentication authentication) {
         log.info("Marking notification {} as read for user: {}", id, authentication.getName());
         String userId = extractUserIdFromAuthentication(authentication);
+        if (userId == null) {
+            return ResponseEntity.notFound().build();
+        }
         NotificationDTO notification = notificationService.markAsRead(id, userId);
         return ResponseEntity.ok(notification);
     }
@@ -86,6 +96,9 @@ public class NotificationController {
             Authentication authentication) {
         log.info("Updating notification {} for user: {}", id, authentication.getName());
         String userId = extractUserIdFromAuthentication(authentication);
+        if (userId == null) {
+            return ResponseEntity.notFound().build();
+        }
         Boolean read = request.get("read");
         if (read != null && read) {
             return ResponseEntity.ok(notificationService.markAsRead(id, userId));
@@ -104,6 +117,9 @@ public class NotificationController {
             Authentication authentication) {
         log.info("Deleting notification {} for user: {}", id, authentication.getName());
         String userId = extractUserIdFromAuthentication(authentication);
+        if (userId == null) {
+            return ResponseEntity.notFound().build();
+        }
         notificationService.deleteNotification(id, userId);
         return ResponseEntity.noContent().build();
     }
@@ -116,6 +132,9 @@ public class NotificationController {
     public ResponseEntity<Void> markAllAsRead(Authentication authentication) {
         log.info("Marking all notifications as read for user: {}", authentication.getName());
         String userId = extractUserIdFromAuthentication(authentication);
+        if (userId == null) {
+            return ResponseEntity.ok().build();
+        }
         notificationService.markAllAsRead(userId);
         return ResponseEntity.ok().build();
     }
@@ -128,6 +147,9 @@ public class NotificationController {
     public ResponseEntity<Void> deleteAllNotifications(Authentication authentication) {
         log.info("Deleting all notifications for user: {}", authentication.getName());
         String userId = extractUserIdFromAuthentication(authentication);
+        if (userId == null) {
+            return ResponseEntity.noContent().build();
+        }
         notificationService.deleteAllNotifications(userId);
         return ResponseEntity.noContent().build();
     }
@@ -184,12 +206,13 @@ public class NotificationController {
 
     /**
      * Helper method: Extract user ID from authentication
+     * Returns null if user not found (e.g. fresh H2 database after restart)
      */
     private String extractUserIdFromAuthentication(Authentication authentication) {
         String email = authentication.getName();
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email))
-                .getId();
+                .map(user -> user.getId())
+                .orElse(null);
     }
 
     // ==================== Notification Preferences ====================
@@ -201,6 +224,9 @@ public class NotificationController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<NotificationPreferenceDTO> getPreferences(Authentication authentication) {
         String userId = extractUserIdFromAuthentication(authentication);
+        if (userId == null) {
+            return ResponseEntity.ok(new NotificationPreferenceDTO());
+        }
         NotificationPreferenceDTO prefs = notificationService.getPreferences(userId);
         return ResponseEntity.ok(prefs);
     }
@@ -214,6 +240,9 @@ public class NotificationController {
             @RequestBody NotificationPreferenceDTO request,
             Authentication authentication) {
         String userId = extractUserIdFromAuthentication(authentication);
+        if (userId == null) {
+            return ResponseEntity.notFound().build();
+        }
         NotificationPreferenceDTO prefs = notificationService.updatePreferences(userId, request);
         return ResponseEntity.ok(prefs);
     }

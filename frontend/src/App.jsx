@@ -14,6 +14,10 @@ import NotificationsPage from './components/NotificationsPage';
 import AdminPanel from './components/AdminPanel';
 import NotificationPreferences from './components/NotificationPreferences';
 import RoleSelection from './components/RoleSelection';
+import ResourcesPage from './components/ResourcesPage';
+import LecturerDashboard from './components/LecturerDashboard';
+import TechnicianDashboard from './components/TechnicianDashboard';
+import AdminDashboard from './components/AdminDashboard';
 
 function App() {
   console.log('Google Client ID from env:', GOOGLE_CLIENT_ID);
@@ -132,12 +136,64 @@ function App() {
               />
 
               <Route
+                path={ROUTES.LECTURER_DASHBOARD}
+                element={
+                  <PrivateRoute
+                    element={
+                      <Layout>
+                        <LecturerDashboard />
+                      </Layout>
+                    }
+                  />
+                }
+              />
+
+              <Route
+                path={ROUTES.TECHNICIAN_DASHBOARD}
+                element={
+                  <PrivateRoute
+                    element={
+                      <Layout>
+                        <TechnicianDashboard />
+                      </Layout>
+                    }
+                  />
+                }
+              />
+
+              <Route
+                path="/resources"
+                element={
+                  <PrivateRoute
+                    element={
+                      <Layout>
+                        <ResourcesPage />
+                      </Layout>
+                    }
+                  />
+                }
+              />
+
+              <Route
                 path={ROUTES.NOTIFICATIONS}
                 element={
                   <PrivateRoute
                     element={
                       <Layout>
                         <NotificationsPage />
+                      </Layout>
+                    }
+                  />
+                }
+              />
+
+              <Route
+                path={ROUTES.ADMIN_DASHBOARD}
+                element={
+                  <PrivateRoute
+                    element={
+                      <Layout>
+                        <AdminDashboard />
                       </Layout>
                     }
                   />

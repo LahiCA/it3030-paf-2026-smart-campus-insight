@@ -2,9 +2,9 @@ spring:
   application:
     name: backend
 
-  # MongoDB Configuration
+  # MongoDB Atlas Configuration
   mongodb:
-    uri: "mongodb+srv://smartcampus:K1M7hV9BCf2rMtJK@cluster0.uvbjflr.mongodb.net/smartcampus?retryWrites=true&w=majority"
+    uri: mongodb+srv://admin:Xe6YIrDpEELZjamW@cluster0.k423yz7.mongodb.net/smartcampus?retryWrites=true&w=majority
 
 server:
   port: 8080

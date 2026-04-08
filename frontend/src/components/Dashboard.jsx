@@ -7,7 +7,10 @@ import {
   FaUsers,
   FaArrowRight,
   FaChartLine,
-  FaGraduationCap
+  FaGraduationCap,
+  FaBuilding,
+  FaCheckCircle,
+  FaClock
 } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
@@ -74,12 +77,39 @@ const Dashboard = () => {
         .db-info-card li { padding: 8px 0; font-size: 14px; color: #666; line-height: 1.6; border-bottom: 1px solid #f0f0f0; }
         .db-info-card li:last-child { border-bottom: none; }
         .db-info-card li strong { color: #333; font-weight: 600; }
+        .db-overview { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 40px; }
+        .db-ov-card { display: flex; align-items: center; gap: 16px; background: white; padding: 20px 24px; border-radius: 12px; border: 1px solid #f0f0f0; }
+        .db-ov-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .db-ov-icon.res { background: #eef2ff; color: #6366f1; }
+        .db-ov-icon.avail { background: #ecfdf5; color: #22c55e; }
+        .db-ov-icon.pend { background: #fff7ed; color: #f59e0b; }
+        .db-ov-icon.tix { background: #fef2f2; color: #ef4444; }
+        .db-ov-num { font-size: 28px; font-weight: 700; color: #1e293b; margin: 0; line-height: 1; }
+        .db-ov-label { font-size: 13px; color: #94a3b8; margin: 0; margin-top: 2px; }
+        .db-recent { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 40px; }
+        .db-recent-card { background: white; border-radius: 12px; border: 1px solid #f0f0f0; padding: 24px; }
+        .db-recent-title { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 600; color: #1e293b; margin: 0 0 20px 0; }
+        .db-recent-title svg { color: #64748b; }
+        .db-recent-list { list-style: none; padding: 0; margin: 0; }
+        .db-recent-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #f8fafc; }
+        .db-recent-item:last-child { border-bottom: none; }
+        .db-recent-left { display: flex; align-items: center; gap: 12px; }
+        .db-recent-icon { width: 36px; height: 36px; border-radius: 8px; background: #f8fafc; color: #94a3b8; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .db-recent-name { font-size: 14px; font-weight: 600; color: #1e293b; margin: 0; }
+        .db-recent-sub { font-size: 12px; color: #94a3b8; margin: 0; margin-top: 2px; }
+        .db-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .db-badge.approved { background: #ecfdf5; color: #16a34a; }
+        .db-badge.pending { background: #fff7ed; color: #f59e0b; }
+        .db-badge.cancelled { background: #f8fafc; color: #94a3b8; }
+        .db-recent-empty { text-align: center; color: #94a3b8; padding: 40px 0; font-size: 14px; }
         @media (max-width: 1024px) {
           .db-wrap { padding: 30px 16px; }
           .db-welcome { flex-direction: column; text-align: center; padding: 30px; }
           .db-welcome-content h1 { font-size: 28px; }
           .db-welcome-icon { font-size: 60px; }
           .db-actions-grid { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+          .db-overview { grid-template-columns: repeat(2, 1fr); }
+          .db-recent { grid-template-columns: 1fr; }
         }
         @media (max-width: 768px) {
           .db-wrap { padding: 20px 12px; }
@@ -89,6 +119,8 @@ const Dashboard = () => {
           .db-welcome-msg { font-size: 14px; margin-bottom: 12px; }
           .db-welcome-icon { font-size: 48px; }
           .db-stats { grid-template-columns: 1fr; margin-bottom: 30px; }
+          .db-overview { grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 30px; }
+          .db-recent { grid-template-columns: 1fr; gap: 16px; margin-bottom: 30px; }
           .db-actions-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 30px; }
           .db-action-card { padding: 16px; }
           .db-card-icon { width: 48px; height: 48px; font-size: 32px; }
@@ -108,6 +140,7 @@ const Dashboard = () => {
           .db-welcome-icon { font-size: 40px; }
           .db-actions h2 { font-size: 18px; }
           .db-actions-grid { grid-template-columns: 1fr; }
+          .db-overview { grid-template-columns: 1fr; }
           .db-action-card { padding: 16px; }
           .db-card-icon { width: 40px; height: 40px; font-size: 28px; }
           .db-card-content h3 { font-size: 15px; }
@@ -128,21 +161,6 @@ const Dashboard = () => {
           </div>
           <div className="db-welcome-icon">
             <FaGraduationCap size={80} />
-          </div>
-        </section>
-
-        <section className="db-stats">
-          <div className="db-stat-card">
-            <div className="db-stat-icon unread">
-              <FaBell size={24} />
-            </div>
-            <div className="db-stat-content">
-              <p className="db-stat-label">Unread Notifications</p>
-              <p className="db-stat-value">{unreadCount}</p>
-            </div>
-            <button className="db-stat-action" onClick={() => navigate('/notifications')} title="View all notifications">
-              <FaArrowRight size={16} />
-            </button>
           </div>
         </section>
 
@@ -178,6 +196,104 @@ const Dashboard = () => {
                 <button className="db-card-btn" onClick={() => navigate('/maintenance')} title="Go to Maintenance"><FaArrowRight /></button>
               </div>
             )}
+          </div>
+        </section>
+
+        <section className="db-overview">
+          <div className="db-ov-card">
+            <div className="db-ov-icon res"><FaBuilding size={22} /></div>
+            <div>
+              <p className="db-ov-num">5</p>
+              <p className="db-ov-label">Total Resources</p>
+            </div>
+          </div>
+          <div className="db-ov-card">
+            <div className="db-ov-icon avail"><FaCheckCircle size={22} /></div>
+            <div>
+              <p className="db-ov-num">4</p>
+              <p className="db-ov-label">Available Now</p>
+            </div>
+          </div>
+          <div className="db-ov-card">
+            <div className="db-ov-icon pend"><FaClock size={22} /></div>
+            <div>
+              <p className="db-ov-num">1</p>
+              <p className="db-ov-label">Pending Bookings</p>
+            </div>
+          </div>
+          <div className="db-ov-card">
+            <div className="db-ov-icon tix"><FaTicketAlt size={22} /></div>
+            <div>
+              <p className="db-ov-num">0</p>
+              <p className="db-ov-label">Open Tickets</p>
+            </div>
+          </div>
+        </section>
+
+        <section className="db-recent">
+          <div className="db-recent-card">
+            <h3 className="db-recent-title"><FaCalendarCheck /> Recent Bookings</h3>
+            <ul className="db-recent-list">
+              <li className="db-recent-item">
+                <div className="db-recent-left">
+                  <div className="db-recent-icon"><FaCalendarCheck size={14} /></div>
+                  <div>
+                    <p className="db-recent-name">PAF Lecture</p>
+                    <p className="db-recent-sub">Lecture Hall A · Mar 15, 14:30</p>
+                  </div>
+                </div>
+                <span className="db-badge approved">Approved</span>
+              </li>
+              <li className="db-recent-item">
+                <div className="db-recent-left">
+                  <div className="db-recent-icon"><FaCalendarCheck size={14} /></div>
+                  <div>
+                    <p className="db-recent-name">Web Dev Workshop</p>
+                    <p className="db-recent-sub">Computer Lab 1 · Mar 16, 19:30</p>
+                  </div>
+                </div>
+                <span className="db-badge pending">Pending</span>
+              </li>
+              <li className="db-recent-item">
+                <div className="db-recent-left">
+                  <div className="db-recent-icon"><FaCalendarCheck size={14} /></div>
+                  <div>
+                    <p className="db-recent-name">Group Project Meeting</p>
+                    <p className="db-recent-sub">Meeting Room 101 · Mar 17, 15:30</p>
+                  </div>
+                </div>
+                <span className="db-badge approved">Approved</span>
+              </li>
+              <li className="db-recent-item">
+                <div className="db-recent-left">
+                  <div className="db-recent-icon"><FaCalendarCheck size={14} /></div>
+                  <div>
+                    <p className="db-recent-name">Guest Lecture</p>
+                    <p className="db-recent-sub">Lecture Hall A · Mar 18, 14:30</p>
+                  </div>
+                </div>
+                <span className="db-badge cancelled">Cancelled</span>
+              </li>
+            </ul>
+          </div>
+          <div className="db-recent-card">
+            <h3 className="db-recent-title"><FaTicketAlt /> Recent Tickets</h3>
+            <p className="db-recent-empty">No tickets yet.</p>
+          </div>
+        </section>
+
+        <section className="db-stats">
+          <div className="db-stat-card">
+            <div className="db-stat-icon unread">
+              <FaBell size={24} />
+            </div>
+            <div className="db-stat-content">
+              <p className="db-stat-label">Unread Notifications</p>
+              <p className="db-stat-value">{unreadCount}</p>
+            </div>
+            <button className="db-stat-action" onClick={() => navigate('/notifications')} title="View all notifications">
+              <FaArrowRight size={16} />
+            </button>
           </div>
         </section>
 
