@@ -21,32 +21,40 @@ const Navbar = () => {
     };
 
     return (
-        <nav className="navbar">
-            <div className="navbar-container">
-                <Link to="/" className="navbar-brand">
+        <nav className="ticket-navbar">
+            <div className="ticket-navbar-container">
+                <Link to="/" className="ticket-navbar-brand">
                     Smart Campus Insight
                 </Link>
 
-                <div className="navbar-menu">
-                    <Link to="/tickets" className={`navbar-link ${location.pathname === "/tickets" ? "active" : ""}`}>
+                <div className="ticket-navbar-menu">
+                    <Link
+                        to="/tickets"
+                        className={`ticket-navbar-link ${location.pathname === "/tickets" ? "ticket-active" : ""}`}
+                    >
                         Dashboard
                     </Link>
-                    <Link to="/create" className={`navbar-link ${location.pathname === "/create" ? "active" : ""}`}>
+
+                    <Link
+                        to="/create"
+                        className={`ticket-navbar-link ${location.pathname === "/create" ? "ticket-active" : ""}`}
+                    >
                         New Ticket
                     </Link>
                 </div>
 
-                <div className="navbar-actions">
+                <div className="ticket-navbar-actions">
                     <select
                         value={role}
                         onChange={(event) => switchRole(event.target.value)}
-                        className="role-select"
+                        className="ticket-role-select"
                     >
                         <option value="USER">USER</option>
                         <option value="TECHNICIAN">TECHNICIAN</option>
                         <option value="ADMIN">ADMIN</option>
                     </select>
-                    <span className="user-role">{role}</span>
+
+                    <span className="ticket-user-role">{role}</span>
                 </div>
             </div>
         </nav>

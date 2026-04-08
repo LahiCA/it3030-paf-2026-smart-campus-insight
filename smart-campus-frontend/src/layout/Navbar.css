@@ -1,4 +1,4 @@
-.navbar {
+.ticket-navbar {
     background-color: var(--primary);
     color: white;
     padding: 0;
@@ -8,7 +8,7 @@
     z-index: 100;
 }
 
-.navbar-container {
+.ticket-navbar-container {
     max-width: 1200px;
     margin: 0 auto;
     display: flex;
@@ -17,7 +17,7 @@
     padding: 16px 20px;
 }
 
-.navbar-brand {
+.ticket-navbar-brand {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -27,16 +27,16 @@
     text-decoration: none;
 }
 
-.brand-icon {
+.ticket-brand-icon {
     font-size: 24px;
 }
 
-.navbar-menu {
+.ticket-navbar-menu {
     display: flex;
     gap: 24px;
 }
 
-.navbar-link {
+.ticket-navbar-link {
     color: rgba(255, 255, 255, 0.9);
     text-decoration: none;
     font-weight: 500;
@@ -45,23 +45,23 @@
     transition: all 0.2s ease;
 }
 
-.navbar-link:hover {
+.ticket-navbar-link:hover {
     background-color: rgba(255, 255, 255, 0.1);
     color: white;
 }
 
-.navbar-link.active {
+.ticket-navbar-link.ticket-active {
     background-color: rgba(255, 255, 255, 0.2);
     color: white;
 }
 
-.navbar-actions {
+.ticket-navbar-actions {
     display: flex;
     align-items: center;
     gap: 16px;
 }
 
-.role-select {
+.ticket-role-select {
     border: none;
     border-radius: 999px;
     padding: 8px 12px;
@@ -70,11 +70,11 @@
     font-weight: 600;
 }
 
-.role-select option {
+.ticket-role-select option {
     color: #0f172a;
 }
 
-.user-role {
+.ticket-user-role {
     font-size: 14px;
     font-weight: 500;
     background-color: rgba(255, 255, 255, 0.2);
@@ -84,12 +84,12 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-    .navbar-container {
+    .ticket-navbar-container {
         flex-direction: column;
         gap: 16px;
     }
 
-    .navbar-menu {
+    .ticket-navbar-menu {
         gap: 16px;
     }
 }

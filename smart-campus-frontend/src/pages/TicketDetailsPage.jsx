@@ -106,7 +106,7 @@ export default function TicketDetailsPage() {
     return (
         <div className="min-h-screen bg-slate-50 px-4 py-8">
             <div className="mx-auto max-w-7xl">
-                <Link to="/" className="mb-5 inline-flex rounded-full bg-white px-4 py-2 text-sm font-semibold text-teal-700 shadow-sm">
+                <Link to="/tickets" className="mb-5 inline-flex rounded-full bg-white px-4 py-2 text-sm font-semibold text-teal-700 shadow-sm">
                     Back to dashboard
                 </Link>
 

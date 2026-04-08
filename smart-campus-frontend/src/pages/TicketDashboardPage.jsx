@@ -62,9 +62,9 @@ export default function TicketDashboardPage() {
                 <section className="rounded-[2rem] bg-white/90 p-8 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur">
                     <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
                         <div>
-                            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-teal-600">Module C</p>
+
                             <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-900">
-                                Maintenance & incident ticketing
+                                Maintenance and Incident Ticketing
                             </h1>
                             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500">
                                 {role === "ADMIN"
@@ -77,7 +77,7 @@ export default function TicketDashboardPage() {
                             onClick={() => setShowCreateModal(true)}
                             className="rounded-full bg-teal-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-teal-700"
                         >
-                            Create ticket
+                            Create Ticket
                         </button>
                     </div>
 
