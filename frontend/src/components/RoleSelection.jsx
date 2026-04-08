@@ -47,7 +47,15 @@ const RoleSelection = () => {
           firstLogin: false,
         });
         setIsAuthenticated(true);
-        navigate('/dashboard', { replace: true });
+
+        // Navigate directly to the role-specific dashboard
+        if (selectedRole === 'LECTURER') {
+          navigate('/lecturer-dashboard', { replace: true });
+        } else if (selectedRole === 'TECHNICIAN') {
+          navigate('/technician-dashboard', { replace: true });
+        } else {
+          navigate('/dashboard', { replace: true });
+        }
       } else {
         setError(result.message || 'Failed to set role. Please try again.');
       }

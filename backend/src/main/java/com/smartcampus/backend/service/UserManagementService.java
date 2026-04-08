@@ -43,6 +43,8 @@ public class UserManagementService {
         user.setRole(role.name());
         user.setDisplayId(sequenceGeneratorService.generateDisplayId(role.name()));
         user.setPassword(passwordEncoder.encode(java.util.UUID.randomUUID().toString()));
+        user.setPhoneNumber(request.getPhoneNumber());
+        user.setAddress(request.getAddress());
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
 
@@ -99,6 +101,8 @@ public class UserManagementService {
 
         user.setName(request.getName());
         user.setEmail(request.getEmail());
+        user.setPhoneNumber(request.getPhoneNumber());
+        user.setAddress(request.getAddress());
         user.setUpdatedAt(LocalDateTime.now());
 
         user = userRepository.save(user);
@@ -141,6 +145,8 @@ public class UserManagementService {
                 .email(user.getEmail())
                 .name(user.getName())
                 .role(user.getRole())
+                .phoneNumber(user.getPhoneNumber())
+                .address(user.getAddress())
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
                 .build();

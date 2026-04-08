@@ -42,7 +42,7 @@ const StatCard = ({ icon, label, value, colorClass, onClick }) => (
 const ActionCard = ({ icon, iconBg, title, description, onClick }) => (
     <div
         onClick={onClick}
-        className="group flex flex-col gap-4 bg-white rounded-xl p-6 shadow-sm border-2 border-transparent hover:border-slate-700 hover:shadow-lg transition-all duration-200 cursor-pointer"
+        className="group flex flex-col gap-4 bg-white rounded-xl p-6 shadow-sm border-2 border-transparent hover:border-teal-500 hover:shadow-lg transition-all duration-200 cursor-pointer"
     >
         <div className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 ${iconBg}`}>
             {icon}
@@ -51,7 +51,7 @@ const ActionCard = ({ icon, iconBg, title, description, onClick }) => (
             <h3 className="text-base font-semibold text-slate-800 mb-1">{title}</h3>
             <p className="text-sm text-slate-500 leading-relaxed">{description}</p>
         </div>
-        <div className="self-end w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-slate-700 group-hover:text-white transition-colors">
+        <div className="self-end w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-teal-600 group-hover:text-white transition-colors">
             <FaArrowRight size={14} />
         </div>
     </div>
@@ -68,7 +68,7 @@ const AdminDashboard = () => {
         <div className="max-w-7xl mx-auto px-6 py-10 font-sans">
 
             {/* Welcome Banner */}
-            <div className="flex items-center justify-between gap-6 rounded-2xl bg-gradient-to-r from-slate-700 to-slate-900 text-white px-10 py-10 mb-10 shadow-lg shadow-slate-300">
+            <div className="flex items-center justify-between gap-6 rounded-2xl bg-gradient-to-r from-teal-500 to-teal-800 text-white px-10 py-10 mb-10 shadow-lg shadow-teal-300">
                 <div>
                     <p className="text-xl opacity-85 mb-1">{getGreeting()},</p>
                     <h1 className="text-3xl font-bold mb-3">{displayName} 👋</h1>

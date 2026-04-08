@@ -46,6 +46,10 @@ public class User implements UserDetails {
      */
     private String role = "LECTURER";
 
+    private String phoneNumber;
+
+    private String address;
+
     private LocalDateTime createdAt = LocalDateTime.now();
 
     private LocalDateTime updatedAt = LocalDateTime.now();

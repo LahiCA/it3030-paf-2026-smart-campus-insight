@@ -16,7 +16,7 @@ const AdminPanel = () => {
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState('add'); // 'add' or 'edit'
   const [editingUser, setEditingUser] = useState(null);
-  const [formData, setFormData] = useState({ name: '', email: '', role: 'LECTURER' });
+  const [formData, setFormData] = useState({ name: '', email: '', role: 'LECTURER', phoneNumber: '', address: '' });
   const [formError, setFormError] = useState('');
 
   useEffect(() => {
@@ -38,7 +38,7 @@ const AdminPanel = () => {
 
   const openAddModal = () => {
     setModalMode('add');
-    setFormData({ name: '', email: '', role: 'LECTURER' });
+    setFormData({ name: '', email: '', role: 'LECTURER', phoneNumber: '', address: '' });
     setFormError('');
     setEditingUser(null);
     setShowModal(true);
@@ -46,7 +46,7 @@ const AdminPanel = () => {
 
   const openEditModal = (u) => {
     setModalMode('edit');
-    setFormData({ name: u.name, email: u.email, role: u.role });
+    setFormData({ name: u.name, email: u.email, role: u.role, phoneNumber: u.phoneNumber || '', address: u.address || '' });
     setFormError('');
     setEditingUser(u);
     setShowModal(true);
@@ -54,7 +54,7 @@ const AdminPanel = () => {
 
   const closeModal = () => {
     setShowModal(false);
-    setFormData({ name: '', email: '', role: 'LECTURER' });
+    setFormData({ name: '', email: '', role: 'LECTURER', phoneNumber: '', address: '' });
     setFormError('');
     setEditingUser(null);
   };
@@ -246,6 +246,8 @@ const AdminPanel = () => {
                   <th>Display ID</th>
                   <th>Name</th>
                   <th>Email</th>
+                  <th>Phone</th>
+                  <th>Address</th>
                   <th>Role</th>
                   <th>Created</th>
                   <th>Actions</th>
@@ -257,6 +259,8 @@ const AdminPanel = () => {
                     <td><span className="um-display-id">{u.displayId || '—'}</span></td>
                     <td>{u.name}</td>
                     <td>{u.email}</td>
+                    <td>{u.phoneNumber || '—'}</td>
+                    <td>{u.address || '—'}</td>
                     <td>
                       <span className={`um-badge ${getRoleBadgeClass(u.role)}`}>
                         {u.role}
@@ -314,6 +318,24 @@ const AdminPanel = () => {
                       <option key={role} value={role}>{role}</option>
                     ))}
                   </select>
+                </div>
+                <div className="um-form-group">
+                  <label>Phone Number</label>
+                  <input
+                    type="tel"
+                    value={formData.phoneNumber}
+                    onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+                    placeholder="Enter phone number"
+                  />
+                </div>
+                <div className="um-form-group">
+                  <label>Address</label>
+                  <input
+                    type="text"
+                    value={formData.address}
+                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                    placeholder="Enter address"
+                  />
                 </div>
                 <div className="um-modal-actions">
                   <button type="button" className="um-btn-cancel" onClick={closeModal}>Cancel</button>

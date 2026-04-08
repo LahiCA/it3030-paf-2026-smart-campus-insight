@@ -3,13 +3,13 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { GOOGLE_CLIENT_ID, ROUTES } from './utils/constants';
 import { AuthProvider } from './context/AuthContext';
+import { useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
 import PrivateRoute from './components/PrivateRoute';
 import Layout from './components/Layout';
 
 // Pages
 import LoginPage from './components/LoginPage';
-import Dashboard from './components/Dashboard';
 import NotificationsPage from './components/NotificationsPage';
 import AdminPanel from './components/AdminPanel';
 import NotificationPreferences from './components/NotificationPreferences';
@@ -19,6 +19,16 @@ import LecturerDashboard from './components/LecturerDashboard';
 import TechnicianDashboard from './components/TechnicianDashboard';
 import AdminDashboard from './components/AdminDashboard';
 import NotificationManagementPage from './components/NotificationManagementPage';
+
+// Routes to the correct dashboard based on the user's role
+const RoleDashboard = () => {
+  const { user } = useAuth();
+  const role = user?.role;
+  if (role === 'ADMIN') return <AdminDashboard />;
+  if (role === 'LECTURER') return <LecturerDashboard />;
+  if (role === 'TECHNICIAN') return <TechnicianDashboard />;
+  return <Navigate to={ROUTES.LOGIN} replace />;
+};
 
 function App() {
   console.log('Google Client ID from env:', GOOGLE_CLIENT_ID);
@@ -129,7 +139,7 @@ function App() {
                   <PrivateRoute
                     element={
                       <Layout>
-                        <Dashboard />
+                        <RoleDashboard />
                       </Layout>
                     }
                   />

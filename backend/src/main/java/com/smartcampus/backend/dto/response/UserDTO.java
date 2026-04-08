@@ -23,6 +23,10 @@ public class UserDTO {
 
     private String role;
 
+    private String phoneNumber;
+
+    private String address;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
