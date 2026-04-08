@@ -1,11 +1,8 @@
 package com.smartcampus.backend.service;
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.Claims;
 import com.smartcampus.backend.dto.response.LoginResponse;
 import com.smartcampus.backend.entities.User;
 import com.smartcampus.backend.exception.InvalidTokenException;
-import com.smartcampus.backend.exception.UserNotFoundException;
 import com.smartcampus.backend.repository.UserRepository;
 import com.smartcampus.backend.util.AppConstants;
 import lombok.extern.slf4j.Slf4j;
@@ -83,7 +80,6 @@ public class AuthService {
         // Step 2: Extract user information from the token payload
         String email = (String) payload.get("email");
         String name = (String) payload.getOrDefault("name", email);
-        String picture = (String) payload.getOrDefault("picture", "");
 
         log.info("Google token parsed. Email: {}, Name: {}", email, name);
 

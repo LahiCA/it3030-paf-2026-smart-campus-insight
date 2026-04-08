@@ -60,7 +60,7 @@ const Dashboard = () => {
       <section className="welcome-section">
         <div className="welcome-content">
           <h1>
-            <span className="greeting">{getGreeting()}</span>, {displayName}! 👋
+            <span className="greeting">{getGreeting()},</span>{displayName}! 👋
           </h1>
           <p className="welcome-message">
             Welcome to Smart Campus Operations Hub. Manage facilities, bookings, and support tickets efficiently.

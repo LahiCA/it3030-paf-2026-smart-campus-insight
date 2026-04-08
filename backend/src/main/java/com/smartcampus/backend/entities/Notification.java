@@ -80,6 +80,7 @@ public class Notification {
      * Used for notification bell badge (showing unread count)
      */
     @Column(nullable = false)
+    @lombok.Builder.Default
     private Boolean read = false;
 
     /**

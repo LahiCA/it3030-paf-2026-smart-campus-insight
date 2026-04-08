@@ -1,6 +1,5 @@
 package com.smartcampus.backend.service;
 
-import com.smartcampus.backend.dto.request.CreateNotificationRequest;
 import com.smartcampus.backend.dto.response.NotificationDTO;
 import com.smartcampus.backend.entities.Notification;
 import com.smartcampus.backend.entities.User;

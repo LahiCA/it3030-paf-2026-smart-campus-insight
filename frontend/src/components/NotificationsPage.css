@@ -3,6 +3,7 @@
   flex-direction: column;
   height: 100%;
   background-color: #f5f7fa;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* Page header */

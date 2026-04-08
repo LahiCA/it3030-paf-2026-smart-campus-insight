@@ -70,7 +70,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 // Step 2: Validate the JWT
                 if (jwtTokenProvider.validateToken(jwt)) {
                     // Step 3: Extract user info from the token
-                    Long userId = jwtTokenProvider.extractUserId(jwt);
                     String email = jwtTokenProvider.extractEmail(jwt);
                     String role = jwtTokenProvider.extractRole(jwt);
 

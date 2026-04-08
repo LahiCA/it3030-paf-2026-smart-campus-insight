@@ -2,7 +2,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(90deg, #14B8A6 0%, #0f766e 100%);
   color: white;
   padding: 0 20px;
   height: 70px;
@@ -10,6 +10,7 @@
   position: sticky;
   top: 0;
   z-index: 100;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* Left section - Brand */

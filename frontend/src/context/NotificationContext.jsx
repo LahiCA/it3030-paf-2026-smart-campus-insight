@@ -1,4 +1,11 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useRef
+} from 'react';
 import {
   getNotifications,
   getUnreadCount,
@@ -12,24 +19,21 @@ import { useAuth } from './AuthContext';
 
 /**
  * NotificationContext
- * 
+ *
  * Manages notifications state globally
- * Provides:
- * - List of notifications
- * - Unread count
- * - Functions to manage notifications
- * - Auto-polling for new notifications
  */
-
 const NotificationContext = createContext();
 
 export const NotificationProvider = ({ children }) => {
   const { isAuthenticated } = useAuth();
+
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [pollingInterval, setPollingInterval] = useState(null);
+
+  // useRef is better than useState for interval IDs
+  const pollingIntervalRef = useRef(null);
 
   /**
    * Fetch all notifications
@@ -45,7 +49,7 @@ export const NotificationProvider = ({ children }) => {
         setNotifications(result.notifications || []);
         setError(null);
       } else {
-        setError(result.message);
+        setError(result.message || 'Failed to fetch notifications');
       }
     } catch (err) {
       console.error('Error fetching notifications:', err);
@@ -65,7 +69,7 @@ export const NotificationProvider = ({ children }) => {
       const result = await getUnreadCount();
 
       if (result.success) {
-        setUnreadCount(result.count);
+        setUnreadCount(result.count ?? 0);
       }
     } catch (err) {
       console.error('Error fetching unread count:', err);
@@ -80,20 +84,19 @@ export const NotificationProvider = ({ children }) => {
       const result = await markAsRead(notificationId);
 
       if (result.success) {
-        // Update local state
-        setNotifications(prevNotifications =>
-          prevNotifications.map(notification =>
+        setNotifications((prevNotifications) =>
+          prevNotifications.map((notification) =>
             notification.id === notificationId
               ? { ...notification, read: true }
               : notification
           )
         );
-        // Update unread count
-        setUnreadCount(prevCount => Math.max(0, prevCount - 1));
+
+        setUnreadCount((prevCount) => Math.max(0, prevCount - 1));
         return { success: true };
-      } else {
-        return { success: false, message: result.message };
       }
+
+      return { success: false, message: result.message };
     } catch (err) {
       console.error('Error marking notification as read:', err);
       return { success: false, message: 'Failed to mark as read' };
@@ -108,20 +111,19 @@ export const NotificationProvider = ({ children }) => {
       const result = await markAsUnread(notificationId);
 
       if (result.success) {
-        // Update local state
-        setNotifications(prevNotifications =>
-          prevNotifications.map(notification =>
+        setNotifications((prevNotifications) =>
+          prevNotifications.map((notification) =>
             notification.id === notificationId
               ? { ...notification, read: false }
               : notification
           )
         );
-        // Update unread count
-        setUnreadCount(prevCount => prevCount + 1);
+
+        setUnreadCount((prevCount) => prevCount + 1);
         return { success: true };
-      } else {
-        return { success: false, message: result.message };
       }
+
+      return { success: false, message: result.message };
     } catch (err) {
       console.error('Error marking notification as unread:', err);
       return { success: false, message: 'Failed to mark as unread' };
@@ -133,22 +135,27 @@ export const NotificationProvider = ({ children }) => {
    */
   const handleDeleteNotification = useCallback(async (notificationId) => {
     try {
+      const notificationToDelete = notifications.find(
+        (n) => n.id === notificationId
+      );
+
       const result = await deleteNotification(notificationId);
 
       if (result.success) {
-        // Update local state
-        setNotifications(prevNotifications =>
-          prevNotifications.filter(notification => notification.id !== notificationId)
+        setNotifications((prevNotifications) =>
+          prevNotifications.filter(
+            (notification) => notification.id !== notificationId
+          )
         );
-        // Update unread count if it was unread
-        const notification = notifications.find(n => n.id === notificationId);
-        if (notification && !notification.read) {
-          setUnreadCount(prevCount => Math.max(0, prevCount - 1));
+
+        if (notificationToDelete && !notificationToDelete.read) {
+          setUnreadCount((prevCount) => Math.max(0, prevCount - 1));
         }
+
         return { success: true };
-      } else {
-        return { success: false, message: result.message };
       }
+
+      return { success: false, message: result.message };
     } catch (err) {
       console.error('Error deleting notification:', err);
       return { success: false, message: 'Failed to delete notification' };
@@ -163,18 +170,18 @@ export const NotificationProvider = ({ children }) => {
       const result = await markAllAsRead(notifications);
 
       if (result.success) {
-        // Update local state
-        setNotifications(prevNotifications =>
-          prevNotifications.map(notification => ({
+        setNotifications((prevNotifications) =>
+          prevNotifications.map((notification) => ({
             ...notification,
             read: true
           }))
         );
+
         setUnreadCount(0);
         return { success: true, message: result.message };
-      } else {
-        return { success: false, message: result.message };
       }
+
+      return { success: false, message: result.message };
     } catch (err) {
       console.error('Error marking all as read:', err);
       return { success: false, message: 'Failed to mark all as read' };
@@ -182,39 +189,35 @@ export const NotificationProvider = ({ children }) => {
   }, [notifications]);
 
   /**
-   * Start polling for new notifications
+   * Stop polling
+   */
+  const stopPolling = useCallback(() => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+  }, []);
+
+  /**
+   * Start polling
    */
   const startPolling = useCallback(() => {
     if (!isAuthenticated) return;
+
+    stopPolling();
 
     // Initial fetch
     fetchNotifications();
     fetchUnreadCount();
 
-    // Poll every NOTIFICATION_POLL_INTERVAL
-    const interval = setInterval(() => {
-      fetchUnreadCount(); // Just check count frequently
-      // Fetch full list less frequently
-      if (Math.random() < 0.3) {
-        fetchNotifications();
-      }
+    pollingIntervalRef.current = setInterval(() => {
+      fetchUnreadCount();
+      fetchNotifications();
     }, NOTIFICATION_POLL_INTERVAL);
-
-    setPollingInterval(interval);
-  }, [isAuthenticated, fetchNotifications, fetchUnreadCount]);
+  }, [isAuthenticated, fetchNotifications, fetchUnreadCount, stopPolling]);
 
   /**
-   * Stop polling
-   */
-  const stopPolling = useCallback(() => {
-    if (pollingInterval) {
-      clearInterval(pollingInterval);
-      setPollingInterval(null);
-    }
-  }, [pollingInterval]);
-
-  /**
-   * Initialize polling when user is authenticated
+   * Initialize when auth changes
    */
   useEffect(() => {
     if (isAuthenticated) {
@@ -223,9 +226,13 @@ export const NotificationProvider = ({ children }) => {
       stopPolling();
       setNotifications([]);
       setUnreadCount(0);
+      setError(null);
+      setLoading(false);
     }
 
-    return () => stopPolling();
+    return () => {
+      stopPolling();
+    };
   }, [isAuthenticated, startPolling, stopPolling]);
 
   const value = {
@@ -250,14 +257,12 @@ export const NotificationProvider = ({ children }) => {
   );
 };
 
-/**
- * useNotifications Hook
- * Use this in components to access notification context
- */
 export const useNotifications = () => {
   const context = useContext(NotificationContext);
+
   if (!context) {
     throw new Error('useNotifications must be used within NotificationProvider');
   }
+
   return context;
 };
