@@ -12,16 +12,16 @@ import Navbar from "./layout/Navbar";
 function App() {
   return (
     <BrowserRouter>
-     <Navbar />
+      <Navbar />
       <div className="flex min-h-screen bg-[var(--surface)]">
         <BWSidebar />
         <main className="flex-1 p-8">
           <Routes>
-            <Route path="/" element={<BWDashboard />} />
+
             <Route path="/bw-create-booking" element={<BWCreateBooking />} />
             <Route path="/bw-my-bookings" element={<BWMyBookings />} />
             <Route path="/bw-admin-bookings" element={<BWAdminBookingList />} />
-              
+
             <Route path="/tickets" element={<TicketDashboardPage />} />
             <Route path="/tickets/:id" element={<TicketDetailsPage />} />
             <Route path="/create" element={<CreateTicketPage />} />
