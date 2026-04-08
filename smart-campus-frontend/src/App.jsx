@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import BWSidebar from "./layout/BWSidebar";
 import BWCreateBooking from "./pages/BWCreateBooking";
 import BWMyBookings from "./pages/BWMyBookings";
+import BWAdminBookingList from "./pages/BWAdminBookingList";
 
 function BWDashboard() {
   return (
@@ -26,6 +27,7 @@ function App() {
             <Route path="/" element={<BWDashboard />} />
             <Route path="/bw-create-booking" element={<BWCreateBooking />} />
             <Route path="/bw-my-bookings" element={<BWMyBookings />} />
+            <Route path="/bw-admin-bookings" element={<BWAdminBookingList />} />
           </Routes>
         </main>
       </div>

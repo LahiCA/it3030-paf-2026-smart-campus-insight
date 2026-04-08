@@ -29,6 +29,10 @@ function BWSidebar() {
         <Link to="/bw-my-bookings" className={linkClasses("/bw-my-bookings")}>
           My Bookings
         </Link>
+
+        <Link to="/bw-admin-bookings" className={linkClasses("/bw-admin-bookings")}>
+          Admin Bookings
+        </Link>
       </nav>
     </aside>
   );

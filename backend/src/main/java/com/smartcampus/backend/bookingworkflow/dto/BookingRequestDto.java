@@ -7,9 +7,6 @@ import lombok.Data;
 @Data
 public class BookingRequestDto {
 
-    @NotBlank(message = "Resource ID is required")
-    private String resourceId;
-
     @NotBlank(message = "User ID is required")
     private String userId;
 
