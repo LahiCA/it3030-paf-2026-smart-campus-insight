@@ -47,7 +47,7 @@ public class LoginResponse {
     /**
      * The newly created or updated user's ID
      */
-    private Long userId;
+    private String userId;
 
     /**
      * The user's email address
@@ -60,7 +60,12 @@ public class LoginResponse {
     private String name;
 
     /**
-     * The user's role: USER, ADMIN, TECHNICIAN, MANAGER
+     * The user's role: STUDENT, STAFF, ADMIN, TECHNICIAN, MANAGER
      */
     private String role;
+
+    /**
+     * Whether this is the user's first login (needs role selection)
+     */
+    private boolean firstLogin;
 }

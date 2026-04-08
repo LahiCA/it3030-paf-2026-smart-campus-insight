@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { loginWithGoogle, logout, getCurrentUser } from '../services/auth';
 import { getUser, getToken, isAuthenticated as checkAuth } from '../services/storage';
-import { getRoleFromToken, getEmailFromToken, decodeToken } from '../utils/jwt';
 
 /**
  * AuthContext
@@ -15,6 +14,8 @@ import { getRoleFromToken, getEmailFromToken, decodeToken } from '../utils/jwt';
  */
 
 const AuthContext = createContext();
+
+export { AuthContext };
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -93,7 +94,7 @@ export const AuthProvider = ({ children }) => {
       if (result.success) {
         setUser(result.user);
         setIsAuthenticated(true);
-        return { success: true, message: result.message };
+        return { success: true, message: result.message, firstLogin: result.firstLogin };
       } else {
         setError(result.message);
         return { success: false, message: result.message };
@@ -148,7 +149,9 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     user,
+    setUser,
     isAuthenticated,
+    setIsAuthenticated,
     loading,
     error,
     login: handleLogin,

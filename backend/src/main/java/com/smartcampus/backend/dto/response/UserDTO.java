@@ -37,7 +37,7 @@ public class UserDTO {
     /**
      * User's unique ID
      */
-    private Long id;
+    private String id;
 
     /**
      * User's email address

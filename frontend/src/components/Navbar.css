@@ -51,19 +51,13 @@
   }
 }
 
-/* Middle section - Notifications */
-.navbar-middle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
-}
-
-/* Right section - User Menu */
+/* Right section - Notification Bell + User Menu */
 .navbar-right {
   flex: 1;
   display: flex;
+  align-items: center;
   justify-content: flex-end;
+  gap: 16px;
 }
 
 .user-menu {

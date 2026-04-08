@@ -84,8 +84,12 @@ public class AuthService {
         log.info("Google token parsed. Email: {}, Name: {}", email, name);
 
         // Step 3: Find existing user or create new one
-        User user = userRepository.findByEmail(email)
-                .orElseGet(() -> createNewUser(email, name));
+        boolean isNewUser = false;
+        User user = userRepository.findByEmail(email).orElse(null);
+        if (user == null) {
+            user = createNewUser(email, name);
+            isNewUser = true;
+        }
 
         // Step 4: Update user information (in case name changed in Google account)
         user.setName(name);
@@ -111,18 +115,61 @@ public class AuthService {
                 user.getRole());
 
         // Step 6: Build and return response
+        // firstLogin = true means the user needs to select their role
+        boolean needsRoleSelection = isNewUser && !isAdminEmail(email);
+
         LoginResponse response = LoginResponse.builder()
                 .success(true)
-                .message("Login successful")
+                .message(needsRoleSelection ? "Please select your role" : "Login successful")
                 .token(jwtToken)
                 .userId(user.getId())
                 .email(user.getEmail())
                 .name(user.getName())
                 .role(user.getRole())
+                .firstLogin(needsRoleSelection)
                 .build();
 
         log.info("Login successful for user: {}", email);
         return response;
+    }
+
+    /**
+     * Complete profile after first login — user selects their role
+     *
+     * @param email    The authenticated user's email
+     * @param roleName The chosen role: STUDENT or STAFF
+     * @return Updated LoginResponse with new JWT
+     */
+    public LoginResponse completeProfile(String email, String roleName) {
+        log.info("Completing profile for user: {} with role: {}", email, roleName);
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new com.smartcampus.backend.exception.UserNotFoundException(
+                        "User not found with email: " + email));
+
+        // Only allow STUDENT or STAFF selection (admin is auto-assigned)
+        if (!"STUDENT".equalsIgnoreCase(roleName) && !"STAFF".equalsIgnoreCase(roleName)) {
+            throw new IllegalArgumentException("Invalid role selection. Choose STUDENT or STAFF.");
+        }
+
+        user.setRole(roleName.toUpperCase());
+        user.setUpdatedAt(java.time.LocalDateTime.now());
+        user = userRepository.save(user);
+
+        // Generate a new JWT with the updated role
+        String jwtToken = jwtTokenProvider.generateToken(
+                user.getId(), user.getEmail(), user.getRole());
+
+        return LoginResponse.builder()
+                .success(true)
+                .message("Profile completed successfully")
+                .token(jwtToken)
+                .userId(user.getId())
+                .email(user.getEmail())
+                .name(user.getName())
+                .role(user.getRole())
+                .firstLogin(false)
+                .build();
     }
 
     /**

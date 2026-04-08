@@ -98,7 +98,7 @@ public class UserManagementController {
      */
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
+    public ResponseEntity<UserDTO> getUserById(@PathVariable String id) {
         log.info("Admin fetching user with ID: {}", id);
 
         UserDTO userDTO = userManagementService.getUserById(id);
@@ -210,7 +210,7 @@ public class UserManagementController {
     @PutMapping("/{id}/role")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserDTO> updateUserRole(
-            @PathVariable Long id,
+            @PathVariable String id,
             @Valid @RequestBody UpdateRoleRequest request) {
 
         log.info("Admin updating role for user ID {} to: {}", id, request.getNewRole());
@@ -248,7 +248,7 @@ public class UserManagementController {
      */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteUser(@PathVariable String id) {
         log.warn("Admin deleting user with ID: {}", id);
 
         userManagementService.deleteUser(id);

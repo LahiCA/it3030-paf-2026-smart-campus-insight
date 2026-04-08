@@ -34,7 +34,7 @@ public class NotificationDTO {
     /**
      * Unique notification ID
      */
-    private Long id;
+    private String id;
 
     /**
      * The notification message to display
@@ -58,7 +58,7 @@ public class NotificationDTO {
      * Example: If relatedEntityId=5 and relatedEntityType=BOOKING,
      * frontend links to /bookings/5
      */
-    private Long relatedEntityId;
+    private String relatedEntityId;
 
     /**
      * Optional: The type of related entity (BOOKING, TICKET, COMMENT, etc.)

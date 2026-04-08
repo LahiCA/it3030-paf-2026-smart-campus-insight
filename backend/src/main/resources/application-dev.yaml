@@ -1,18 +1,7 @@
 spring:
-  datasource:
-    # Local MySQL database for development
-    url: jdbc:mysql://localhost:3306/smartcampus?createDatabaseIfNotExist=true
-    username: root
-    password: # Leave empty if no password
-
-  jpa:
-    hibernate:
-      # AUTO: automatically create/update tables (good for development)
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
+  # MongoDB Configuration for development
+  mongodb:
+    uri: "mongodb+srv://smartcampus:K1M7hV9BCf2rMtJK@cluster0.uvbjflr.mongodb.net/smartcampus?retryWrites=true&w=majority"
 
 jwt:
   # For development, use a simple secret (in production, use env var)

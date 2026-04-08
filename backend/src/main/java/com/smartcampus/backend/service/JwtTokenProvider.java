@@ -60,7 +60,7 @@ public class JwtTokenProvider {
      * @param role   The user's role (USER, ADMIN, TECHNICIAN, MANAGER)
      * @return A signed JWT token string
      */
-    public String generateToken(Long userId, String email, String role) {
+    public String generateToken(String userId, String email, String role) {
         log.debug("Generating JWT token for user: {} with role: {}", email, role);
 
         // Create claims (payload) of the token
@@ -101,7 +101,7 @@ public class JwtTokenProvider {
      * @param token The JWT token
      * @return The user ID
      */
-    public Long extractUserId(String token) {
+    public String extractUserId(String token) {
         try {
             Claims claims = Jwts.parserBuilder()
                     .setSigningKey(getSigningKey())
@@ -109,7 +109,7 @@ public class JwtTokenProvider {
                     .parseClaimsJws(token)
                     .getBody();
 
-            return claims.get("userId", Long.class);
+            return claims.get("userId", String.class);
         } catch (JwtException | IllegalArgumentException e) {
             log.error("Error extracting userId from token: {}", e.getMessage());
             return null;

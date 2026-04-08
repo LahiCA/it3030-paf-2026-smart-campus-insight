@@ -30,12 +30,14 @@ export const loginWithGoogle = async (googleToken) => {
         id: response.data.userId,
         email: response.data.email,
         name: response.data.name,
-        role: response.data.role
+        role: response.data.role,
+        firstLogin: response.data.firstLogin
       });
 
       return {
         success: true,
         user: response.data,
+        firstLogin: response.data.firstLogin,
         message: 'Login successful'
       };
     } else {
@@ -63,6 +65,47 @@ export const logout = () => {
     success: true,
     message: 'Logged out successfully'
   };
+};
+
+/**
+ * Complete profile after first login — select role (STUDENT or STAFF)
+ *
+ * @param {string} role - The selected role
+ * @returns {Promise<object>} Updated user data with new JWT
+ */
+export const completeProfile = async (role) => {
+  try {
+    const response = await axiosInstance.post('/auth/complete-profile', { role });
+
+    if (response.data.success && response.data.token) {
+      // Update stored token and user data with new role
+      saveToken(response.data.token);
+      saveUser({
+        id: response.data.userId,
+        email: response.data.email,
+        name: response.data.name,
+        role: response.data.role,
+        firstLogin: false
+      });
+
+      return {
+        success: true,
+        user: response.data,
+        message: 'Profile completed successfully'
+      };
+    }
+
+    return {
+      success: false,
+      message: response.data.message || 'Failed to complete profile'
+    };
+  } catch (error) {
+    console.error('Complete profile error:', error);
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Failed to complete profile'
+    };
+  }
 };
 
 /**

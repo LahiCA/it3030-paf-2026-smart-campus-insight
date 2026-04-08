@@ -1,7 +1,6 @@
 package com.smartcampus.backend.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,8 +25,8 @@ public class UpdateRoleRequest {
     /**
      * The ID of the user whose role should be changed
      */
-    @NotNull(message = "User ID cannot be null")
-    private Long userId;
+    @NotBlank(message = "User ID cannot be blank")
+    private String userId;
 
     /**
      * The new role: USER, ADMIN, TECHNICIAN, MANAGER

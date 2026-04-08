@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaArrowLeft, FaCheckDouble, FaFilter, FatRedX } from 'react-icons/fa';
+import { FaArrowLeft, FaCheckDouble } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '../context/NotificationContext';
 import NotificationItem from './NotificationItem';

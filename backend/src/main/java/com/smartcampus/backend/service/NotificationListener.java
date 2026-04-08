@@ -50,7 +50,7 @@ public class NotificationListener {
      * @param userId    The user whose booking was approved
      * @param bookingId The booking ID (for the frontend to reference)
      */
-    public void notifyBookingApproved(Long userId, Long bookingId) {
+    public void notifyBookingApproved(String userId, String bookingId) {
         log.info("Sending booking approved notification to user {}", userId);
 
         notificationService.sendNotification(
@@ -69,7 +69,7 @@ public class NotificationListener {
      * @param bookingId The booking ID
      * @param reason    Optional reason for rejection
      */
-    public void notifyBookingRejected(Long userId, Long bookingId, String reason) {
+    public void notifyBookingRejected(String userId, String bookingId, String reason) {
         log.info("Sending booking rejected notification to user {}", userId);
 
         String message = reason != null && !reason.isEmpty()
@@ -92,7 +92,7 @@ public class NotificationListener {
      * @param ticketId    The ticket ID
      * @param ticketTitle The ticket title/subject
      */
-    public void notifyTicketCreated(Long userId, Long ticketId, String ticketTitle) {
+    public void notifyTicketCreated(String userId, String ticketId, String ticketTitle) {
         log.info("Sending ticket created notification to user {}", userId);
 
         String message = "New incident ticket created: " + ticketTitle;
@@ -113,7 +113,7 @@ public class NotificationListener {
      * @param ticketId  The ticket ID
      * @param newStatus The new status (e.g., "IN_PROGRESS", "RESOLVED", "CLOSED")
      */
-    public void notifyTicketStatusChanged(Long userId, Long ticketId, String newStatus) {
+    public void notifyTicketStatusChanged(String userId, String ticketId, String newStatus) {
         log.info("Sending ticket status changed notification to user {}", userId);
 
         String message = "Ticket #" + ticketId + " status changed to: " + newStatus;
@@ -134,7 +134,7 @@ public class NotificationListener {
      * @param ticketId      The ticket ID
      * @param commenterName The name of the person who commented
      */
-    public void notifyTicketCommented(Long userId, Long ticketId, String commenterName) {
+    public void notifyTicketCommented(String userId, String ticketId, String commenterName) {
         log.info("Sending ticket comment notification to user {}", userId);
 
         String message = commenterName + " commented on ticket #" + ticketId;
@@ -155,7 +155,7 @@ public class NotificationListener {
      * @param bookingId     The booking ID
      * @param commenterName The person who commented
      */
-    public void notifyBookingCommented(Long userId, Long bookingId, String commenterName) {
+    public void notifyBookingCommented(String userId, String bookingId, String commenterName) {
         log.info("Sending booking comment notification to user {}", userId);
 
         String message = commenterName + " commented on your booking request";
@@ -179,10 +179,10 @@ public class NotificationListener {
      * @param entityType Optional entity type (BOOKING, TICKET, etc.)
      */
     public void sendCustomNotification(
-            Long userId,
+            String userId,
             String message,
             NotificationType type,
-            Long entityId,
+            String entityId,
             String entityType) {
 
         log.info("Sending custom notification to user {}", userId);

@@ -167,7 +167,7 @@ export const NotificationProvider = ({ children }) => {
    */
   const handleMarkAllAsRead = useCallback(async () => {
     try {
-      const result = await markAllAsRead(notifications);
+      const result = await markAllAsRead();
 
       if (result.success) {
         setNotifications((prevNotifications) =>
@@ -186,7 +186,7 @@ export const NotificationProvider = ({ children }) => {
       console.error('Error marking all as read:', err);
       return { success: false, message: 'Failed to mark all as read' };
     }
-  }, [notifications]);
+  }, []);
 
   /**
    * Stop polling

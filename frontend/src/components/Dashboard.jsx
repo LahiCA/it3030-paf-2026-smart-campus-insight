@@ -6,7 +6,8 @@ import {
   FaBell,
   FaUsers,
   FaArrowRight,
-  FaChartLine
+  FaChartLine,
+  FaGraduationCap
 } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
@@ -29,7 +30,7 @@ import './Dashboard.css';
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { user, isAdmin, isTechnician, isManager } = useAuth();
+  const { user, isAdmin, isTechnician } = useAuth();
   const { unreadCount } = useNotifications();
 
   /**
@@ -72,7 +73,7 @@ const Dashboard = () => {
 
         {/* Welcome visualization */}
         <div className="welcome-icon">
-          🏛️
+          <FaGraduationCap size={80} />
         </div>
       </section>
 

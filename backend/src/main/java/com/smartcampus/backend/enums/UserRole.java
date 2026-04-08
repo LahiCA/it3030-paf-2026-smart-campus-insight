@@ -24,6 +24,18 @@ public enum UserRole {
     USER("ROLE_USER", "Campus Member"),
 
     /**
+     * Student
+     * Permissions: Create bookings, post comments, view personal notifications
+     */
+    STUDENT("ROLE_STUDENT", "Student"),
+
+    /**
+     * Staff / Lecturer
+     * Permissions: Create bookings, manage classes, view staff notifications
+     */
+    STAFF("ROLE_STAFF", "Staff / Lecturer"),
+
+    /**
      * System administrator
      * Permissions: Manage users, approve bookings, view all notifications, manage
      * roles

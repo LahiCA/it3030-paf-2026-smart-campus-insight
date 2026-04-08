@@ -1,6 +1,9 @@
 package com.smartcampus.backend.controller;
 
+import com.smartcampus.backend.dto.request.CreateNotificationRequest;
 import com.smartcampus.backend.dto.response.NotificationDTO;
+import com.smartcampus.backend.dto.response.NotificationPreferenceDTO;
+import com.smartcampus.backend.enums.NotificationType;
 import com.smartcampus.backend.service.NotificationService;
 import com.smartcampus.backend.repository.UserRepository;
 import com.smartcampus.backend.exception.UserNotFoundException;
@@ -11,6 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +41,7 @@ public class NotificationController {
     public ResponseEntity<List<NotificationDTO>> getAllNotifications(
             Authentication authentication) {
         log.info("Fetching all notifications for user: {}", authentication.getName());
-        Long userId = extractUserIdFromAuthentication(authentication);
+        String userId = extractUserIdFromAuthentication(authentication);
         List<NotificationDTO> notifications = notificationService.getUserNotifications(userId);
         return ResponseEntity.ok(notifications);
     }
@@ -50,8 +54,8 @@ public class NotificationController {
     public ResponseEntity<Map<String, Long>> getUnreadCount(
             Authentication authentication) {
         log.info("Fetching unread count for user: {}", authentication.getName());
-        Long userId = extractUserIdFromAuthentication(authentication);
-        Long unreadCount = notificationService.getUnreadCount(userId);
+        String userId = extractUserIdFromAuthentication(authentication);
+        long unreadCount = notificationService.getUnreadCount(userId);
         Map<String, Long> response = new HashMap<>();
         response.put("unreadCount", unreadCount);
         return ResponseEntity.ok(response);
@@ -63,10 +67,10 @@ public class NotificationController {
     @PostMapping("/{id}/read")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<NotificationDTO> markNotificationAsRead(
-            @PathVariable Long id,
+            @PathVariable String id,
             Authentication authentication) {
         log.info("Marking notification {} as read for user: {}", id, authentication.getName());
-        Long userId = extractUserIdFromAuthentication(authentication);
+        String userId = extractUserIdFromAuthentication(authentication);
         NotificationDTO notification = notificationService.markAsRead(id, userId);
         return ResponseEntity.ok(notification);
     }
@@ -77,11 +81,11 @@ public class NotificationController {
     @PutMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<NotificationDTO> updateNotificationReadStatus(
-            @PathVariable Long id,
+            @PathVariable String id,
             @RequestBody Map<String, Boolean> request,
             Authentication authentication) {
         log.info("Updating notification {} for user: {}", id, authentication.getName());
-        Long userId = extractUserIdFromAuthentication(authentication);
+        String userId = extractUserIdFromAuthentication(authentication);
         Boolean read = request.get("read");
         if (read != null && read) {
             return ResponseEntity.ok(notificationService.markAsRead(id, userId));
@@ -96,12 +100,53 @@ public class NotificationController {
     @DeleteMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> deleteNotification(
-            @PathVariable Long id,
+            @PathVariable String id,
             Authentication authentication) {
         log.info("Deleting notification {} for user: {}", id, authentication.getName());
-        Long userId = extractUserIdFromAuthentication(authentication);
+        String userId = extractUserIdFromAuthentication(authentication);
         notificationService.deleteNotification(id, userId);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * POST /api/notifications/mark-all-read - Mark all notifications as read
+     */
+    @PostMapping("/mark-all-read")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> markAllAsRead(Authentication authentication) {
+        log.info("Marking all notifications as read for user: {}", authentication.getName());
+        String userId = extractUserIdFromAuthentication(authentication);
+        notificationService.markAllAsRead(userId);
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * DELETE /api/notifications - Delete all notifications
+     */
+    @DeleteMapping
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> deleteAllNotifications(Authentication authentication) {
+        log.info("Deleting all notifications for user: {}", authentication.getName());
+        String userId = extractUserIdFromAuthentication(authentication);
+        notificationService.deleteAllNotifications(userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * POST /api/notifications - Create a notification (ADMIN only)
+     */
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<NotificationDTO> createNotification(
+            @Valid @RequestBody CreateNotificationRequest request) {
+        log.info("Admin creating notification for user: {}", request.getUserId());
+        NotificationDTO notification = notificationService.sendNotification(
+                request.getUserId(),
+                request.getMessage(),
+                NotificationType.valueOf(request.getType()),
+                request.getRelatedEntityId(),
+                request.getRelatedEntityType());
+        return ResponseEntity.status(201).body(notification);
     }
 
     /**
@@ -140,10 +185,36 @@ public class NotificationController {
     /**
      * Helper method: Extract user ID from authentication
      */
-    private Long extractUserIdFromAuthentication(Authentication authentication) {
+    private String extractUserIdFromAuthentication(Authentication authentication) {
         String email = authentication.getName();
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email))
                 .getId();
+    }
+
+    // ==================== Notification Preferences ====================
+
+    /**
+     * GET /api/notifications/preferences - Get user's notification preferences
+     */
+    @GetMapping("/preferences")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<NotificationPreferenceDTO> getPreferences(Authentication authentication) {
+        String userId = extractUserIdFromAuthentication(authentication);
+        NotificationPreferenceDTO prefs = notificationService.getPreferences(userId);
+        return ResponseEntity.ok(prefs);
+    }
+
+    /**
+     * PUT /api/notifications/preferences - Update user's notification preferences
+     */
+    @PutMapping("/preferences")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<NotificationPreferenceDTO> updatePreferences(
+            @RequestBody NotificationPreferenceDTO request,
+            Authentication authentication) {
+        String userId = extractUserIdFromAuthentication(authentication);
+        NotificationPreferenceDTO prefs = notificationService.updatePreferences(userId, request);
+        return ResponseEntity.ok(prefs);
     }
 }

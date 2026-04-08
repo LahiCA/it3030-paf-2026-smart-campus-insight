@@ -1,7 +1,6 @@
 package com.smartcampus.backend.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -32,8 +31,8 @@ public class CreateNotificationRequest {
     /**
      * The user who should receive this notification
      */
-    @NotNull(message = "User ID cannot be null")
-    private Long userId;
+    @NotBlank(message = "User ID cannot be blank")
+    private String userId;
 
     /**
      * The notification message
@@ -53,7 +52,7 @@ public class CreateNotificationRequest {
      * Optional: If this notification is about a specific booking/ticket
      * Set this to the booking or ticket ID
      */
-    private Long relatedEntityId;
+    private String relatedEntityId;
 
     /**
      * Optional: The type of entity (BOOKING, TICKET, COMMENT, USER)

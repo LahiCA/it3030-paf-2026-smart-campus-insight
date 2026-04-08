@@ -40,7 +40,7 @@ public class UserManagementService {
      * @return UserDTO containing user information
      * @throws UserNotFoundException if user doesn't exist
      */
-    public UserDTO getUserById(Long userId) {
+    public UserDTO getUserById(String userId) {
         log.debug("Fetching user with ID: {}", userId);
 
         User user = userRepository.findById(userId)
@@ -117,7 +117,7 @@ public class UserManagementService {
      * @throws UserNotFoundException    if user doesn't exist
      * @throws IllegalArgumentException if role is invalid
      */
-    public UserDTO updateUserRole(Long userId, String newRole) {
+    public UserDTO updateUserRole(String userId, String newRole) {
         log.info("Updating role for user ID {} to role: {}", userId, newRole);
 
         // Step 1: Find the user
@@ -155,7 +155,7 @@ public class UserManagementService {
      * @param userId The user to delete
      * @throws UserNotFoundException if user doesn't exist
      */
-    public void deleteUser(Long userId) {
+    public void deleteUser(String userId) {
         log.warn("Deleting user with ID: {}", userId);
 
         User user = userRepository.findById(userId)

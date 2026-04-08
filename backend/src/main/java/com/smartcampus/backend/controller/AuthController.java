@@ -7,6 +7,8 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -80,6 +82,28 @@ public class AuthController {
         LoginResponse response = authService.loginWithGoogle(loginRequest.getGoogleToken());
 
         // Return 200 OK with the response
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Complete profile after first login — select role (STUDENT or STAFF)
+     *
+     * POST /api/auth/complete-profile
+     * Request Body: { "role": "STUDENT" } or { "role": "STAFF" }
+     * Authentication: Required (user must be logged in)
+     */
+    @PostMapping("/complete-profile")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<LoginResponse> completeProfile(
+            @RequestBody java.util.Map<String, String> request,
+            Authentication authentication) {
+
+        String role = request.get("role");
+        String email = authentication.getName();
+
+        log.info("Complete profile request for user: {} with role: {}", email, role);
+
+        LoginResponse response = authService.completeProfile(email, role);
         return ResponseEntity.ok(response);
     }
 }

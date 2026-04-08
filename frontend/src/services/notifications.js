@@ -129,25 +129,17 @@ export const deleteNotification = async (notificationId) => {
 
 /**
  * Mark all notifications as read
- * Utility function
+ * Uses the bulk endpoint
  * 
- * @param {array} notifications - Array of notification objects
  * @returns {Promise<object>} Results
  */
-export const markAllAsRead = async (notifications) => {
+export const markAllAsRead = async () => {
   try {
-    const unreadNotifications = notifications.filter(n => !n.read);
-    
-    const promises = unreadNotifications.map(notification =>
-      markAsRead(notification.id)
-    );
-    
-    await Promise.all(promises);
+    await axiosInstance.post('/notifications/mark-all-read');
     
     return {
       success: true,
-      marked: unreadNotifications.length,
-      message: `${unreadNotifications.length} notifications marked as read`
+      message: 'All notifications marked as read'
     };
   } catch (error) {
     console.error('Error marking all as read:', error);

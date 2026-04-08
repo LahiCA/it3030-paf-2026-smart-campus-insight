@@ -6,8 +6,8 @@
  */
 
 // API Configuration
-export const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080/api';
-export const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 // Token & Storage Keys
 export const TOKEN_KEY = 'smartcampus_jwt_token';
@@ -16,7 +16,8 @@ export const REFRESH_TOKEN_KEY = 'smartcampus_refresh_token';
 
 // User Roles
 export const ROLES = {
-  USER: 'USER',
+  STUDENT: 'STUDENT',
+  STAFF: 'STAFF',
   ADMIN: 'ADMIN',
   TECHNICIAN: 'TECHNICIAN',
   MANAGER: 'MANAGER'
@@ -50,6 +51,7 @@ export const ERROR_MESSAGES = {
 // Routes
 export const ROUTES = {
   LOGIN: '/login',
+  ROLE_SELECTION: '/select-role',
   DASHBOARD: '/dashboard',
   NOTIFICATIONS: '/notifications',
   PROFILE: '/profile',

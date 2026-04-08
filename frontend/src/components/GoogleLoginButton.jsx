@@ -2,7 +2,7 @@ import React from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { GOOGLE_CLIENT_ID } from '../utils/constants';
+import { ROUTES } from '../utils/constants';
 
 /**
  * GoogleLoginButton Component
@@ -46,9 +46,10 @@ const GoogleLoginButton = ({ onSuccess, onError, text = 'signin_with', size = 'l
           onSuccess(result.user);
         }
 
-        // Redirect to dashboard after successful login
+        // Redirect based on firstLogin flag
+        const destination = result.firstLogin ? ROUTES.ROLE_SELECTION : '/dashboard';
         setTimeout(() => {
-          navigate('/dashboard', { replace: true });
+          navigate(destination, { replace: true });
         }, 500);
       } else {
         // Handle login failure

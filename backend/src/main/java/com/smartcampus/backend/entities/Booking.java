@@ -1,46 +1,30 @@
 package com.smartcampus.backend.entities;
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.time.LocalDateTime;
 
 /**
- * Booking Entity (Stub for Module B)
- * 
- * This is a placeholder entity for bookings.
- * Your teammate in Module B will expand this with real functionality.
- * 
- * For now, it has the basic fields to satisfy the User entity's relationship.
+ * Booking Document (MongoDB) - Stub for Module B
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
-@Table(name = "bookings")
+@Document(collection = "bookings")
 public class Booking {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
-    /**
-     * The user who made the booking
-     */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Indexed
+    private String userId;
 
-    /**
-     * Booking status: PENDING, APPROVED, REJECTED, COMPLETED
-     */
-    @Column(nullable = false)
     private String status = "PENDING";
 
-    /**
-     * When this booking was created
-     */
-    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 }

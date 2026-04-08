@@ -2,23 +2,9 @@ spring:
   application:
     name: backend
 
-  # Database configuration - Using H2 in-memory database for testing/demo
-  datasource:
-    url: jdbc:h2:mem:smartcampus
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
-
-  # JPA/Hibernate configuration
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    show-sql: false
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.H2Dialect
-        format_sql: true
-    database-platform: org.hibernate.dialect.H2Dialect
+  # MongoDB Configuration
+  mongodb:
+    uri: "mongodb+srv://smartcampus:K1M7hV9BCf2rMtJK@cluster0.uvbjflr.mongodb.net/smartcampus?retryWrites=true&w=majority"
 
 server:
   port: 8080
@@ -39,7 +25,7 @@ google:
   client:
     # Get this from Google Cloud Console
     # https://console.cloud.google.com/apis/credentials
-    id: ${GOOGLE_CLIENT_ID:your-google-client-id-from-console}
+    id: ${GOOGLE_CLIENT_ID:539537632818-jqoqt2naq9u9t07j1h6nai6c3hvpgqb0.apps.googleusercontent.com}
 
 # ============================================
 # Admin Configuration
@@ -48,7 +34,7 @@ admin:
   # Comma-separated list of emails that should be admin
   # Example: "admin@sliit.edu,manager@sliit.edu"
   # If empty, only the first registered user becomes admin
-  emails: ${ADMIN_EMAILS:}
+  emails: ${ADMIN_EMAILS:Insightspark12@gmail.com}
 
 # ============================================
 # Logging Configuration

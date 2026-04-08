@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaUser, FaSignOutAlt, FaCog, FaChevronDown } from 'react-icons/fa';
+import { FaUser, FaSignOutAlt, FaCog, FaChevronDown, FaGraduationCap } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import NotificationBell from './NotificationBell';
 import './Navbar.css';
@@ -86,18 +86,14 @@ const Navbar = () => {
           onClick={() => navigate('/dashboard')}
           title="Go to Dashboard"
         >
-          <span className="brand-icon">🏛️</span>
+          <span className="brand-icon"><FaGraduationCap size={24} /></span>
           <span className="brand-text">Smart Campus</span>
         </button>
       </div>
 
-      {/* Middle section - Notification Bell */}
-      <div className="navbar-middle">
-        <NotificationBell />
-      </div>
-
-      {/* Right section - User Menu */}
+      {/* Right section - Notification Bell + User Menu */}
       <div className="navbar-right" ref={dropdownRef}>
+        <NotificationBell />
         <div className="user-menu">
           {/* User button */}
           <button
@@ -158,6 +154,15 @@ const Navbar = () => {
                     </span>
                   </button>
                 )}
+
+                {/* Settings / Notification Preferences */}
+                <button
+                  className="dropdown-item"
+                  onClick={() => { navigate('/settings'); setIsUserDropdownOpen(false); }}
+                >
+                  <FaCog size={16} />
+                  <span>Notification Settings</span>
+                </button>
 
                 {/* Divider */}
                 <div className="dropdown-divider"></div>

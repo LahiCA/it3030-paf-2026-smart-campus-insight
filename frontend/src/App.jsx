@@ -11,6 +11,9 @@ import Layout from './components/Layout';
 import LoginPage from './components/LoginPage';
 import Dashboard from './components/Dashboard';
 import NotificationsPage from './components/NotificationsPage';
+import AdminPanel from './components/AdminPanel';
+import NotificationPreferences from './components/NotificationPreferences';
+import RoleSelection from './components/RoleSelection';
 
 function App() {
   console.log('Google Client ID from env:', GOOGLE_CLIENT_ID);
@@ -113,6 +116,7 @@ function App() {
           <Router>
             <Routes>
               <Route path={ROUTES.LOGIN} element={<LoginPage />} />
+              <Route path={ROUTES.ROLE_SELECTION} element={<RoleSelection />} />
 
               <Route
                 path={ROUTES.DASHBOARD}
@@ -134,6 +138,32 @@ function App() {
                     element={
                       <Layout>
                         <NotificationsPage />
+                      </Layout>
+                    }
+                  />
+                }
+              />
+
+              <Route
+                path={ROUTES.ADMIN_PANEL}
+                element={
+                  <PrivateRoute
+                    element={
+                      <Layout>
+                        <AdminPanel />
+                      </Layout>
+                    }
+                  />
+                }
+              />
+
+              <Route
+                path={ROUTES.SETTINGS}
+                element={
+                  <PrivateRoute
+                    element={
+                      <Layout>
+                        <NotificationPreferences />
                       </Layout>
                     }
                   />
