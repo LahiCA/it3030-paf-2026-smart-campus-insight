@@ -24,7 +24,15 @@
   --font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
   --font-size-base: 16px;
   --line-height: 1.5;
+
+
 }
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
 
 * {
   margin: 0;

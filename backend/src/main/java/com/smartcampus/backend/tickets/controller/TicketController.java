@@ -14,7 +14,8 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/tickets")
-@CrossOrigin
+@CrossOrigin(origins = "http://localhost:5173") // allow your frontend origin
+
 public class TicketController {
 
     private final TicketService service;

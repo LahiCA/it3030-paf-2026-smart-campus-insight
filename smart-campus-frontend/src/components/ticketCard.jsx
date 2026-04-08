@@ -1,70 +1,27 @@
-import { Link } from 'react-router-dom';
-import TicketStatusBadge from './TicketStatusBadge';
-
-const TicketCard = ({ ticket }) => {
-    const formatDate = (dateString) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-        });
-    };
-
-    const getPriorityClass = (priority) => {
-        switch (priority?.toLowerCase()) {
-            case 'high': return 'priority-high';
-            case 'medium': return 'priority-medium';
-            case 'low': return 'priority-low';
-            default: return 'priority-low';
-        }
-    };
-
+export default function TicketCard({ ticket }) {
     return (
-        <div className="ticket-card card">
-            <div className="card-header">
-                <div className="ticket-header">
-                    <h3 className="ticket-title">{ticket.title}</h3>
-                    <TicketStatusBadge status={ticket.status} />
-                </div>
-                <div className="ticket-meta">
-                    <span className={`priority-badge status-badge ${getPriorityClass(ticket.priority)}`}>
-                        {ticket.priority || 'Low'}
-                    </span>
-                    <span className="ticket-date">{formatDate(ticket.createdAt)}</span>
-                </div>
+        <div className="bg-white p-4 rounded-xl shadow hover:shadow-md">
+            <h3 className="font-semibold text-lg">{ticket.title}</h3>
+
+            <p className="text-sm text-gray-500 line-clamp-2">
+                {ticket.description}
+            </p>
+
+            <div className="flex justify-between items-center mt-3">
+                <span className="text-xs text-gray-400">
+                    {ticket.category}
+                </span>
+
+                <span className="text-xs font-semibold text-teal-600">
+                    {ticket.priority}
+                </span>
             </div>
 
-            <div className="card-body">
-                <p className="ticket-description">
-                    {ticket.description.length > 100
-                        ? `${ticket.description.substring(0, 100)}...`
-                        : ticket.description
-                    }
-                </p>
-
-                <div className="ticket-details">
-                    {ticket.category && (
-                        <div className="detail-item">
-                            <span className="detail-label">Category:</span>
-                            <span className="detail-value">{ticket.category}</span>
-                        </div>
-                    )}
-                    {ticket.assignedTo && (
-                        <div className="detail-item">
-                            <span className="detail-label">Assigned to:</span>
-                            <span className="detail-value">{ticket.assignedTo}</span>
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            <div className="card-footer">
-                <Link to={`/ticket/${ticket.id}`} className="btn btn-secondary">
-                    View Details
-                </Link>
+            <div className="flex justify-between mt-3">
+                <span className="text-xs bg-gray-100 px-2 py-1 rounded">
+                    {ticket.status}
+                </span>
             </div>
         </div>
     );
-};
-
-export default TicketCard;
+}

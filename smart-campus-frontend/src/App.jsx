@@ -1,23 +1,20 @@
-import { Routes, Route } from "react-router-dom";
-import Navbar from "./layout/Navbar";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import TicketList from "./pages/TicketList";
-import CreateTicket from "./pages/CreateTicket";
 import TicketDetails from "./pages/TicketDetails";
-import './App.css';
+import CreateTicket from "./pages/CreateTicket";
 
-function App() {
+export default function App() {
+
   return (
-    <>
-      <Navbar />
-      <div className="app-container">
-        <Routes>
-          <Route path="/" element={<TicketList />} />
-          <Route path="/create" element={<CreateTicket />} />
-          <Route path="/ticket/:id" element={<TicketDetails />} />
-        </Routes>
-      </div>
-    </>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<TicketList />} />
+        <Route path="/tickets/:id" element={<TicketDetails />} />
+        <Route path="/create" element={<CreateTicket />} />
+
+
+      </Routes>
+    </BrowserRouter>
   );
 }
 
-export default App;

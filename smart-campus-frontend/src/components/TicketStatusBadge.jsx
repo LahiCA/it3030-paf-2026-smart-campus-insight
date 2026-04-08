@@ -1,24 +1,15 @@
-const TicketStatusBadge = ({ status }) => {
-    const getStatusClass = (status) => {
-        switch (status) {
-            case 'OPEN': return 'status-open';
-            case 'IN_PROGRESS': return 'status-in_progress';
-            case 'RESOLVED': return 'status-resolved';
-            case 'CLOSED': return 'status-closed';
-            case 'REJECTED': return 'status-rejected';
-            default: return 'status-open';
-        }
-    };
-
-    const formatStatus = (status) => {
-        return status.replace('_', ' ');
+export default function TicketStatusBadge({ status }) {
+    const map = {
+        OPEN: "bg-blue-100 text-blue-600",
+        IN_PROGRESS: "bg-yellow-100 text-yellow-600",
+        RESOLVED: "bg-green-100 text-green-600",
+        CLOSED: "bg-gray-200 text-gray-600",
+        REJECTED: "bg-red-100 text-red-600",
     };
 
     return (
-        <span className={`status-badge ${getStatusClass(status)}`}>
-            {formatStatus(status)}
+        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${map[status]}`}>
+            {status}
         </span>
     );
-};
-
-export default TicketStatusBadge;
+}

@@ -1,168 +1,139 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ticketApi } from '../api/ticketApi';
+import { useState } from "react";
+import { createTicket, uploadImages } from "../api/ticketApi";
 
-const CreateTicket = () => {
-    const navigate = useNavigate();
-    const [formData, setFormData] = useState({
-        title: '',
-        description: '',
-        category: '',
-        priority: 'Low'
+export default function CreateTicket({ onTicketCreated }) {
+    const [form, setForm] = useState({
+        title: "",
+        description: "",
+        category: "",
+        priority: "LOW",
+        location: "",
+        resourceId: "",
+        email: "",
+        phone: ""
     });
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
+    const [files, setFiles] = useState([]);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const handleSubmit = async () => {
+        if (!form.title || !form.description || !form.category) {
+            alert("Fill required fields");
+            return;
+        }
 
-        if (!formData.title.trim() || !formData.description.trim()) {
-            setError('Title and description are required');
+        if (files.length > 3) {
+            alert("Max 3 images allowed");
             return;
         }
 
         try {
-            setLoading(true);
-            setError(null);
-
-            const ticketData = {
-                ...formData,
-                createdBy: 'user123', // In real app, get from auth
-                status: 'OPEN'
+            const payload = {
+                title: form.title,
+                description: form.description,
+                category: form.category,
+                priority: form.priority,
+                location: form.location,
+                resourceId: form.resourceId,
+                createdBy: "user001",
+                contactDetails: `${form.email} | ${form.phone}`
             };
 
-            await ticketApi.createTicket(ticketData);
-            navigate('/');
+            const newTicket = await createTicket(payload);
+
+            // upload images after ticket created
+            if (files.length > 0) {
+                await uploadImages(newTicket.id, files);
+            }
+
+            alert("Ticket Created ✅");
+
+            if (onTicketCreated) {
+                onTicketCreated(newTicket);
+            }
+
+            // reset
+            setForm({
+                title: "",
+                description: "",
+                category: "",
+                priority: "LOW",
+                location: "",
+                resourceId: "",
+                email: "",
+                phone: ""
+            });
+            setFiles([]);
+
         } catch (err) {
-            setError('Failed to create ticket. Please try again.');
-            console.error('Error creating ticket:', err);
-        } finally {
-            setLoading(false);
+            console.error(err);
+            alert("Error creating ticket");
         }
     };
 
     return (
-        <div className="create-ticket-page">
-            <div className="page-header">
-                <h1>Create New Ticket</h1>
-            </div>
 
-            <div className="form-container card">
-                <div className="card-body">
-                    {error && (
-                        <div className="error-message" style={{
-                            color: 'var(--danger)',
-                            backgroundColor: '#fef2f2',
-                            padding: '12px',
-                            borderRadius: '6px',
-                            marginBottom: '20px',
-                            border: '1px solid #fecaca'
-                        }}>
-                            {error}
-                        </div>
-                    )}
 
-                    <form onSubmit={handleSubmit}>
-                        <div className="form-group">
-                            <label className="form-label" htmlFor="title">
-                                Title *
-                            </label>
-                            <input
-                                type="text"
-                                id="title"
-                                name="title"
-                                className="form-input"
-                                value={formData.title}
-                                onChange={handleChange}
-                                placeholder="Enter ticket title"
-                                required
-                            />
-                        </div>
+        <div className="bg-white p-5 rounded-xl">
+            <h2 className="text-lg font-bold mb-3 text-teal-600">Create Ticket</h2>
 
-                        <div className="form-group">
-                            <label className="form-label" htmlFor="description">
-                                Description *
-                            </label>
-                            <textarea
-                                id="description"
-                                name="description"
-                                className="form-input form-textarea"
-                                value={formData.description}
-                                onChange={handleChange}
-                                placeholder="Describe the issue in detail"
-                                required
-                            />
-                        </div>
+            <input placeholder="Title"
+                value={form.title}
+                onChange={e => setForm({ ...form, title: e.target.value })}
+                className="border p-2 w-full mb-2 rounded" />
 
-                        <div className="form-row grid grid-2">
-                            <div className="form-group">
-                                <label className="form-label" htmlFor="category">
-                                    Category
-                                </label>
-                                <select
-                                    id="category"
-                                    name="category"
-                                    className="form-select"
-                                    value={formData.category}
-                                    onChange={handleChange}
-                                >
-                                    <option value="">Select category</option>
-                                    <option value="Technical">Technical</option>
-                                    <option value="Maintenance">Maintenance</option>
-                                    <option value="Facilities">Facilities</option>
-                                    <option value="Academic">Academic</option>
-                                    <option value="Other">Other</option>
-                                </select>
-                            </div>
+            <textarea placeholder="Description"
+                value={form.description}
+                onChange={e => setForm({ ...form, description: e.target.value })}
+                className="border p-2 w-full mb-2 rounded" />
 
-                            <div className="form-group">
-                                <label className="form-label" htmlFor="priority">
-                                    Priority
-                                </label>
-                                <select
-                                    id="priority"
-                                    name="priority"
-                                    className="form-select"
-                                    value={formData.priority}
-                                    onChange={handleChange}
-                                >
-                                    <option value="Low">Low</option>
-                                    <option value="Medium">Medium</option>
-                                    <option value="High">High</option>
-                                </select>
-                            </div>
-                        </div>
+            <select value={form.category}
+                onChange={e => setForm({ ...form, category: e.target.value })}
+                className="border p-2 w-full mb-2 rounded">
+                <option value="">Category</option>
+                <option>Hardware</option>
+                <option>Network</option>
+                <option>Software</option>
+            </select>
 
-                        <div className="form-actions">
-                            <button
-                                type="button"
-                                className="btn btn-secondary"
-                                onClick={() => navigate('/')}
-                                disabled={loading}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                type="submit"
-                                className="btn btn-primary"
-                                disabled={loading}
-                            >
-                                {loading ? 'Creating...' : 'Create Ticket'}
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+            <input placeholder="Resource ID"
+                value={form.resourceId}
+                onChange={e => setForm({ ...form, resourceId: e.target.value })}
+                className="border p-2 w-full mb-2 rounded" />
+
+            <input placeholder="Location"
+                value={form.location}
+                onChange={e => setForm({ ...form, location: e.target.value })}
+                className="border p-2 w-full mb-2 rounded" />
+
+            <select value={form.priority}
+                onChange={e => setForm({ ...form, priority: e.target.value })}
+                className="border p-2 w-full mb-2 rounded">
+                <option>LOW</option>
+                <option>MEDIUM</option>
+                <option>HIGH</option>
+            </select>
+
+            {/* CONTACT */}
+            <input placeholder="Email"
+                value={form.email}
+                onChange={e => setForm({ ...form, email: e.target.value })}
+                className="border p-2 w-full mb-2 rounded" />
+
+            <input placeholder="Phone"
+                value={form.phone}
+                onChange={e => setForm({ ...form, phone: e.target.value })}
+                className="border p-2 w-full mb-2 rounded" />
+
+            {/* IMAGE UPLOAD */}
+            <input type="file" multiple
+                onChange={e => setFiles([...e.target.files])}
+                className="mb-2" />
+
+            <button onClick={handleSubmit}
+                className="bg-teal-500 text-white px-4 py-2 rounded w-full">
+                Submit
+            </button>
+
         </div>
     );
-};
-
-export default CreateTicket;
+}
