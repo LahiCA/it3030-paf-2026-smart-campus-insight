@@ -24,7 +24,13 @@ public class TicketService {
 
     // CREATE TICKET
     public Ticket createTicket(Ticket ticket) {
+
         ticket.setStatus("OPEN");
+
+        if (ticket.getContactDetails() == null || ticket.getContactDetails().isEmpty()) {
+            ticket.setContactDetails("N/A");
+        }
+
         return ticketRepo.save(ticket);
     }
 
@@ -38,17 +44,18 @@ public class TicketService {
         return ticketRepo.findById(id).orElseThrow();
     }
 
+    // UPDATE STATUS
     public Ticket updateStatus(String id, String newStatus) {
+
         Ticket ticket = getTicketById(id);
         String currentStatus = ticket.getStatus();
 
-        // VALID WORKFLOW
-        if (currentStatus.equals("OPEN") && newStatus.equals("IN_PROGRESS")) {
-            // valid
-        } else if (currentStatus.equals("IN_PROGRESS") && newStatus.equals("RESOLVED")) {
-            // valid
-        } else if (currentStatus.equals("RESOLVED") && newStatus.equals("CLOSED")) {
-            // valid
+        if ("OPEN".equals(currentStatus) && "IN_PROGRESS".equals(newStatus)) {
+
+        } else if ("IN_PROGRESS".equals(currentStatus) && "RESOLVED".equals(newStatus)) {
+
+        } else if ("RESOLVED".equals(currentStatus) && "CLOSED".equals(newStatus)) {
+
         } else {
             throw new RuntimeException("Invalid status transition from "
                     + currentStatus + " to " + newStatus);

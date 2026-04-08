@@ -3,7 +3,8 @@ spring:
     name: backend
   data:
     mongodb:
-      uri:mongodb+srv://admin_2001:admin1234@cluster0.ceiyn.mongodb.net/smart_campus
+      uri: mongodb+srv://admin_2001:admin1234@cluster0.ceiyn.mongodb.net/smart_campus
+      
 
 server:
   port: 8080
