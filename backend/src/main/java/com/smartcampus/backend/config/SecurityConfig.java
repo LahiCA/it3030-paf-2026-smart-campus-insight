@@ -125,10 +125,14 @@ public class SecurityConfig {
 
                 // Allow requests from localhost (for development)
                 config.setAllowedOrigins(Arrays.asList(
-                                "http://localhost:3000", // Local React dev server
-                                "http://localhost:3002", // Local React dev server (alternative port)
-                                "http://localhost:8080" // Local backend (sometimes needed)
-                ));
+                                "http://localhost:3000",
+                                "http://localhost:3001",
+                                "http://localhost:3002",
+                                "http://localhost:3003",
+                                "http://localhost:3004",
+                                "http://localhost:3005",
+                                "http://localhost:3006",
+                                "http://localhost:8080"));
 
                 // Allow these HTTP methods
                 config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));

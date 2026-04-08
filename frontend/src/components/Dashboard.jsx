@@ -11,43 +11,18 @@ import {
 } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
-import './Dashboard.css';
-
-/**
- * Dashboard Component
- * 
- * Main application home page
- * Shows welcome message, quick stats, and action cards
- * 
- * Features:
- * - Personalized welcome greeting
- * - Quick stats (unread notifications count)
- * - Quick action cards (navigate to modules)
- * - Visual card-based layout
- * - Role-based content visibility
- * - Responsive design
- */
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { user, isAdmin, isTechnician } = useAuth();
   const { unreadCount } = useNotifications();
 
-  /**
-   * Get user's display name
-   */
   const displayName = user?.firstName && user?.lastName
     ? `${user.firstName} ${user.lastName}`
     : user?.email?.split('@')[0] || 'User';
 
-  /**
-   * Format role for display
-   */
   const roleDisplay = formatRole(user?.role || 'USER');
 
-  /**
-   * Get greeting based on time of day
-   */
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return 'Good Morning';
@@ -56,176 +31,181 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="dashboard">
-      {/* Welcome section */}
-      <section className="welcome-section">
-        <div className="welcome-content">
-          <h1>
-            <span className="greeting">{getGreeting()},</span>{displayName}! 👋
-          </h1>
-          <p className="welcome-message">
-            Welcome to Smart Campus Operations Hub. Manage facilities, bookings, and support tickets efficiently.
-          </p>
-          <p className="role-badge">
-            Role: <strong>{roleDisplay}</strong>
-          </p>
-        </div>
-
-        {/* Welcome visualization */}
-        <div className="welcome-icon">
-          <FaGraduationCap size={80} />
-        </div>
-      </section>
-
-      {/* Quick stats section */}
-      <section className="stats-section">
-        <div className="stat-card">
-          <div className="stat-icon unread">
-            <FaBell size={24} />
+    <>
+      <style>{`
+        .db-wrap { padding: 40px 24px; max-width: 1400px; margin: 0 auto; width: 100%; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .db-welcome { display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, #14B8A6 0%, #0f766e 100%); color: white; padding: 40px; border-radius: 12px; margin-bottom: 40px; gap: 20px; box-shadow: 0 8px 16px rgba(20, 184, 166, 0.4); }
+        .db-welcome-content { flex-grow: 1; }
+        .db-welcome-content h1 { font-size: 32px; margin: 0 0 16px 0; line-height: 1.3; font-weight: 700; }
+        .db-greeting { display: block; font-size: 24px; opacity: 0.95; margin-bottom: 8px; }
+        .db-welcome-msg { font-size: 16px; margin: 0 0 16px 0; opacity: 0.95; line-height: 1.6; }
+        .db-role-badge { display: inline-block; background-color: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 24px; font-size: 14px; margin: 0; }
+        .db-role-badge strong { font-weight: 600; }
+        .db-welcome-icon { font-size: 80px; line-height: 1; flex-shrink: 0; }
+        .db-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 40px; }
+        .db-stat-card { display: flex; align-items: center; gap: 16px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .db-stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+        .db-stat-icon { width: 60px; height: 60px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 28px; flex-shrink: 0; }
+        .db-stat-icon.unread { background-color: #fff3e0; color: #ff9800; }
+        .db-stat-content { flex-grow: 1; }
+        .db-stat-label { margin: 0 0 4px 0; font-size: 13px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+        .db-stat-value { margin: 0; font-size: 28px; font-weight: 700; color: #333; }
+        .db-stat-action { width: 40px; height: 40px; border-radius: 8px; background-color: #f0f0f0; color: #666; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background-color 0.2s ease; flex-shrink: 0; border: none; }
+        .db-stat-action:hover { background-color: #e0e0e0; color: #333; }
+        .db-actions h2 { font-size: 20px; color: #333; margin: 0 0 20px 0; font-weight: 600; }
+        .db-actions-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-bottom: 40px; }
+        .db-action-card { display: flex; flex-direction: column; gap: 16px; background: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: all 0.3s ease; cursor: pointer; border: 2px solid transparent; }
+        .db-action-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); border-color: #14B8A6; }
+        .db-card-icon { font-size: 40px; line-height: 1; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 8px; flex-shrink: 0; }
+        .db-bookings .db-card-icon { background-color: #e3f2fd; color: #2196f3; }
+        .db-tickets .db-card-icon { background-color: #fff3e0; color: #ff9800; }
+        .db-notifs .db-card-icon { background-color: #f3e5f5; color: #9c27b0; }
+        .db-admin .db-card-icon { background-color: #e8f5e9; color: #4caf50; }
+        .db-tech .db-card-icon { background-color: #fce4ec; color: #e91e63; }
+        .db-card-content { flex-grow: 1; }
+        .db-card-content h3 { margin: 0 0 8px 0; font-size: 18px; color: #333; font-weight: 600; }
+        .db-card-content p { margin: 0; font-size: 14px; color: #666; line-height: 1.4; }
+        .db-card-btn { align-self: flex-start; width: 40px; height: 40px; border-radius: 8px; background-color: #f0f0f0; color: #666; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; font-size: 16px; border: none; }
+        .db-card-btn:hover { background-color: #e0e0e0; color: #333; transform: translateX(4px); }
+        .db-info { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 40px; }
+        .db-info-card { background: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .db-info-card h3 { margin: 0 0 16px 0; font-size: 16px; color: #333; font-weight: 600; }
+        .db-info-card ul { list-style: none; padding: 0; margin: 0; }
+        .db-info-card li { padding: 8px 0; font-size: 14px; color: #666; line-height: 1.6; border-bottom: 1px solid #f0f0f0; }
+        .db-info-card li:last-child { border-bottom: none; }
+        .db-info-card li strong { color: #333; font-weight: 600; }
+        @media (max-width: 1024px) {
+          .db-wrap { padding: 30px 16px; }
+          .db-welcome { flex-direction: column; text-align: center; padding: 30px; }
+          .db-welcome-content h1 { font-size: 28px; }
+          .db-welcome-icon { font-size: 60px; }
+          .db-actions-grid { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+        }
+        @media (max-width: 768px) {
+          .db-wrap { padding: 20px 12px; }
+          .db-welcome { padding: 20px; gap: 16px; margin-bottom: 30px; }
+          .db-welcome-content h1 { font-size: 24px; margin-bottom: 12px; }
+          .db-greeting { font-size: 20px; margin-bottom: 6px; }
+          .db-welcome-msg { font-size: 14px; margin-bottom: 12px; }
+          .db-welcome-icon { font-size: 48px; }
+          .db-stats { grid-template-columns: 1fr; margin-bottom: 30px; }
+          .db-actions-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 30px; }
+          .db-action-card { padding: 16px; }
+          .db-card-icon { width: 48px; height: 48px; font-size: 32px; }
+          .db-card-content h3 { font-size: 16px; }
+          .db-card-content p { font-size: 13px; }
+          .db-info { grid-template-columns: 1fr; gap: 16px; margin-top: 30px; }
+          .db-info-card { padding: 16px; }
+          .db-info-card h3 { font-size: 15px; margin-bottom: 12px; }
+          .db-info-card li { padding: 6px 0; font-size: 13px; }
+        }
+        @media (max-width: 600px) {
+          .db-wrap { padding: 16px 10px; }
+          .db-welcome { padding: 16px; margin-bottom: 20px; }
+          .db-welcome-content h1 { font-size: 20px; }
+          .db-greeting { font-size: 16px; }
+          .db-welcome-msg { font-size: 13px; margin-bottom: 12px; }
+          .db-welcome-icon { font-size: 40px; }
+          .db-actions h2 { font-size: 18px; }
+          .db-actions-grid { grid-template-columns: 1fr; }
+          .db-action-card { padding: 16px; }
+          .db-card-icon { width: 40px; height: 40px; font-size: 28px; }
+          .db-card-content h3 { font-size: 15px; }
+        }
+      `}</style>
+      <div className="db-wrap">
+        <section className="db-welcome">
+          <div className="db-welcome-content">
+            <h1>
+              <span className="db-greeting">{getGreeting()},</span>{displayName}! 👋
+            </h1>
+            <p className="db-welcome-msg">
+              Welcome to Smart Campus Operations Hub. Manage facilities, bookings, and support tickets efficiently.
+            </p>
+            <p className="db-role-badge">
+              Role: <strong>{roleDisplay}</strong>
+            </p>
           </div>
-          <div className="stat-content">
-            <p className="stat-label">Unread Notifications</p>
-            <p className="stat-value">{unreadCount}</p>
+          <div className="db-welcome-icon">
+            <FaGraduationCap size={80} />
           </div>
-          <button
-            className="stat-action"
-            onClick={() => navigate('/notifications')}
-            title="View all notifications"
-          >
-            <FaArrowRight size={16} />
-          </button>
-        </div>
-      </section>
+        </section>
 
-      {/* Quick actions section */}
-      <section className="actions-section">
-        <h2>Quick Actions</h2>
-        <div className="actions-grid">
-          {/* Bookings card */}
-          <div className="action-card bookings-card">
-            <div className="card-icon">
-              <FaCalendarCheck size={32} />
+        <section className="db-stats">
+          <div className="db-stat-card">
+            <div className="db-stat-icon unread">
+              <FaBell size={24} />
             </div>
-            <div className="card-content">
-              <h3>Bookings</h3>
-              <p>View and manage facility bookings</p>
+            <div className="db-stat-content">
+              <p className="db-stat-label">Unread Notifications</p>
+              <p className="db-stat-value">{unreadCount}</p>
             </div>
-            <button
-              className="card-button"
-              onClick={() => navigate('/bookings')}
-              title="Go to Bookings"
-            >
-              <FaArrowRight />
+            <button className="db-stat-action" onClick={() => navigate('/notifications')} title="View all notifications">
+              <FaArrowRight size={16} />
             </button>
           </div>
+        </section>
 
-          {/* Tickets card */}
-          <div className="action-card tickets-card">
-            <div className="card-icon">
-              <FaTicketAlt size={32} />
+        <section className="db-actions">
+          <h2>Quick Actions</h2>
+          <div className="db-actions-grid">
+            <div className="db-action-card db-bookings">
+              <div className="db-card-icon"><FaCalendarCheck size={32} /></div>
+              <div className="db-card-content"><h3>Bookings</h3><p>View and manage facility bookings</p></div>
+              <button className="db-card-btn" onClick={() => navigate('/bookings')} title="Go to Bookings"><FaArrowRight /></button>
             </div>
-            <div className="card-content">
-              <h3>Support Tickets</h3>
-              <p>Create and track support requests</p>
+            <div className="db-action-card db-tickets">
+              <div className="db-card-icon"><FaTicketAlt size={32} /></div>
+              <div className="db-card-content"><h3>Support Tickets</h3><p>Create and track support requests</p></div>
+              <button className="db-card-btn" onClick={() => navigate('/tickets')} title="Go to Tickets"><FaArrowRight /></button>
             </div>
-            <button
-              className="card-button"
-              onClick={() => navigate('/tickets')}
-              title="Go to Tickets"
-            >
-              <FaArrowRight />
-            </button>
+            <div className="db-action-card db-notifs">
+              <div className="db-card-icon"><FaBell size={32} /></div>
+              <div className="db-card-content"><h3>Notifications</h3><p>View all notifications and updates</p></div>
+              <button className="db-card-btn" onClick={() => navigate('/notifications')} title="Go to Notifications"><FaArrowRight /></button>
+            </div>
+            {isAdmin() && (
+              <div className="db-action-card db-admin">
+                <div className="db-card-icon"><FaUsers size={32} /></div>
+                <div className="db-card-content"><h3>User Management</h3><p>Manage users and roles</p></div>
+                <button className="db-card-btn" onClick={() => navigate('/admin/users')} title="Go to Admin Panel"><FaArrowRight /></button>
+              </div>
+            )}
+            {isTechnician() && (
+              <div className="db-action-card db-tech">
+                <div className="db-card-icon"><FaChartLine size={32} /></div>
+                <div className="db-card-content"><h3>Maintenance</h3><p>View maintenance requests</p></div>
+                <button className="db-card-btn" onClick={() => navigate('/maintenance')} title="Go to Maintenance"><FaArrowRight /></button>
+              </div>
+            )}
           </div>
+        </section>
 
-          {/* Notifications card */}
-          <div className="action-card notifications-card">
-            <div className="card-icon">
-              <FaBell size={32} />
-            </div>
-            <div className="card-content">
-              <h3>Notifications</h3>
-              <p>View all notifications and updates</p>
-            </div>
-            <button
-              className="card-button"
-              onClick={() => navigate('/notifications')}
-              title="Go to Notifications"
-            >
-              <FaArrowRight />
-            </button>
+        <section className="db-info">
+          <div className="db-info-card">
+            <h3>📚 Getting Started</h3>
+            <ul>
+              <li>Check your <strong>notifications</strong> for updates on bookings and tickets</li>
+              <li>Navigate to <strong>Bookings</strong> to reserve facilities</li>
+              <li>Use <strong>Support Tickets</strong> to report issues and track resolutions</li>
+              <li>Visit your <strong>Profile</strong> to manage account settings</li>
+            </ul>
           </div>
-
-          {/* Admin card - only for admins */}
-          {isAdmin() && (
-            <div className="action-card admin-card">
-              <div className="card-icon">
-                <FaUsers size={32} />
-              </div>
-              <div className="card-content">
-                <h3>User Management</h3>
-                <p>Manage users and roles</p>
-              </div>
-              <button
-                className="card-button"
-                onClick={() => navigate('/admin/users')}
-                title="Go to Admin Panel"
-              >
-                <FaArrowRight />
-              </button>
-            </div>
-          )}
-
-          {/* Technician card - only for technicians */}
-          {isTechnician() && (
-            <div className="action-card tech-card">
-              <div className="card-icon">
-                <FaChartLine size={32} />
-              </div>
-              <div className="card-content">
-                <h3>Maintenance</h3>
-                <p>View maintenance requests</p>
-              </div>
-              <button
-                className="card-button"
-                onClick={() => navigate('/maintenance')}
-                title="Go to Maintenance"
-              >
-                <FaArrowRight />
-              </button>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Info section */}
-      <section className="info-section">
-        <div className="info-card">
-          <h3>📚 Getting Started</h3>
-          <ul>
-            <li>Check your <strong>notifications</strong> for updates on bookings and tickets</li>
-            <li>Navigate to <strong>Bookings</strong> to reserve facilities</li>
-            <li>Use <strong>Support Tickets</strong> to report issues and track resolutions</li>
-            <li>Visit your <strong>Profile</strong> to manage account settings</li>
-          </ul>
-        </div>
-
-        <div className="info-card">
-          <h3>💡 Tips</h3>
-          <ul>
-            <li>Enable notifications to stay updated with important events</li>
-            <li>Check notification bell regularly for new messages</li>
-            <li>Use filters in Notifications page to find specific updates</li>
-            <li>Mark notifications as read to keep your inbox organized</li>
-          </ul>
-        </div>
-      </section>
-    </div>
+          <div className="db-info-card">
+            <h3>💡 Tips</h3>
+            <ul>
+              <li>Enable notifications to stay updated with important events</li>
+              <li>Check notification bell regularly for new messages</li>
+              <li>Use filters in Notifications page to find specific updates</li>
+              <li>Mark notifications as read to keep your inbox organized</li>
+            </ul>
+          </div>
+        </section>
+      </div>
+    </>
   );
 };
 
-/**
- * Format role name
- */
 function formatRole(role) {
   const roleNames = {
     'USER': 'Regular User',
