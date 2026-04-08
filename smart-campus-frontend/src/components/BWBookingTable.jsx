@@ -1,6 +1,18 @@
 import BWBookingStatusBadge from "./BWBookingStatusBadge";
 
 function BWBookingTable({ bookings, onCancelBooking, actionLoadingId }) {
+  const getRemarks = (booking) => {
+    if (booking.status === "REJECTED") {
+      return booking.rejectionReason || "Rejected";
+    }
+
+    if (booking.status === "CANCELLED") {
+      return booking.cancelReason || "Cancelled";
+    }
+
+    return "—";
+  };
+
   return (
     <div className="bg-white rounded-2xl shadow-md p-6 overflow-x-auto">
       <h2 className="text-2xl font-bold text-[var(--deep-teal)] mb-2">
@@ -19,6 +31,7 @@ function BWBookingTable({ bookings, onCancelBooking, actionLoadingId }) {
             <th className="text-left px-4 py-3">Time</th>
             <th className="text-left px-4 py-3">Purpose</th>
             <th className="text-left px-4 py-3">Status</th>
+            <th className="text-left px-4 py-3">Remarks</th>
             <th className="text-left px-4 py-3 rounded-r-xl">Action</th>
           </tr>
         </thead>
@@ -40,6 +53,9 @@ function BWBookingTable({ bookings, onCancelBooking, actionLoadingId }) {
                 <td className="px-4 py-4">
                   <BWBookingStatusBadge status={booking.status} />
                 </td>
+                <td className="px-4 py-4 text-sm text-slate-600 max-w-xs">
+                  {getRemarks(booking)}
+                </td>
                 <td className="px-4 py-4">
                   {booking.status === "APPROVED" ? (
                     <button
@@ -57,7 +73,7 @@ function BWBookingTable({ bookings, onCancelBooking, actionLoadingId }) {
             ))
           ) : (
             <tr>
-              <td colSpan="7" className="text-center py-8 text-slate-500">
+              <td colSpan="8" className="text-center py-8 text-slate-500">
                 No bookings found.
               </td>
             </tr>

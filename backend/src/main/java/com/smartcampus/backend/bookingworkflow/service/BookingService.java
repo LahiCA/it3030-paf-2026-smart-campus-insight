@@ -34,7 +34,7 @@ public class BookingService {
         }
 
         List<Booking> existingBookings =
-                repository.findByResourceIdAndBookingDate(dto.getResourceId(), date);
+                repository.findByResourceNameAndBookingDate(dto.getResourceName(), date);
 
         boolean hasConflict = existingBookings.stream()
                 .filter(b -> b.getStatus() != BookingStatus.REJECTED && b.getStatus() != BookingStatus.CANCELLED)
@@ -45,7 +45,6 @@ public class BookingService {
         }
 
         Booking booking = Booking.builder()
-                .resourceId(dto.getResourceId())
                 .userId(dto.getUserId())
                 .resourceName(dto.getResourceName())
                 .resourceType(dto.getResourceType())
