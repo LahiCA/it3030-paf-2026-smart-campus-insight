@@ -30,8 +30,16 @@ const Sidebar = () => {
     }
   };
 
+  const getDashboardPath = () => {
+    const role = user?.role;
+    if (role === 'ADMIN') return '/admin-dashboard';
+    if (role === 'LECTURER') return '/lecturer-dashboard';
+    if (role === 'TECHNICIAN') return '/technician-dashboard';
+    return '/dashboard';
+  };
+
   const menuItems = [
-    { path: '/dashboard', icon: FaThLarge, label: 'Dashboard' },
+    { path: getDashboardPath(), icon: FaThLarge, label: 'Dashboard' },
     { path: '/resources', icon: FaBuilding, label: 'Resources' },
     { path: '/bookings', icon: FaCalendarAlt, label: 'Bookings' },
     { path: '/tickets', icon: FaTicketAlt, label: 'Tickets' },
@@ -39,7 +47,6 @@ const Sidebar = () => {
   ];
 
   if (isAdmin()) {
-    menuItems[0] = { path: '/admin-dashboard', icon: FaThLarge, label: 'Dashboard' };
     menuItems.push({ path: '/admin', icon: FaUsers, label: 'User Management' });
     menuItems.push({ path: '/notifications-management', icon: FaBullhorn, label: 'Notification Mgmt' });
   }

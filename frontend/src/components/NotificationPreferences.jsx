@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../utils/axios-instance';
-import './NotificationPreferences.css';
 
 const NotificationPreferences = () => {
   const [prefs, setPrefs] = useState(null);
@@ -41,8 +40,8 @@ const NotificationPreferences = () => {
     }
   };
 
-  if (loading) return <div className="prefs-loading">Loading preferences...</div>;
-  if (!prefs) return <div className="prefs-error">Failed to load preferences.</div>;
+  if (loading) return <div className="text-center p-10 text-slate-500">Loading preferences...</div>;
+  if (!prefs) return <div className="text-center p-10 text-slate-500">Failed to load preferences.</div>;
 
   const prefItems = [
     { key: 'bookingApproved', label: 'Booking Approved', desc: 'When your facility booking is approved' },
@@ -56,34 +55,47 @@ const NotificationPreferences = () => {
   ];
 
   return (
-    <div className="notification-prefs">
-      <div className="prefs-header">
-        <h2>Notification Preferences</h2>
-        <p>Choose which notifications you want to receive</p>
+    <div className="max-w-[700px] mx-auto px-5 py-[30px]">
+      <div>
+        <h2 className="text-2xl font-bold text-slate-900 mb-1">Notification Preferences</h2>
+        <p className="text-slate-500 text-sm mb-6">Choose which notifications you want to receive</p>
       </div>
 
-      {successMsg && <div className="prefs-success">{successMsg}</div>}
+      {successMsg && (
+        <div className="bg-emerald-100 text-emerald-900 px-4 py-3 rounded-lg mb-4 font-medium">
+          {successMsg}
+        </div>
+      )}
 
-      <div className="prefs-list">
+      <div className="flex flex-col bg-white rounded-xl border border-slate-200 overflow-hidden mb-6">
         {prefItems.map((item) => (
-          <div key={item.key} className="pref-item">
-            <div className="pref-info">
-              <span className="pref-label">{item.label}</span>
-              <span className="pref-desc">{item.desc}</span>
+          <div key={item.key} className="flex justify-between items-center px-5 py-4 border-b border-slate-100 last:border-b-0">
+            <div className="flex flex-col gap-0.5">
+              <span className="font-semibold text-slate-900 text-sm">{item.label}</span>
+              <span className="text-slate-400 text-[13px]">{item.desc}</span>
             </div>
-            <label className="toggle-switch">
+            <label className="relative inline-block w-12 h-[26px] flex-shrink-0">
               <input
                 type="checkbox"
+                className="peer opacity-0 w-0 h-0"
                 checked={prefs[item.key] || false}
                 onChange={() => handleToggle(item.key)}
               />
-              <span className="toggle-slider"></span>
+              <span className="absolute cursor-pointer inset-0 bg-slate-300 rounded-[26px] transition-all duration-300
+                before:absolute before:content-[''] before:h-5 before:w-5 before:left-[3px] before:bottom-[3px]
+                before:bg-white before:rounded-full before:transition-all before:duration-300
+                peer-checked:bg-teal-500 peer-checked:before:translate-x-[22px]">
+              </span>
             </label>
           </div>
         ))}
       </div>
 
-      <button className="prefs-save-btn" onClick={handleSave} disabled={saving}>
+      <button
+        className="w-full py-[14px] bg-teal-500 text-white border-0 rounded-[10px] text-[15px] font-semibold cursor-pointer transition-colors duration-200 hover:bg-teal-600 disabled:bg-slate-300 disabled:cursor-not-allowed"
+        onClick={handleSave}
+        disabled={saving}
+      >
         {saving ? 'Saving...' : 'Save Preferences'}
       </button>
     </div>
