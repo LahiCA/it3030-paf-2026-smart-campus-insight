@@ -1,15 +1,17 @@
-export default function TicketStatusBadge({ status }) {
-    const map = {
-        OPEN: "bg-blue-100 text-blue-600",
-        IN_PROGRESS: "bg-yellow-100 text-yellow-600",
-        RESOLVED: "bg-green-100 text-green-600",
-        CLOSED: "bg-gray-200 text-gray-600",
-        REJECTED: "bg-red-100 text-red-600",
-    };
+const STATUS_STYLES = {
+    OPEN: "bg-blue-100 text-blue-700 border-blue-200",
+    IN_PROGRESS: "bg-amber-100 text-amber-700 border-amber-200",
+    RESOLVED: "bg-green-100 text-green-700 border-green-200",
+    CLOSED: "bg-slate-200 text-slate-700 border-slate-300",
+    REJECTED: "bg-red-100 text-red-700 border-red-200",
+};
 
+export default function TicketStatusBadge({ status }) {
     return (
-        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${map[status]}`}>
-            {status}
+        <span
+            className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold tracking-wide ${STATUS_STYLES[status] || "bg-slate-100 text-slate-600 border-slate-200"}`}
+        >
+            {status?.replaceAll("_", " ")}
         </span>
     );
 }

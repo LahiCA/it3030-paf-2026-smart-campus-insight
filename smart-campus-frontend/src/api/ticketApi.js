@@ -1,52 +1,137 @@
 import axios from "axios";
 
-const API = axios.create({
+const api = axios.create({
     baseURL: "/api/tickets",
 });
 
-// ---------- TICKETS ----------
-export const getTickets = async () => (await API.get("/")).data;
-export const createTicket = async (data) => (await API.post("/", data)).data;
-export const getTicket = async (id) => (await API.get(`/${id}`)).data;
+const getRole = () => localStorage.getItem("userRole") || "USER";
+const getUserId = () => localStorage.getItem("userId") || "user-001";
 
-export const updateStatus = (id, status) =>
-    API.put(`/${id}/status?status=${status}`);
+api.interceptors.request.use((config) => {
+    config.headers.role = getRole();
+    config.headers.userId = getUserId();
+    return config;
+});
 
-export const resolveTicket = (id, note) =>
-    API.put(`/${id}/resolve?note=${note}`);
-
-export const assignTech = (id, techId) =>
-    API.put(`/${id}/assign?techId=${techId}`, {}, { headers: { role: "ADMIN" } });
-
-export const rejectTicket = (id, reason) =>
-    API.put(`/${id}/reject?reason=${reason}`, {}, { headers: { role: "ADMIN" } });
-
-// ---------- COMMENTS ----------
-export const getComments = async (id) =>
-    (await API.get(`/${id}/comments`)).data;
-
-export const addComment = (id, data) =>
-    API.post(`/${id}/comments`, data);
-
-export const editComment = (id, userId, message) =>
-    API.put(`/comments/${id}?message=${message}`, {}, { headers: { userId } });
-
-export const deleteComment = (id, userId) =>
-    API.delete(`/comments/${id}`, { headers: { userId } });
-
-// ---------- IMAGES ----------
-export const uploadImages = (id, files) => {
-    const formData = new FormData();
-    files.forEach((f) => formData.append("files", f));
-    return API.post(`/${id}/upload`, formData);
+const unwrapError = (error) => {
+    throw error?.response?.data || { message: "Request failed" };
 };
 
-export const getImages = async (id) =>
-    (await API.get(`/${id}/images`)).data;
+export const getCurrentUser = () => ({
+    userId: getUserId(),
+    role: getRole(),
+});
 
-export const deleteImage = (id) =>
-    API.delete(`/images/${id}`, { headers: { role: "ADMIN" } });
+export const getTickets = async () => {
+    try {
+        const { role, userId } = getCurrentUser();
+        const endpoint = role === "ADMIN" ? "" : `/user/${userId}`;
+        const response = await api.get(endpoint);
+        return response.data;
+    } catch (error) {
+        unwrapError(error);
+    }
+};
 
-// ---------- DELETE ----------
-export const deleteTicket = (id) =>
-    API.delete(`/${id}`, { headers: { role: "ADMIN" } });
+export const createTicket = async (payload) => {
+    try {
+        const response = await api.post("", payload);
+        return response.data;
+    } catch (error) {
+        unwrapError(error);
+    }
+};
+
+export const getTicket = async (id) => {
+    try {
+        const response = await api.get(`/${id}`);
+        return response.data;
+    } catch (error) {
+        unwrapError(error);
+    }
+};
+
+export const updateTicket = async (id, payload) => {
+    try {
+        const response = await api.put(`/${id}`, payload);
+        return response.data;
+    } catch (error) {
+        unwrapError(error);
+    }
+};
+
+export const updateStatus = async (id, payload) => {
+    try {
+        const response = await api.put(`/${id}/status`, payload);
+        return response.data;
+    } catch (error) {
+        unwrapError(error);
+    }
+};
+
+export const assignTechnician = async (id, assignedTo) => {
+    try {
+        const response = await api.put(`/${id}/assign`, { assignedTo });
+        return response.data;
+    } catch (error) {
+        unwrapError(error);
+    }
+};
+
+export const uploadImages = async (id, files) => {
+    try {
+        const formData = new FormData();
+        files.forEach((file) => formData.append("files", file));
+        const response = await api.post(`/${id}/upload`, formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+        });
+        return response.data;
+    } catch (error) {
+        unwrapError(error);
+    }
+};
+
+export const getComments = async (id) => {
+    try {
+        const response = await api.get(`/${id}/comments`);
+        return response.data;
+    } catch (error) {
+        unwrapError(error);
+    }
+};
+
+export const addComment = async (id, payload) => {
+    try {
+        const response = await api.post(`/${id}/comments`, payload);
+        return response.data;
+    } catch (error) {
+        unwrapError(error);
+    }
+};
+
+export const editComment = async (commentId, payload) => {
+    try {
+        const response = await api.put(`/comments/${commentId}`, payload);
+        return response.data;
+    } catch (error) {
+        unwrapError(error);
+    }
+};
+
+export const deleteComment = async (commentId) => {
+    try {
+        await api.delete(`/comments/${commentId}`);
+    } catch (error) {
+        unwrapError(error);
+    }
+};
+
+export const deleteTicket = async (id) => {
+    try {
+        await api.delete(`/${id}`);
+    } catch (error) {
+        unwrapError(error);
+    }
+};
+
+export const getAttachmentUrl = (imageId) => `/api/tickets/attachments/${imageId}`;
