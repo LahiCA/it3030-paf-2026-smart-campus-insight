@@ -58,6 +58,7 @@ export const ROUTES = {
   PROFILE: '/profile',
   SETTINGS: '/settings',
   ADMIN_PANEL: '/admin',
+  NOTIFICATION_MANAGEMENT: '/notifications-management',
   RESOURCES: '/resources',
   BOOKINGS: '/bookings',
   TICKETS: '/tickets'

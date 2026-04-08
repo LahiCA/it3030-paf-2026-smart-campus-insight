@@ -32,9 +32,14 @@ import java.time.LocalDateTime;
 public class NotificationDTO {
 
     /**
-     * Unique notification ID
+     * MongoDB auto-generated unique notification ID
      */
     private String id;
+
+    /**
+     * Human-readable display ID (e.g. NOTF000001)
+     */
+    private String displayId;
 
     /**
      * The notification message to display
@@ -64,6 +69,11 @@ public class NotificationDTO {
      * Optional: The type of related entity (BOOKING, TICKET, COMMENT, etc.)
      */
     private String relatedEntityType;
+
+    /**
+     * Target audience for broadcast notifications (ALL, ADMIN, LECTURER, TECHNICIAN)
+     */
+    private String targetAudience;
 
     /**
      * When the notification was created

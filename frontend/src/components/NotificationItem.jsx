@@ -1,7 +1,6 @@
 import React from 'react';
 import { FaTrash, FaCheckCircle, FaCircle } from 'react-icons/fa';
 import { useNotifications } from '../context/NotificationContext';
-import './NotificationItem.css';
 
 /**
  * NotificationItem Component
@@ -21,18 +20,24 @@ import './NotificationItem.css';
  * - Optional click handler (could navigate to related entity)
  */
 
+const TYPE_STYLES = {
+  BOOKING_APPROVED:  'bg-green-100 text-green-700',
+  BOOKING_REJECTED:  'bg-red-100 text-red-700',
+  TICKET_CREATED:    'bg-orange-100 text-orange-700',
+  TICKET_UPDATED:    'bg-purple-100 text-purple-700',
+  COMMENT_ADDED:     'bg-teal-100 text-teal-700',
+  BOOKING_COMMENT:   'bg-pink-100 text-pink-700',
+  GENERAL:           'bg-gray-100 text-gray-600',
+};
+
 const NotificationItem = ({ notification, onItemClick = null }) => {
   const { markAsRead, markAsUnread, deleteNotification } = useNotifications();
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [isTogglingRead, setIsTogglingRead] = React.useState(false);
 
-  /**
-   * Handle mark as read/unread toggle
-   */
   const handleToggleRead = async (e) => {
     e.stopPropagation();
     setIsTogglingRead(true);
-
     try {
       if (notification.read) {
         await markAsUnread(notification.id);
@@ -44,13 +49,9 @@ const NotificationItem = ({ notification, onItemClick = null }) => {
     }
   };
 
-  /**
-   * Handle delete
-   */
   const handleDelete = async (e) => {
     e.stopPropagation();
     setIsDeleting(true);
-
     try {
       await deleteNotification(notification.id);
     } finally {
@@ -58,82 +59,67 @@ const NotificationItem = ({ notification, onItemClick = null }) => {
     }
   };
 
-  /**
-   * Handle item click
-   */
   const handleClick = () => {
-    if (!notification.read) {
-      markAsRead(notification.id);
-    }
-    if (onItemClick) {
-      onItemClick(notification);
-    }
+    if (!notification.read) markAsRead(notification.id);
+    if (onItemClick) onItemClick(notification);
   };
+
+  const typeBadge = TYPE_STYLES[notification.type] || TYPE_STYLES.GENERAL;
 
   return (
     <div
-      className={`notification-item ${notification.read ? 'read' : 'unread'}`}
       onClick={handleClick}
-      style={{ cursor: onItemClick ? 'pointer' : 'default' }}
+      className={[
+        'flex items-start gap-3 px-5 py-4 border-b border-gray-100 last:border-0 transition-colors',
+        notification.read
+          ? 'bg-white hover:bg-gray-50'
+          : 'bg-blue-50 border-l-4 border-l-blue-400 pl-4 hover:bg-blue-100/60',
+        onItemClick ? 'cursor-pointer' : '',
+      ].join(' ')}
     >
-      {/* Status indicator */}
-      <div className="item-status">
-        {notification.read ? (
-          <FaCheckCircle className="icon-read" title="Read" />
-        ) : (
-          <FaCircle className="icon-unread" title="Unread" />
-        )}
+      {/* Status icon */}
+      <div className="mt-0.5 w-7 h-7 flex-shrink-0 flex items-center justify-center rounded-full bg-gray-100">
+        {notification.read
+          ? <FaCheckCircle className="text-green-500" size={14} />
+          : <FaCircle className="text-blue-500" size={11} />}
       </div>
 
       {/* Content */}
-      <div className="item-content">
-        {/* Message */}
-        <p className="item-message">
+      <div className="flex-1 min-w-0">
+        <p className={`text-sm leading-snug break-words ${notification.read ? 'text-gray-600 font-normal' : 'text-gray-800 font-medium'}`}>
           {notification.message}
         </p>
-
-        {/* Metadata */}
-        <div className="item-metadata">
-          {/* Type badge */}
-          <span className={`type-badge type-${notification.type.toLowerCase()}`}>
+        <div className="flex flex-wrap items-center gap-2 mt-1.5">
+          <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold uppercase tracking-wide ${typeBadge}`}>
             {formatTypeName(notification.type)}
           </span>
-
-          {/* Timestamp */}
-          <span className="item-time">
-            {formatTime(new Date(notification.createdAt))}
-          </span>
-
+          <span className="text-xs text-gray-400">{formatTime(new Date(notification.createdAt))}</span>
           {notification.readAt && (
-            <span className="read-time" title={`Read at ${new Date(notification.readAt).toLocaleString()}`}>
-              (read)
-            </span>
+            <span className="text-xs text-gray-300 italic">(read)</span>
           )}
         </div>
       </div>
 
       {/* Actions */}
-      <div className="item-actions">
-        {/* Mark as read/unread button */}
+      <div className="flex items-center gap-1 flex-shrink-0 ml-2">
         <button
-          className="action-btn toggle-read-btn"
           onClick={handleToggleRead}
           disabled={isTogglingRead}
           title={notification.read ? 'Mark as unread' : 'Mark as read'}
-          aria-label={notification.read ? 'Mark as unread' : 'Mark as read'}
+          className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-bold transition-colors disabled:opacity-50
+            ${notification.read
+              ? 'text-gray-400 hover:bg-gray-100 hover:text-gray-600'
+              : 'text-blue-500 hover:bg-blue-100'}`}
         >
-          {isTogglingRead ? '...' : notification.read ? '✕' : '✓'}
+          {isTogglingRead ? '…' : notification.read ? '✕' : '✓'}
         </button>
-
-        {/* Delete button */}
         <button
-          className="action-btn delete-btn"
           onClick={handleDelete}
           disabled={isDeleting}
           title="Delete notification"
-          aria-label="Delete notification"
+          className="w-8 h-8 flex items-center justify-center rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors disabled:opacity-50"
         >
-          {isDeleting ? '...' : <FaTrash size={16} />}
+          {isDeleting ? '…' : <FaTrash size={13} />}
         </button>
       </div>
     </div>

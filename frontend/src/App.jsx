@@ -18,6 +18,7 @@ import ResourcesPage from './components/ResourcesPage';
 import LecturerDashboard from './components/LecturerDashboard';
 import TechnicianDashboard from './components/TechnicianDashboard';
 import AdminDashboard from './components/AdminDashboard';
+import NotificationManagementPage from './components/NotificationManagementPage';
 
 function App() {
   console.log('Google Client ID from env:', GOOGLE_CLIENT_ID);
@@ -220,6 +221,19 @@ function App() {
                     element={
                       <Layout>
                         <NotificationPreferences />
+                      </Layout>
+                    }
+                  />
+                }
+              />
+
+              <Route
+                path={ROUTES.NOTIFICATION_MANAGEMENT}
+                element={
+                  <PrivateRoute
+                    element={
+                      <Layout>
+                        <NotificationManagementPage />
                       </Layout>
                     }
                   />

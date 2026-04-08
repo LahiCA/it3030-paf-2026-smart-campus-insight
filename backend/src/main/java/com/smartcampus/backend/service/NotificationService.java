@@ -1,9 +1,11 @@
 package com.smartcampus.backend.service;
 
+import com.smartcampus.backend.dto.request.AdminNotificationRequest;
 import com.smartcampus.backend.dto.response.NotificationDTO;
 import com.smartcampus.backend.dto.response.NotificationPreferenceDTO;
 import com.smartcampus.backend.entities.Notification;
 import com.smartcampus.backend.entities.NotificationPreference;
+import com.smartcampus.backend.entities.User;
 import com.smartcampus.backend.enums.NotificationType;
 import com.smartcampus.backend.exception.UserNotFoundException;
 import com.smartcampus.backend.repository.NotificationPreferenceRepository;
@@ -47,6 +49,9 @@ public class NotificationService {
     @Autowired
     private NotificationPreferenceRepository preferenceRepository;
 
+    @Autowired
+    private SequenceGeneratorService sequenceGeneratorService;
+
     /**
      * Create and send a notification to a user
      * 
@@ -79,6 +84,7 @@ public class NotificationService {
 
         // Step 2: Create notification entity
         Notification notification = Notification.builder()
+                .displayId(sequenceGeneratorService.generateDisplayId("NOTIFICATION"))
                 .userId(userId)
                 .message(message)
                 .type(type)
@@ -339,14 +345,123 @@ public class NotificationService {
     private NotificationDTO convertToDTO(Notification notification) {
         return NotificationDTO.builder()
                 .id(notification.getId())
+                .displayId(notification.getDisplayId())
                 .message(notification.getMessage())
-                .type(notification.getType().name())
+                .type(notification.getType() != null ? notification.getType().name() : null)
                 .read(notification.getRead())
                 .relatedEntityId(notification.getRelatedEntityId())
                 .relatedEntityType(notification.getRelatedEntityType())
+                .targetAudience(notification.getTargetAudience())
                 .createdAt(notification.getCreatedAt())
                 .readAt(notification.getReadAt())
                 .build();
+    }
+
+    // ==================== Admin Notification Management ====================
+
+    /**
+     * Admin: create a broadcast notification for all users of a given audience.
+     * Saves a single template document with targetAudience set (no userId).
+     */
+    public NotificationDTO adminCreateNotification(AdminNotificationRequest req) {
+        log.info("Admin creating broadcast notification for audience: {}", req.getTargetAudience());
+
+        Notification notification = Notification.builder()
+                .displayId(sequenceGeneratorService.generateDisplayId("NOTIFICATION"))
+                .message(req.getMessage())
+                .type(NotificationType.valueOf(req.getType()))
+                .targetAudience(req.getTargetAudience())
+                .read(false)
+                .build();
+
+        notification = notificationRepository.save(notification);
+        log.info("Broadcast notification created: {}", notification.getDisplayId());
+        return convertToDTO(notification);
+    }
+
+    /**
+     * Admin: update message/type/targetAudience of a broadcast notification.
+     */
+    public NotificationDTO adminUpdateNotification(String id, AdminNotificationRequest req) {
+        log.info("Admin updating notification: {}", id);
+
+        Notification notification = notificationRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("Notification not found with ID: " + id));
+
+        notification.setMessage(req.getMessage());
+        notification.setType(NotificationType.valueOf(req.getType()));
+        notification.setTargetAudience(req.getTargetAudience());
+
+        notification = notificationRepository.save(notification);
+        return convertToDTO(notification);
+    }
+
+    /**
+     * Admin: delete any notification by ID.
+     */
+    public void adminDeleteNotification(String id) {
+        log.info("Admin deleting notification: {}", id);
+        Notification notification = notificationRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("Notification not found with ID: " + id));
+        notificationRepository.delete(notification);
+        log.info("Notification {} deleted by admin", id);
+    }
+
+    /**
+     * Admin: get all broadcast notifications (template records without a userId).
+     */
+    public List<NotificationDTO> adminGetAllNotifications() {
+        return notificationRepository.findByUserIdIsNullOrderByCreatedAtDesc()
+                .stream().map(this::convertToDTO).collect(Collectors.toList());
+    }
+
+    /**
+     * Get all notifications (personal + broadcast) for a user including their role-based broadcasts.
+     * Used by the NotificationController when a user fetches their notifications.
+     */
+    public List<NotificationDTO> getUserNotificationsWithBroadcasts(String userId) {
+        log.debug("Fetching all notifications (personal + broadcast) for user ID: {}", userId);
+
+        if (!userRepository.existsById(userId)) {
+            throw new UserNotFoundException("User not found with ID: " + userId);
+        }
+
+        // Fetch user to get their role
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new UserNotFoundException("User not found with ID: " + userId));
+        String role = user.getRole() != null ? user.getRole().toUpperCase() : "LECTURER";
+
+        // Personal notifications
+        List<Notification> personal = notificationRepository.findByUserIdOrderByCreatedAtDesc(userId);
+
+        // Broadcast notifications for this role + ALL
+        List<Notification> broadcasts = notificationRepository
+                .findByTargetAudienceInOrderByCreatedAtDesc(List.of("ALL", role));
+
+        // Merge and sort by createdAt desc
+        List<Notification> merged = new java.util.ArrayList<>();
+        merged.addAll(personal);
+        merged.addAll(broadcasts);
+        merged.sort((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()));
+
+        return merged.stream().map(this::convertToDTO).collect(Collectors.toList());
+    }
+
+    /**
+     * Count unread notifications (personal + broadcasts) for a user.
+     */
+    public long getUnreadCountWithBroadcasts(String userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new UserNotFoundException("User not found with ID: " + userId);
+        }
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new UserNotFoundException("User not found with ID: " + userId));
+        String role = user.getRole() != null ? user.getRole().toUpperCase() : "LECTURER";
+
+        long personal = notificationRepository.countByUserIdAndReadFalse(userId);
+        long broadcasts = notificationRepository
+                .countByTargetAudienceInAndReadFalse(List.of("ALL", role));
+        return personal + broadcasts;
     }
 
     // ==================== Notification Preferences ====================

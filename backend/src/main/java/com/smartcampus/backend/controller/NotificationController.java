@@ -1,5 +1,6 @@
 package com.smartcampus.backend.controller;
 
+import com.smartcampus.backend.dto.request.AdminNotificationRequest;
 import com.smartcampus.backend.dto.request.CreateNotificationRequest;
 import com.smartcampus.backend.dto.response.NotificationDTO;
 import com.smartcampus.backend.dto.response.NotificationPreferenceDTO;
@@ -45,7 +46,7 @@ public class NotificationController {
         if (userId == null) {
             return ResponseEntity.ok(List.of());
         }
-        List<NotificationDTO> notifications = notificationService.getUserNotifications(userId);
+        List<NotificationDTO> notifications = notificationService.getUserNotificationsWithBroadcasts(userId);
         return ResponseEntity.ok(notifications);
     }
 
@@ -63,7 +64,7 @@ public class NotificationController {
             response.put("unreadCount", 0L);
             return ResponseEntity.ok(response);
         }
-        long unreadCount = notificationService.getUnreadCount(userId);
+        long unreadCount = notificationService.getUnreadCountWithBroadcasts(userId);
         response.put("unreadCount", unreadCount);
         return ResponseEntity.ok(response);
     }
@@ -155,7 +156,7 @@ public class NotificationController {
     }
 
     /**
-     * POST /api/notifications - Create a notification (ADMIN only)
+     * POST /api/notifications - Create a personal notification for a specific user (ADMIN only)
      */
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -169,6 +170,54 @@ public class NotificationController {
                 request.getRelatedEntityId(),
                 request.getRelatedEntityType());
         return ResponseEntity.status(201).body(notification);
+    }
+
+    // ==================== Admin Notification Management ====================
+
+    /**
+     * GET /api/notifications/admin - List all broadcast notifications (ADMIN only)
+     */
+    @GetMapping("/admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<NotificationDTO>> adminGetAllNotifications() {
+        log.info("Admin fetching all broadcast notifications");
+        return ResponseEntity.ok(notificationService.adminGetAllNotifications());
+    }
+
+    /**
+     * POST /api/notifications/admin - Create broadcast notification (ADMIN only)
+     */
+    @PostMapping("/admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<NotificationDTO> adminCreateNotification(
+            @Valid @RequestBody AdminNotificationRequest request) {
+        log.info("Admin creating broadcast notification: audience={}", request.getTargetAudience());
+        NotificationDTO dto = notificationService.adminCreateNotification(request);
+        return ResponseEntity.status(201).body(dto);
+    }
+
+    /**
+     * PUT /api/notifications/admin/{id} - Update broadcast notification (ADMIN only)
+     */
+    @PutMapping("/admin/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<NotificationDTO> adminUpdateNotification(
+            @PathVariable String id,
+            @Valid @RequestBody AdminNotificationRequest request) {
+        log.info("Admin updating broadcast notification: {}", id);
+        NotificationDTO dto = notificationService.adminUpdateNotification(id, request);
+        return ResponseEntity.ok(dto);
+    }
+
+    /**
+     * DELETE /api/notifications/admin/{id} - Delete notification (ADMIN only)
+     */
+    @DeleteMapping("/admin/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> adminDeleteNotification(@PathVariable String id) {
+        log.info("Admin deleting notification: {}", id);
+        notificationService.adminDeleteNotification(id);
+        return ResponseEntity.noContent().build();
     }
 
     /**

@@ -53,6 +53,10 @@ public class SequenceGeneratorService {
                 prefix = "TEC";
                 seqName = "technician_seq";
                 break;
+            case "NOTIFICATION":
+                prefix = "NOTF";
+                seqName = "notification_seq";
+                break;
             default:
                 prefix = "USR";
                 seqName = "user_seq";
@@ -60,6 +64,10 @@ public class SequenceGeneratorService {
         }
 
         long seq = generateSequence(seqName);
+        // NOTF uses 6-digit padding, others use 4-digit
+        if ("notification_seq".equals(seqName)) {
+            return prefix + String.format("%06d", seq);
+        }
         return prefix + String.format("%04d", seq);
     }
 }

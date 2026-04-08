@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '../context/NotificationContext';
 import NotificationItem from './NotificationItem';
 import { NOTIFICATION_TYPES } from '../utils/constants';
-import './NotificationsPage.css';
 
 /**
  * NotificationsPage Component
@@ -86,55 +85,45 @@ const NotificationsPage = () => {
   const unreadCountCalc = notifications.filter(n => !n.read).length;
 
   return (
-    <div className="notifications-page">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
-      <div className="page-header">
-        <div className="header-top">
+      <div className="bg-white border-b border-gray-200 px-6 py-5">
+        <div className="flex items-center gap-4 mb-3">
           <button
-            className="back-button"
             onClick={() => navigate('/dashboard')}
-            title="Back to Dashboard"
+            className="w-10 h-10 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 transition-colors"
             aria-label="Back"
           >
-            <FaArrowLeft size={20} />
+            <FaArrowLeft size={18} />
           </button>
-          <h1>Notifications</h1>
-          <div className="header-stats">
-            <span className="stat unread">
-              {unreadCountCalc} unread
-            </span>
-            <span className="stat divider">•</span>
-            <span className="stat read">
-              {readCount} read
-            </span>
+          <h1 className="text-2xl font-bold text-gray-900 flex-1">Notifications</h1>
+          <div className="flex items-center gap-3 text-sm font-medium">
+            <span className="text-red-500">{unreadCountCalc} unread</span>
+            <span className="text-gray-300">•</span>
+            <span className="text-green-600">{readCount} read</span>
           </div>
         </div>
-
-        {/* Action buttons */}
-        <div className="header-actions">
-          {unreadCount > 0 && (
+        {unreadCount > 0 && (
+          <div className="flex">
             <button
-              className="action-button mark-all"
               onClick={handleMarkAllAsRead}
-              title="Mark all as read"
+              className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
             >
-              <FaCheckDouble size={16} />
-              <span>Mark All as Read</span>
+              <FaCheckDouble size={14} />
+              Mark All as Read
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
-      {/* Controls */}
-      <div className="page-controls">
-        {/* Status filter */}
-        <div className="filter-group">
-          <label htmlFor="status-filter">Status:</label>
+      {/* Filters */}
+      <div className="bg-white border-b border-gray-200 px-6 py-4 flex flex-wrap gap-4 items-center">
+        <div className="flex items-center gap-2">
+          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Status:</label>
           <select
-            id="status-filter"
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="filter-select"
+            className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
           >
             <option value="all">All ({notifications.length})</option>
             <option value="unread">Unread ({unreadCountCalc})</option>
@@ -142,32 +131,26 @@ const NotificationsPage = () => {
           </select>
         </div>
 
-        {/* Type filter */}
-        <div className="filter-group">
-          <label htmlFor="type-filter">Type:</label>
+        <div className="flex items-center gap-2">
+          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Type:</label>
           <select
-            id="type-filter"
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
-            className="filter-select"
+            className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
           >
             <option value="all">All Types</option>
             {Object.values(NOTIFICATION_TYPES).map(type => (
-              <option key={type} value={type}>
-                {formatTypeName(type)}
-              </option>
+              <option key={type} value={type}>{formatTypeName(type)}</option>
             ))}
           </select>
         </div>
 
-        {/* Sort order */}
-        <div className="filter-group">
-          <label htmlFor="sort-filter">Sort:</label>
+        <div className="flex items-center gap-2">
+          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Sort:</label>
           <select
-            id="sort-filter"
             value={sortOrder}
             onChange={(e) => setSortOrder(e.target.value)}
-            className="filter-select"
+            className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
           >
             <option value="newest">Newest First</option>
             <option value="oldest">Oldest First</option>
@@ -176,45 +159,44 @@ const NotificationsPage = () => {
       </div>
 
       {/* Content */}
-      <div className="page-content">
-        {/* Loading state */}
+      <div className="flex-1 px-6 py-6">
         {loading && (
-          <div className="state-message loading-state">
-            <span className="spinner">⏳</span>
-            <p>Loading notifications...</p>
+          <div className="flex flex-col items-center justify-center py-24 text-gray-400 gap-3">
+            <svg className="animate-spin h-8 w-8 text-blue-400" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            <p className="text-sm">Loading notifications…</p>
           </div>
         )}
 
-        {/* Error state */}
         {error && (
-          <div className="state-message error-state">
-            <span className="error-icon">⚠️</span>
-            <p>{error}</p>
+          <div className="flex flex-col items-center justify-center py-16 gap-3">
+            <span className="text-4xl">⚠️</span>
+            <p className="text-red-500 text-sm font-medium">{error}</p>
             <button
-              className="retry-button"
               onClick={() => window.location.reload()}
+              className="text-blue-600 hover:underline text-sm"
             >
               Retry
             </button>
           </div>
         )}
 
-        {/* Empty state */}
         {!loading && !error && filteredNotifications.length === 0 && (
-          <div className="state-message empty-state">
-            <span className="empty-icon">📭</span>
-            <h2>No notifications</h2>
-            <p>
+          <div className="flex flex-col items-center justify-center py-24 text-gray-400 gap-4">
+            <span className="text-6xl">📭</span>
+            <h2 className="text-lg font-semibold text-gray-600">No notifications</h2>
+            <p className="text-sm text-center max-w-sm text-gray-400">
               {notifications.length === 0
-                ? 'You don\'t have any notifications yet. You\'ll see them here when activities happen.'
+                ? "You don't have any notifications yet. You'll see them here when activities happen."
                 : 'No notifications match your filters. Try adjusting them.'}
             </p>
           </div>
         )}
 
-        {/* Notifications list */}
         {!loading && !error && filteredNotifications.length > 0 && (
-          <div className="notifications-list">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             {filteredNotifications.map(notification => (
               <NotificationItem
                 key={notification.id}
@@ -226,12 +208,10 @@ const NotificationsPage = () => {
         )}
       </div>
 
-      {/* Footer info */}
+      {/* Footer */}
       {filteredNotifications.length > 0 && (
-        <div className="page-footer">
-          <p>
-            Showing {filteredNotifications.length} of {notifications.length} notifications
-          </p>
+        <div className="px-6 pb-6 text-xs text-gray-400 text-center">
+          Showing {filteredNotifications.length} of {notifications.length} notifications
         </div>
       )}
     </div>

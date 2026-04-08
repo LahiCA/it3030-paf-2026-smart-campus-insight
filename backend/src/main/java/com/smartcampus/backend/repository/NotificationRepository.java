@@ -6,6 +6,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface NotificationRepository extends MongoRepository<Notification, String> {
@@ -22,4 +23,14 @@ public interface NotificationRepository extends MongoRepository<Notification, St
                         String userId, String relatedEntityId, String relatedEntityType);
 
         void deleteByUserId(String userId);
+
+        /** All broadcast notifications targeting a role or ALL */
+        List<Notification> findByTargetAudienceInOrderByCreatedAtDesc(List<String> audiences);
+
+        Long countByTargetAudienceInAndReadFalse(List<String> audiences);
+
+        /** Admin management: find template notifications (no specific userId) */
+        List<Notification> findByUserIdIsNullOrderByCreatedAtDesc();
+
+        Optional<Notification> findByDisplayId(String displayId);
 }

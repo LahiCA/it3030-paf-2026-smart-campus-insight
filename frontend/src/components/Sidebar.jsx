@@ -5,6 +5,7 @@ import {
   FaCalendarAlt,
   FaTicketAlt,
   FaBell,
+  FaBullhorn,
   FaUsers,
   FaSignOutAlt,
   FaGraduationCap,
@@ -40,6 +41,7 @@ const Sidebar = () => {
   if (isAdmin()) {
     menuItems[0] = { path: '/admin-dashboard', icon: FaThLarge, label: 'Dashboard' };
     menuItems.push({ path: '/admin', icon: FaUsers, label: 'User Management' });
+    menuItems.push({ path: '/notifications-management', icon: FaBullhorn, label: 'Notification Mgmt' });
   }
 
   return (

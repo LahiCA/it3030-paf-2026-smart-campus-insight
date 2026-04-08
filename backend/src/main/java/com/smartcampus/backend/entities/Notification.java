@@ -21,6 +21,9 @@ public class Notification {
     @Id
     private String id;
 
+    /** Human-readable display ID, e.g. NOTF000001 */
+    private String displayId;
+
     private String userId;
 
     @NotBlank(message = "Notification message cannot be blank")
@@ -34,6 +37,12 @@ public class Notification {
     private String relatedEntityId;
 
     private String relatedEntityType;
+
+    /**
+     * Target audience for broadcast notifications (ALL, ADMIN, LECTURER, TECHNICIAN).
+     * When set, the notification is shown to all users with that role instead of a specific userId.
+     */
+    private String targetAudience;
 
     @lombok.Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -50,3 +59,4 @@ public class Notification {
         this.readAt = null;
     }
 }
+
