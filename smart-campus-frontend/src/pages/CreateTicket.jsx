@@ -14,70 +14,164 @@ export default function CreateTicket({ onTicketCreated }) {
     });
 
     const [files, setFiles] = useState([]);
+    const [errors, setErrors] = useState({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleSubmit = async () => {
-        if (!form.title || !form.description || !form.category) {
-            alert("Fill required fields");
-            return;
-        }
+    const validateForm = () => {
+        const newErrors = {};
 
-        if (files.length > 3) {
-            alert("Max 3 images allowed");
-            return;
-        }
+        if (!form.title.trim()) newErrors.title = "Title is required";
+        if (form.title.trim().length < 3) newErrors.title = "Title must be at least 3 characters";
+
+        if (!form.description.trim()) newErrors.description = "Description is required";
+        if (form.description.trim().length < 10) newErrors.description = "Description must be at least 10 characters";
+
+        if (!form.category) newErrors.category = "Category is required";
+
+        if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) newErrors.email = "Invalid email format";
+        if (form.phone && !/^\d{10,}$/.test(form.phone.replace(/\D/g, ''))) newErrors.phone = "Phone must be at least 10 digits";
+
         if (files.length > 3) newErrors.files = "Maximum 3 images allowed";
 
         // Check file sizes (max 5MB each)
         files.forEach((file) => {
+            if (file.size > 5 * 1024 * 1024) {
+                newErrors.files = "Each image must be less than 5MB";
+            }
+        });
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!validateForm()) return;
+
+        setIsSubmitting(true);
 
         try {
             const payload = {
-                title: form.title,
-                description: form.description,
+                title: form.title.trim(),
+                description: form.description.trim(),
                 category: form.category,
                 priority: form.priority,
-                location: form.location,
-                resourceId: form.resourceId,
-                createdBy: "user001",
-                contactDetails: `${form.email} | ${form.phone}`
+                location: form.location.trim() || "Not specified",
+                resourceId: form.resourceId.trim() || "Not specified",
+                createdBy: localStorage.getItem("userId") || "user001",
+                contactDetails: `${form.email || "N/A"} | ${form.phone || "N/A"}`
             };
 
             const newTicket = await createTicket(payload);
 
-            // upload images after ticket created
+            // Upload images if provided
             if (files.length > 0) {
+                try {
+                    await uploadImages(newTicket.id || newTicket._id, files);
+                } catch (err) {
+                    console.error("Error uploading images:", err);
                     // Don't fail the whole operation if images fail
                 }
             }
 
-            alert("Ticket Created ✅");
+            alert("✅ Ticket created successfully!");
 
             if (onTicketCreated) {
                 onTicketCreated(newTicket);
             }
 
-            // reset
+            // Reset form
             setForm({
                 title: "",
                 description: "",
                 category: "",
-                priority: "LOW",
+                priority: "MEDIUM",
                 location: "",
                 resourceId: "",
                 email: "",
                 phone: ""
             });
             setFiles([]);
+            setErrors({});
 
         } catch (err) {
-            console.error(err);
-            alert("Error creating ticket");
+            console.error("Error creating ticket:", err);
+            alert("❌ Error creating ticket. Please try again.");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
+    const handleFileChange = (e) => {
+        const selectedFiles = Array.from(e.target.files);
+        if (selectedFiles.length > 3) {
+            setErrors({ ...errors, files: "Maximum 3 images allowed" });
+            return;
+        }
+        setFiles(selectedFiles);
+        setErrors({ ...errors, files: "" });
+    };
+
     return (
+        <form onSubmit={handleSubmit} className="bg-white rounded-xl">
+            <h2 className="text-2xl font-bold mb-6 text-gray-900 text-center">Create New Ticket</h2>
+
+            {/* Title */}
+            <div className="mb-4">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Ticket Title *
+                </label>
+                <input
+                    type="text"
+                    placeholder="e.g., Broken Projector in Room 101"
+                    value={form.title}
+                    onChange={(e) => {
+                        setForm({ ...form, title: e.target.value });
+                        if (errors.title) setErrors({ ...errors, title: "" });
+                    }}
+                    className={`w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500 transition ${errors.title ? "border-red-500" : "border-gray-300"
+                        }`}
+                />
+                {errors.title && <p className="text-red-600 text-xs mt-1">{errors.title}</p>}
+            </div>
+
+            {/* Description */}
+            <div className="mb-4">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Description *
+                </label>
+                <textarea
                     placeholder="Provide detailed description of the issue..."
+                    value={form.description}
+                    onChange={(e) => {
+                        setForm({ ...form, description: e.target.value });
+                        if (errors.description) setErrors({ ...errors, description: "" });
+                    }}
+                    rows="4"
+                    className={`w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500 transition ${errors.description ? "border-red-500" : "border-gray-300"
+                        }`}
+                />
+                {errors.description && <p className="text-red-600 text-xs mt-1">{errors.description}</p>}
+            </div>
+
+            {/* Category and Priority */}
+            <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Category *
+                    </label>
+                    <select
+                        value={form.category}
+                        onChange={(e) => {
+                            setForm({ ...form, category: e.target.value });
+                            if (errors.category) setErrors({ ...errors, category: "" });
+                        }}
+                        className={`w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500 transition ${errors.category ? "border-red-500" : "border-gray-300"
                             }`}
+                    >
+                        <option value="">Select category</option>
+                        <option value="Hardware">Hardware</option>
                         <option value="Network">Network</option>
                         <option value="Software">Software</option>
                         <option value="Facility">Facility</option>

@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-    baseURL: "/api/tickets", // relative path now works with proxy
+    baseURL: "/api/tickets",
 });
 
 // ---------- TICKETS ----------
