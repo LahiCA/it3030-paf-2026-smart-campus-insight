@@ -1,132 +1,360 @@
 package com.smartcampus.backend.tickets.service;
 
-import com.smartcampus.backend.tickets.model.*;
-import com.smartcampus.backend.tickets.repository.*;
-import org.springframework.stereotype.Service;
-
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
-import java.io.File;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
+
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.smartcampus.backend.tickets.dto.AssignTechnicianRequest;
+import com.smartcampus.backend.tickets.dto.CommentCreateRequest;
+import com.smartcampus.backend.tickets.dto.CommentUpdateRequest;
+import com.smartcampus.backend.tickets.dto.StatusUpdateRequest;
+import com.smartcampus.backend.tickets.dto.TicketCreateRequest;
+import com.smartcampus.backend.tickets.dto.TicketUpdateRequest;
+import com.smartcampus.backend.tickets.model.Comment;
+import com.smartcampus.backend.tickets.model.Ticket;
+import com.smartcampus.backend.tickets.model.TicketImage;
+import com.smartcampus.backend.tickets.repository.CommentRepository;
+import com.smartcampus.backend.tickets.repository.TicketImageRepository;
+import com.smartcampus.backend.tickets.repository.TicketRepository;
 
 @Service
 public class TicketService {
 
-    private final TicketRepository ticketRepo;
-    private final CommentRepository commentRepo;
-    private final TicketImageRepository imageRepo;
+    private static final String ROLE_ADMIN = "ADMIN";
+    private static final String ROLE_TECHNICIAN = "TECHNICIAN";
+    private static final String STATUS_OPEN = "OPEN";
+    private static final String STATUS_IN_PROGRESS = "IN_PROGRESS";
+    private static final String STATUS_RESOLVED = "RESOLVED";
+    private static final String STATUS_CLOSED = "CLOSED";
+    private static final String STATUS_REJECTED = "REJECTED";
+    private static final int MAX_ATTACHMENTS = 3;
+    private static final Set<String> STATUS_MANAGERS = Set.of(ROLE_ADMIN, ROLE_TECHNICIAN);
 
-    public TicketService(TicketRepository ticketRepo,
-            CommentRepository commentRepo,
-            TicketImageRepository imageRepo) {
-        this.ticketRepo = ticketRepo;
-        this.commentRepo = commentRepo;
-        this.imageRepo = imageRepo;
+    private final TicketRepository ticketRepository;
+    private final CommentRepository commentRepository;
+    private final TicketImageRepository ticketImageRepository;
+    private final Path uploadDirectory = Paths.get(System.getProperty("user.dir"), "uploads");
+
+    public TicketService(
+            TicketRepository ticketRepository,
+            CommentRepository commentRepository,
+            TicketImageRepository ticketImageRepository) {
+        this.ticketRepository = ticketRepository;
+        this.commentRepository = commentRepository;
+        this.ticketImageRepository = ticketImageRepository;
     }
 
-    // CREATE TICKET
-    public Ticket createTicket(Ticket ticket) {
-        ticket.setStatus("OPEN");
-        return ticketRepo.save(ticket);
+    public Ticket createTicket(TicketCreateRequest request) {
+        LocalDateTime now = LocalDateTime.now();
+        Ticket ticket = Ticket.builder()
+                .title(request.getTitle().trim())
+                .description(request.getDescription().trim())
+                .category(request.getCategory().trim())
+                .priority(request.getPriority().trim().toUpperCase())
+                .status(STATUS_OPEN)
+                .userId(request.getUserId().trim())
+                .createdAt(now)
+                .updatedAt(now)
+                .build();
+
+        return hydrate(ticketRepository.save(ticket));
     }
 
-    // GET ALL
-    public List<Ticket> getAllTickets() {
-        return ticketRepo.findAll();
+    public List<Ticket> getAllTickets(String requesterRole) {
+        requireRole(requesterRole, ROLE_ADMIN);
+        return ticketRepository.findAll().stream()
+                .sorted(Comparator.comparing(Ticket::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
+                .map(this::hydrate)
+                .toList();
     }
 
-    // GET BY ID
     public Ticket getTicketById(String id) {
-        return ticketRepo.findById(id).orElseThrow();
+        return hydrate(findTicket(id));
     }
 
-    // UPDATE STATUS
-    public Ticket updateStatus(String id, String status) {
-        Ticket ticket = getTicketById(id);
-        ticket.setStatus(status);
-        return ticketRepo.save(ticket);
+    public List<Ticket> getTicketsByUserId(String userId) {
+        return ticketRepository.findByUserIdOrderByCreatedAtDesc(userId).stream()
+                .map(this::hydrate)
+                .toList();
     }
 
-    // ASSIGN TECHNICIAN
-    public Ticket assignTechnician(String ticketId, String techId) {
-        Ticket ticket = ticketRepo.findById(ticketId)
-                .orElseThrow(() -> new RuntimeException("Ticket with ID " + ticketId + " not found"));
+    public Ticket updateTicket(String id, TicketUpdateRequest request, String requesterUserId, String requesterRole) {
+        Ticket ticket = findTicket(id);
+        if (!ROLE_ADMIN.equals(normalize(requesterRole)) && !Objects.equals(ticket.getUserId(), requesterUserId)) {
+            throw new RuntimeException("Only the ticket owner or ADMIN can update this ticket");
+        }
+        if (!STATUS_OPEN.equals(ticket.getStatus()) && !STATUS_IN_PROGRESS.equals(ticket.getStatus())) {
+            throw new RuntimeException("Only OPEN or IN_PROGRESS tickets can be updated");
+        }
 
-        ticket.setAssignedTo(techId);
-        ticket.setStatus("IN_PROGRESS");
-        return ticketRepo.save(ticket);
+        ticket.setTitle(request.getTitle().trim());
+        ticket.setDescription(request.getDescription().trim());
+        ticket.setCategory(request.getCategory().trim());
+        ticket.setPriority(request.getPriority().trim().toUpperCase());
+        ticket.setUpdatedAt(LocalDateTime.now());
+
+        return hydrate(ticketRepository.save(ticket));
     }
 
-    // ADD COMMENT
-    public Comment addComment(Comment comment) {
-        return commentRepo.save(comment);
+    public void deleteTicket(String id, String requesterRole) {
+        requireRole(requesterRole, ROLE_ADMIN);
+        Ticket ticket = findTicket(id);
+        List<TicketImage> images = ticketImageRepository.findByTicketId(id);
+        for (TicketImage image : images) {
+            deleteStoredFile(image.getFilePath());
+        }
+        ticketImageRepository.deleteAll(images);
+        commentRepository.deleteAll(commentRepository.findByTicketId(id));
+        ticketRepository.delete(ticket);
     }
 
-    // GET COMMENTS
+    public Ticket updateStatus(String id, StatusUpdateRequest request, String requesterRole) {
+        requireAnyRole(requesterRole, STATUS_MANAGERS);
+        Ticket ticket = findTicket(id);
+        String nextStatus = normalize(request.getStatus());
+        validateTransition(ticket.getStatus(), nextStatus);
+
+        if (STATUS_RESOLVED.equals(nextStatus) && !StringUtils.hasText(request.getResolutionNotes())) {
+            throw new RuntimeException("Resolution notes are required when resolving a ticket");
+        }
+        if (STATUS_REJECTED.equals(nextStatus) && !StringUtils.hasText(request.getRejectionReason())) {
+            throw new RuntimeException("Rejection reason is required when rejecting a ticket");
+        }
+
+        ticket.setStatus(nextStatus);
+        if (StringUtils.hasText(request.getResolutionNotes())) {
+            ticket.setResolutionNotes(request.getResolutionNotes().trim());
+        }
+        if (StringUtils.hasText(request.getRejectionReason())) {
+            ticket.setRejectionReason(request.getRejectionReason().trim());
+        }
+        if (STATUS_REJECTED.equals(nextStatus)) {
+            ticket.setAssignedTo(null);
+        }
+        ticket.setUpdatedAt(LocalDateTime.now());
+
+        return hydrate(ticketRepository.save(ticket));
+    }
+
+    public Ticket assignTechnician(String id, AssignTechnicianRequest request, String requesterRole) {
+        requireRole(requesterRole, ROLE_ADMIN);
+        Ticket ticket = findTicket(id);
+        if (STATUS_CLOSED.equals(ticket.getStatus()) || STATUS_REJECTED.equals(ticket.getStatus())) {
+            throw new RuntimeException("Closed or rejected tickets cannot be assigned");
+        }
+
+        ticket.setAssignedTo(request.getAssignedTo().trim());
+        ticket.setUpdatedAt(LocalDateTime.now());
+
+        if (STATUS_OPEN.equals(ticket.getStatus())) {
+            ticket.setStatus(STATUS_IN_PROGRESS);
+        }
+
+        return hydrate(ticketRepository.save(ticket));
+    }
+
+    public List<TicketImage> uploadImages(String ticketId, MultipartFile[] files) {
+        Ticket ticket = findTicket(ticketId);
+        if (files == null || files.length == 0) {
+            throw new RuntimeException("At least one image is required");
+        }
+
+        List<TicketImage> existingImages = ticketImageRepository.findByTicketIdOrderByUploadedAtAsc(ticketId);
+        if (existingImages.size() + files.length > MAX_ATTACHMENTS) {
+            throw new RuntimeException("A ticket can have at most 3 image attachments");
+        }
+
+        try {
+            Files.createDirectories(uploadDirectory);
+            for (MultipartFile file : files) {
+                validateImage(file);
+            }
+
+            LocalDateTime now = LocalDateTime.now();
+            for (MultipartFile file : files) {
+                String originalName = Objects.requireNonNullElse(file.getOriginalFilename(), "attachment");
+                String safeFileName = UUID.randomUUID() + "_" + StringUtils.cleanPath(originalName);
+                Path target = uploadDirectory.resolve(safeFileName).normalize();
+                Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
+
+                TicketImage image = TicketImage.builder()
+                        .ticketId(ticketId)
+                        .fileName(safeFileName)
+                        .filePath(target.toString())
+                        .contentType(file.getContentType())
+                        .uploadedAt(now)
+                        .build();
+                ticketImageRepository.save(image);
+            }
+
+            ticket.setUpdatedAt(now);
+            ticketRepository.save(ticket);
+            return ticketImageRepository.findByTicketIdOrderByUploadedAtAsc(ticketId);
+        } catch (IOException exception) {
+            throw new RuntimeException("Failed to upload ticket images", exception);
+        }
+    }
+
     public List<Comment> getComments(String ticketId) {
-        return commentRepo.findByTicketId(ticketId);
+        findTicket(ticketId);
+        return commentRepository.findByTicketIdOrderByCreatedAtAsc(ticketId);
     }
 
-    // SAVE IMAGE
-    public TicketImage saveImage(TicketImage img) {
-        return imageRepo.save(img);
+    public Comment addComment(String ticketId, CommentCreateRequest request) {
+        findTicket(ticketId);
+        LocalDateTime now = LocalDateTime.now();
+        Comment comment = Comment.builder()
+                .ticketId(ticketId)
+                .userId(request.getUserId().trim())
+                .message(request.getMessage().trim())
+                .createdAt(now)
+                .updatedAt(now)
+                .build();
+
+        Comment savedComment = commentRepository.save(comment);
+        touchTicket(ticketId);
+        return savedComment;
     }
 
-    // GET IMAGES
+    public Comment updateComment(String commentId, CommentUpdateRequest request) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("Comment not found"));
+        if (!Objects.equals(comment.getUserId(), request.getUserId().trim())) {
+            throw new RuntimeException("Only the comment owner can edit this comment");
+        }
+
+        comment.setMessage(request.getMessage().trim());
+        comment.setUpdatedAt(LocalDateTime.now());
+        Comment savedComment = commentRepository.save(comment);
+        touchTicket(comment.getTicketId());
+        return savedComment;
+    }
+
+    public void deleteComment(String commentId, String requesterUserId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("Comment not found"));
+        if (!Objects.equals(comment.getUserId(), requesterUserId)) {
+            throw new RuntimeException("Only the comment owner can delete this comment");
+        }
+
+        commentRepository.delete(comment);
+        touchTicket(comment.getTicketId());
+    }
+
     public List<TicketImage> getImages(String ticketId) {
-        return imageRepo.findByTicketId(ticketId);
+        findTicket(ticketId);
+        return ticketImageRepository.findByTicketIdOrderByUploadedAtAsc(ticketId);
     }
 
-    // Edit comment
-    public Comment updateComment(String commentId, String userId, String newMessage) {
-        Comment comment = commentRepo.findById(commentId)
-                .orElseThrow(() -> new RuntimeException("Comment not found"));
+    public TicketImage getImageMetadata(String imageId) {
+        return ticketImageRepository.findById(imageId)
+                .orElseThrow(() -> new RuntimeException("Attachment not found"));
+    }
 
-        if (!comment.getUserId().equals(userId)) {
-            throw new RuntimeException("You can only edit your own comments");
+    public Resource loadImageAsResource(String imageId) {
+        try {
+            TicketImage image = getImageMetadata(imageId);
+            Path path = Paths.get(image.getFilePath());
+            Resource resource = new UrlResource(path.toUri());
+            if (!resource.exists() || !resource.isReadable()) {
+                throw new RuntimeException("Attachment file is not available");
+            }
+            return resource;
+        } catch (IOException exception) {
+            throw new RuntimeException("Failed to read attachment", exception);
         }
-
-        comment.setMessage(newMessage);
-        return commentRepo.save(comment);
     }
 
-    // Delete comment
-    public void deleteComment(String commentId, String userId) {
-        Comment comment = commentRepo.findById(commentId)
-                .orElseThrow(() -> new RuntimeException("Comment not found"));
-
-        if (!comment.getUserId().equals(userId)) {
-            throw new RuntimeException("You can only delete your own comments");
-        }
-
-        commentRepo.delete(comment);
+    public MediaType getImageMediaType(String imageId) {
+        TicketImage image = getImageMetadata(imageId);
+        String contentType = image.getContentType() == null ? MediaType.IMAGE_JPEG_VALUE : image.getContentType();
+        return MediaType.parseMediaType(contentType);
     }
 
-    // Delete ticket
-    public void deleteTicket(String ticketId) {
-        Ticket ticket = ticketRepo.findById(ticketId)
+    private Ticket findTicket(String id) {
+        return ticketRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Ticket not found"));
-
-        // Optional: delete related comments and images
-        List<Comment> comments = commentRepo.findByTicketId(ticketId);
-        commentRepo.deleteAll(comments);
-
-        List<TicketImage> images = imageRepo.findByTicketId(ticketId);
-        imageRepo.deleteAll(images);
-
-        ticketRepo.delete(ticket);
     }
 
-    // Delete image
-    public void deleteImage(String imageId) {
-        TicketImage img = imageRepo.findById(imageId)
-                .orElseThrow(() -> new RuntimeException("Image not found"));
+    private Ticket hydrate(Ticket ticket) {
+        ticket.setAttachments(ticketImageRepository.findByTicketIdOrderByUploadedAtAsc(ticket.getId()));
+        ticket.setComments(commentRepository.findByTicketIdOrderByCreatedAtAsc(ticket.getId()));
+        return ticket;
+    }
 
-        // Remove file from local storage
-        File file = new File(img.getImagePath());
-        if (file.exists()) {
-            file.delete();
+    private void validateTransition(String currentStatus, String nextStatus) {
+        String normalizedCurrent = normalize(currentStatus);
+        if (STATUS_REJECTED.equals(normalizedCurrent) || STATUS_CLOSED.equals(normalizedCurrent)) {
+            throw new RuntimeException("Closed or rejected tickets cannot change status");
         }
 
-        imageRepo.delete(img);
+        boolean valid = switch (normalizedCurrent) {
+            case STATUS_OPEN -> STATUS_IN_PROGRESS.equals(nextStatus) || STATUS_REJECTED.equals(nextStatus);
+            case STATUS_IN_PROGRESS -> STATUS_RESOLVED.equals(nextStatus) || STATUS_REJECTED.equals(nextStatus);
+            case STATUS_RESOLVED -> STATUS_CLOSED.equals(nextStatus);
+            default -> false;
+        };
+
+        if (!valid) {
+            throw new RuntimeException("Invalid status transition from " + normalizedCurrent + " to " + nextStatus);
+        }
     }
 
+    private void validateImage(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new RuntimeException("Uploaded image cannot be empty");
+        }
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new RuntimeException("Only image files are allowed");
+        }
+    }
+
+    private void requireRole(String actualRole, String expectedRole) {
+        if (!expectedRole.equals(normalize(actualRole))) {
+            throw new RuntimeException("Access denied for role: " + normalize(actualRole));
+        }
+    }
+
+    private void requireAnyRole(String actualRole, Set<String> allowedRoles) {
+        String normalizedRole = normalize(actualRole);
+        if (!allowedRoles.contains(normalizedRole)) {
+            throw new RuntimeException("Access denied for role: " + normalizedRole);
+        }
+    }
+
+    private String normalize(String value) {
+        return value == null ? "" : value.trim().toUpperCase();
+    }
+
+    private void touchTicket(String ticketId) {
+        Ticket ticket = findTicket(ticketId);
+        ticket.setUpdatedAt(LocalDateTime.now());
+        ticketRepository.save(ticket);
+    }
+
+    private void deleteStoredFile(String filePath) {
+        try {
+            if (StringUtils.hasText(filePath)) {
+                Files.deleteIfExists(Paths.get(filePath));
+            }
+        } catch (IOException exception) {
+            throw new RuntimeException("Failed to delete attachment file", exception);
+        }
+    }
 }
