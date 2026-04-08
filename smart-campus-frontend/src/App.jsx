@@ -3,6 +3,7 @@ import BWSidebar from "./layout/BWSidebar";
 import BWCreateBooking from "./pages/BWCreateBooking";
 import BWMyBookings from "./pages/BWMyBookings";
 import BWAdminBookingList from "./pages/BWAdminBookingList";
+import BWVerifyBooking from "./pages/BWVerifyBooking";
 
 function BWDashboard() {
   return (
@@ -28,6 +29,7 @@ function App() {
             <Route path="/bw-create-booking" element={<BWCreateBooking />} />
             <Route path="/bw-my-bookings" element={<BWMyBookings />} />
             <Route path="/bw-admin-bookings" element={<BWAdminBookingList />} />
+            <Route path="/bw/verify-booking/:id" element={<BWVerifyBooking />} />
           </Routes>
         </main>
       </div>
