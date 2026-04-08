@@ -1,0 +1,715 @@
+{
+  "info": {
+    "_postman_id": "smart-campus-api-collection",
+    "name": "Smart Campus Operations Hub - API Collection",
+    "description": "Complete API testing collection for Smart Campus backend\n\nBase URL: http://localhost:8080/api\n\nEndpoints covered:\n- Authentication (OAuth 2.0 + JWT)\n- User Management (Role-based)\n- Notifications (CRUD + filtering)\n- Notification Listener (Integration)\n\nNote: Replace placeholders with actual values before testing",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Google OAuth Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test: Verify successful login response",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has token', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.token).to.exist;",
+                  "});",
+                  "",
+                  "pm.test('Response has user data', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.user).to.exist;",
+                  "    pm.expect(jsonData.user.id).to.exist;",
+                  "    pm.expect(jsonData.user.email).to.exist;",
+                  "});",
+                  "",
+                  "// Save token for subsequent requests",
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('jwt_token', jsonData.token);",
+                  "    pm.environment.set('user_id', jsonData.user.id);",
+                  "    pm.environment.set('user_email', jsonData.user.email);",
+                  "    pm.environment.set('user_role', jsonData.user.role);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"googleToken\": \"{{google_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/google",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "google"]
+            },
+            "description": "Login with Google OAuth token\n\nRequired:\n- googleToken: Valid JWT token from Google Sign-In\n\nReturns:\n- token: JWT token for API authentication\n- user: User object with id, email, role"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "User Management",
+      "item": [
+        {
+          "name": "Get Current User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains user data', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.id).to.exist;",
+                  "    pm.expect(jsonData.email).to.exist;",
+                  "    pm.expect(jsonData.role).to.exist;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/me",
+              "host": ["{{base_url}}"],
+              "path": ["users", "me"]
+            },
+            "description": "Get current authenticated user's information\n\nAuthentication: Required (JWT token)\n\nReturns: 200 OK with user data"
+          },
+          "response": []
+        },
+        {
+          "name": "Get User by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains correct user', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.id).to.equal(parseInt(pm.request.url.query.get('user_id')));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}"]
+            },
+            "description": "Get user by ID (Admin only)\n\nAuthentication: Required (Admin role)\n\nReturns: 200 OK or 404 Not Found"
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Users",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response is an array', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(Array.isArray(jsonData)).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": ["{{base_url}}"],
+              "path": ["users"]
+            },
+            "description": "Get all users (Admin only)\n\nAuthentication: Required (Admin role)\n\nReturns: 200 OK with array of users"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Users by Role",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('All users have specified role', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(Array.isArray(jsonData)).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/role/ADMIN",
+              "host": ["{{base_url}}"],
+              "path": ["users", "role", "ADMIN"]
+            },
+            "description": "Get users by role (Admin only)\n\nAvailable roles: USER, ADMIN, TECHNICIAN, MANAGER\n\nAuthentication: Required (Admin role)\n\nReturns: 200 OK with array of users"
+          },
+          "response": []
+        },
+        {
+          "name": "Update User Role",
+          "event": [
+            {
+              "listen": "test",
+              "script": [
+                "pm.test('Status code is 200', function () {",
+                "    pm.response.to.have.status(200);",
+                "});",
+                "",
+                "pm.test('User role was updated', function () {",
+                "    var jsonData = pm.response.json();",
+                "    pm.expect(jsonData.role).to.equal('TECHNICIAN');",
+                "});"
+              ]
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"TECHNICIAN\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}/role",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}", "role"]
+            },
+            "description": "Update user role (Admin only)\n\nAvailable roles: USER, ADMIN, TECHNICIAN, MANAGER\n\nAuthentication: Required (Admin role)\n\nReturns: 200 OK with updated user"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 204', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}"]
+            },
+            "description": "Delete user (Admin only)\n\nAuthentication: Required (Admin role)\n\nReturns: 204 No Content"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "Get All Notifications",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response is an array', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(Array.isArray(jsonData)).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notifications",
+              "host": ["{{base_url}}"],
+              "path": ["notifications"]
+            },
+            "description": "Get all user notifications\n\nQuery parameters:\n- unread (optional): true/false - filter by read status\n\nAuthentication: Required (JWT token)\n\nReturns: 200 OK with array of notifications"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Unread Notifications Only",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('All notifications are unread', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(Array.isArray(jsonData)).to.be.true;",
+                  "    if (jsonData.length > 0) {",
+                  "        jsonData.forEach(function(notif) {",
+                  "            pm.expect(notif.read).to.equal(false);",
+                  "        });",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notifications?unread=true",
+              "host": ["{{base_url}}"],
+              "path": ["notifications"],
+              "query": [
+                {
+                  "key": "unread",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "Get only unread notifications\n\nAuthentication: Required (JWT token)\n\nReturns: 200 OK with array of unread notifications"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Unread Count",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains unread count', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.unreadCount).to.exist;",
+                  "    pm.expect(typeof jsonData.unreadCount).to.equal('number');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notifications/unread/count",
+              "host": ["{{base_url}}"],
+              "path": ["notifications", "unread", "count"]
+            },
+            "description": "Get count of unread notifications\n\nAuthentication: Required (JWT token)\n\nReturns: 200 OK with {unreadCount: number}"
+          },
+          "response": []
+        },
+        {
+          "name": "Mark Notification as Read",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Notification marked as read', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.read).to.equal(true);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notifications/{{notification_id}}/read",
+              "host": ["{{base_url}}"],
+              "path": ["notifications", "{{notification_id}}", "read"]
+            },
+            "description": "Mark specific notification as read\n\nAuthentication: Required (JWT token)\n\nReturns: 200 OK with updated notification"
+          },
+          "response": []
+        },
+        {
+          "name": "Toggle Notification Read Status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Notification read status updated', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.read).to.exist;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"read\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/notifications/{{notification_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["notifications", "{{notification_id}}"]
+            },
+            "description": "Update notification read status\n\nBody:\n- read: true/false\n\nAuthentication: Required (JWT token)\n\nReturns: 200 OK with updated notification"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Notification",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 204', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notifications/{{notification_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["notifications", "{{notification_id}}"]
+            },
+            "description": "Delete specific notification\n\nAuthentication: Required (JWT token)\n\nReturns: 204 No Content"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Notification Listener (Integration)",
+      "item": [
+        {
+          "name": "Notify Booking Approved",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": 1,\n  \"bookingId\": 100,\n  \"facilityName\": \"Meeting Room A\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/notifications/listener/booking-approved",
+              "host": ["{{base_url}}"],
+              "path": ["notifications", "listener", "booking-approved"]
+            },
+            "description": "Triggered when a booking is approved.\nCalls NotificationListener.notifyBookingApproved()\n\nIntegration endpoint for booking module"
+          },
+          "response": []
+        },
+        {
+          "name": "Notify Booking Rejected",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": 1,\n  \"bookingId\": 100,\n  \"reason\": \"Time slot already booked\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/notifications/listener/booking-rejected",
+              "host": ["{{base_url}}"],
+              "path": ["notifications", "listener", "booking-rejected"]
+            },
+            "description": "Triggered when a booking is rejected.\nCalls NotificationListener.notifyBookingRejected()\n\nIntegration endpoint for booking module"
+          },
+          "response": []
+        },
+        {
+          "name": "Notify Ticket Created",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": 1,\n  \"ticketId\": 50,\n  \"title\": \"Broken Door Lock\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/notifications/listener/ticket-created",
+              "host": ["{{base_url}}"],
+              "path": ["notifications", "listener", "ticket-created"]
+            },
+            "description": "Triggered when a support ticket is created.\nCalls NotificationListener.notifyTicketCreated()\n\nIntegration endpoint for tickets module"
+          },
+          "response": []
+        },
+        {
+          "name": "Notify Ticket Status Changed",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": 1,\n  \"ticketId\": 50,\n  \"newStatus\": \"IN_PROGRESS\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/notifications/listener/ticket-status-changed",
+              "host": ["{{base_url}}"],
+              "path": ["notifications", "listener", "ticket-status-changed"]
+            },
+            "description": "Triggered when ticket status changes.\nCalls NotificationListener.notifyTicketStatusChanged()\n\nIntegration endpoint for tickets module"
+          },
+          "response": []
+        },
+        {
+          "name": "Notify Ticket Commented",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": 1,\n  \"ticketId\": 50,\n  \"commentText\": \"Issue has been identified\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/notifications/listener/ticket-commented",
+              "host": ["{{base_url}}"],
+              "path": ["notifications", "listener", "ticket-commented"]
+            },
+            "description": "Triggered when a comment is added to ticket.\nCalls NotificationListener.notifyTicketCommented()\n\nIntegration endpoint for tickets module"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Set base URL if not already set",
+          "if (!pm.environment.get('base_url')) {",
+          "    pm.environment.set('base_url', 'localhost:8080/api');",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global test setup",
+          "console.log('Testing: ' + pm.request.name);",
+          "console.log('URL: ' + pm.request.url);",
+          "console.log('Status: ' + pm.response.code);"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "localhost:8080/api",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "google_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_email",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_role",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "notification_id",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
