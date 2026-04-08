@@ -1,36 +1,43 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import React from 'react'
+import NavBar from './component/NavBar'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import Home from './pages/Home'
+import AboutUs from './pages/AboutUs'
+import ContactUs from './pages/ContactUs'
+import AdminDashboard from './pages/AdminDashboard'
+import AdminResourcesPage from './pages/AdminResourcesPage'
+import UserResourcesPage from './pages/UserResourcesPage'
+import { useAuth } from './context/AuthContext'
 import BWSidebar from "./layout/BWSidebar";
 import BWCreateBooking from "./pages/BWCreateBooking";
 import BWMyBookings from "./pages/BWMyBookings";
 
-function BWDashboard() {
-  return (
-    <div className="bg-white rounded-2xl shadow-md p-8">
-      <h2 className="text-3xl font-bold text-[var(--deep-teal)] mb-4">
-        Booking Workflow Dashboard
-      </h2>
-      <p className="text-slate-600">
-        Welcome to the Smart Campus booking workflow module.
-      </p>
-    </div>
-  );
-}
+const App = () => {
+  
 
-function App() {
   return (
-    <BrowserRouter>
-      <div className="flex min-h-screen bg-[var(--surface)]">
-        <BWSidebar />
-        <main className="flex-1 p-8">
-          <Routes>
-            <Route path="/" element={<BWDashboard />} />
-            <Route path="/bw-create-booking" element={<BWCreateBooking />} />
-            <Route path="/bw-my-bookings" element={<BWMyBookings />} />
-          </Routes>
-        </main>
+    <div>
+      <NavBar />
+      <BWSidebar />
+      <div className='px-6 md:px-16 lg:px-24 xl:px-32'>
+        <Routes>
+          <Route path='/' element={<Home />} />
+          <Route path="/about" element={<AboutUs />} />
+          
+          {/*<Route path="/resources" element={isAdmin ? <AdminResourcesPage /> : <UserResourcesPage />} />*/}
+          <Route path="/resources" element={<UserResourcesPage />} />
+          <Route path="resourcesadmin" element={<AdminResourcesPage />} />
+          <Route path="about" element={<AboutUs />} />
+          <Route path="/contact" element={<ContactUs />} />
+          <Route path="/admindashboard" element={<AdminDashboard />} />
+          <Route path="/bw" element={<BWDashboard />} />
+          <Route path="/bw-create-booking" element={<BWCreateBooking />} />
+          <Route path="/bw-my-bookings" element={<BWMyBookings />} />
+          
+        </Routes>
       </div>
-    </BrowserRouter>
-  );
+    </div>
+  )
 }
 
-export default App;
+export default App

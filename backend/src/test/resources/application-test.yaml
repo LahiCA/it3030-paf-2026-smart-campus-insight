@@ -1,0 +1,16 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb://localhost:27018/testdb
+
+  mail:
+    host: localhost
+    port: 2525
+
+app:
+  security:
+    jwt:
+      secret: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+    admin-emails: admin@test.com
+  google:
+    client-id: test-client-id
