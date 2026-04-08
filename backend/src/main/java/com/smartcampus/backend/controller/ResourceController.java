@@ -1,8 +1,8 @@
 package com.smartcampus.backend.controller;
 
-import com.smartcampus.backend.model.Resource;
 import com.smartcampus.backend.model.Resource.ResourceStatus;
 import com.smartcampus.backend.model.Resource.ResourceType;
+import com.smartcampus.backend.model.Resource;
 import com.smartcampus.backend.services.ResourceService;
 import com.smartcampus.backend.utils.FileUploadUtil;
 import jakarta.validation.Valid;
@@ -13,12 +13,12 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/resources")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
 public class ResourceController {
 
     private final ResourceService resourceService;
@@ -26,35 +26,36 @@ public class ResourceController {
 
     @GetMapping
     public ResponseEntity<List<Resource>> getAllResources(
-            @RequestParam(required = false) ResourceStatus status,
-            @RequestParam(required = false) ResourceType type,
-            @RequestParam(required = false) String search) {
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String location,
+            @RequestParam(required = false) Integer capacityMin) {
 
-        // 🔍 Search
-        if (search != null && !search.isBlank()) {
-            return ResponseEntity.ok(resourceService.searchResources(search));
+        ResourceStatus statusEnum = null;
+        ResourceType typeEnum = null;
+
+        try {
+            if (status != null && !status.isBlank()) {
+                statusEnum = Arrays.stream(ResourceStatus.values())
+                    .filter(s -> s.name().equalsIgnoreCase(status))
+                    .findFirst()
+                    .orElse(null);
+            }
+
+            if (type != null && !type.isBlank()) {
+                typeEnum = Arrays.stream(ResourceType.values())
+                    .filter(t -> t.name().equalsIgnoreCase(type))
+                    .findFirst()
+                    .orElse(null);
+}
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build(); // invalid enum value
         }
 
-        // ✅ Correct combined filtering
-        if (status != null && type != null) {
-            return ResponseEntity.ok(
-                    resourceService.getResourcesByStatusAndType(status, type)
-            );
-        }
-
-        if (status != null) {
-            return ResponseEntity.ok(
-                    resourceService.getAvailableResources()
-            );
-        }
-
-        if (type != null) {
-            return ResponseEntity.ok(
-                    resourceService.getResourcesByType(type)
-            );
-        }
-
-        return ResponseEntity.ok(resourceService.getAllResources());
+        return ResponseEntity.ok(
+                resourceService.filterResources(statusEnum, typeEnum, search, location, capacityMin)
+        );
     }
 
     @GetMapping("/{id}")

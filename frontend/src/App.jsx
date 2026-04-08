@@ -5,9 +5,14 @@ import Home from './pages/Home'
 import AboutUs from './pages/AboutUs'
 import ContactUs from './pages/ContactUs'
 import AdminDashboard from './pages/AdminDashboard'
-import ResourcesPage from './pages/ResourcesPage'
+import AdminResourcesPage from './pages/AdminResourcesPage'
+import UserResourcesPage from './pages/UserResourcesPage'
+import { useAuth } from './context/AuthContext'
 
 const App = () => {
+  const { user } = useAuth()
+  const isAdmin = user?.role === 'ADMIN' || user?.role === 'STAFF'
+
   return (
     <div>
       <NavBar />
@@ -16,7 +21,10 @@ const App = () => {
           <Route path='/' element={<Home />} />
           <Route path="/about" element={<AboutUs />} />
           
-          <Route path="/resources" element={<ResourcesPage />} />
+          {/*<Route path="/resources" element={isAdmin ? <AdminResourcesPage /> : <UserResourcesPage />} />*/}
+          <Route path="/resources" element={<UserResourcesPage />} />
+          <Route path="resourcesadmin" element={<AdminResourcesPage />} />
+          <Route path="about" element={<AboutUs />} />
           <Route path="/contact" element={<ContactUs />} />
           <Route path="/admindashboard" element={<AdminDashboard />} />
         </Routes>

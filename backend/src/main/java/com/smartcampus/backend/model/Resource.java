@@ -1,11 +1,14 @@
 package com.smartcampus.backend.model;
 
+import com.smartcampus.backend.model.Resource.ResourceStatus;
+import com.smartcampus.backend.model.Resource.ResourceType;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Document(collection = "resources")
 @Data
@@ -29,11 +32,14 @@ public class Resource {
     private int capacity;
 
     @Builder.Default
-    private ResourceStatus status = ResourceStatus.ACTIVE;
+    private ResourceStatus status = ResourceStatus.AVAILABLE;
 
     private String description;
 
     private String imageUrl;
+
+    private LocalTime availableFrom;
+    private LocalTime availableTo;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -49,10 +55,10 @@ public class Resource {
     }
 
     public enum ResourceType {
-        LECTURE_HALL, LAB, MEETING_ROOM, SPORTS, STUDY_ROOM, AUDITORIUM, OTHER
+        LECTURE_HALL, LAB, MEETING_ROOM, EQUIPMENT, SPORTS, STUDY_ROOM, AUDITORIUM, OTHER
     }
 
     public enum ResourceStatus {
-        ACTIVE, OUT_OF_SERVICE, OCCUPIED, MAINTENANCE, RETIRED
+        AVAILABLE, OUT_OF_SERVICE, OCCUPIED, MAINTENANCE, RETIRED
     }
 }

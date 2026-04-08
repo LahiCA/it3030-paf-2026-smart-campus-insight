@@ -3,8 +3,13 @@ import axios from 'axios'
 const BASE = '/api/resources'
 
 // GET all — with optional filters
-export const getResources = (params = {}) =>
-  axios.get(BASE, { params })
+export const getResources = (params = {}) => {
+  // Filter out empty values to prevent sending empty strings to backend
+  const filteredParams = Object.fromEntries(
+    Object.entries(params).filter(([_, value]) => value !== '' && value !== null && value !== undefined)
+  )
+  return axios.get(BASE, { params: filteredParams })
+}
 
 // GET single
 export const getResourceById = (id) =>

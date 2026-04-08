@@ -4,9 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smartcampus.backend.model.Resource;
 import com.smartcampus.backend.model.Resource.ResourceStatus;
 import com.smartcampus.backend.model.Resource.ResourceType;
-import com.smartcampus.backend.repo.BookingRepository;
+
 import com.smartcampus.backend.repo.ResourceRepository;
-import com.smartcampus.backend.repo.UserRepository;
+
 import com.smartcampus.backend.services.ResourceService;
 import com.smartcampus.backend.utils.FileUploadUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,11 +48,11 @@ class ResourceControllerTest {
     @MockBean
     private ResourceRepository resourceRepository;
 
-    @MockBean
-    private BookingRepository bookingRepository;
+    // @MockBean
+    // private BookingRepository bookingRepository;
 
-    @MockBean
-    private UserRepository userRepository;
+    // @MockBean
+    // private UserRepository userRepository;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -67,7 +67,7 @@ class ResourceControllerTest {
         resource.setType(ResourceType.LAB);
         resource.setLocation("Block A");
         resource.setCapacity(30);
-        resource.setStatus(ResourceStatus.ACTIVE);
+        resource.setStatus(ResourceStatus.AVAILABLE);
     }
 
     @Test
@@ -105,7 +105,7 @@ class ResourceControllerTest {
                         .param("type", "LAB")
                         .param("location", "Block A")
                         .param("capacity", "30")
-                        .param("status", "ACTIVE")
+                        .param("status", "AVAILABLE")
                         .with(csrf()))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.name").value("Test Lab"));
@@ -124,7 +124,7 @@ class ResourceControllerTest {
                         .param("type", "LAB")
                         .param("location", "Block A")
                         .param("capacity", "30")
-                        .param("status", "ACTIVE")
+                        .param("status", "AVAILABLE")
                         .with(request -> {
                             request.setMethod("PUT");
                             return request;

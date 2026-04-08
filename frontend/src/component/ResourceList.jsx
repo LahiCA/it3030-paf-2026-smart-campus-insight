@@ -1,57 +1,89 @@
 import React from 'react'
-import { Building2, MapPin, Users, Pencil, Trash2 } from 'lucide-react'
+import { Building2, MapPin, Users, Clock, Pencil, Trash2 } from 'lucide-react'
 
 const statusBadge = {
-  AVAILABLE:   'badge-green',
-  OCCUPIED:    'badge-yellow',
-  MAINTENANCE: 'badge-orange',
-  RETIRED:     'badge-gray',
+  AVAILABLE:      'bg-green-50 text-green-800',
+  OCCUPIED:       'bg-amber-50 text-amber-800',
+  MAINTENANCE:    'bg-orange-50 text-orange-800',
+  OUT_OF_SERVICE: 'bg-red-50 text-red-800',
+  RETIRED:        'bg-gray-100 text-gray-600',
 }
 
-export default function ResourceList({ resources, onEdit, onDelete, canManage }) {
-  if (!resources.length) {
-    return (
-      <div className="empty-state">
-        <Building2 size={44} />
-        <h3>No resources found</h3>
-        <p>Add your first campus resource to get started.</p>
-      </div>
-    )
-  }
+export default function ResourceCard({ resource, onEdit, onDelete, canManage }) {
+  if (!resource) return null
 
   return (
-    <div className="resource-grid">
-      {resources.map(r => (
-        <div className="resource-card" key={r.id}>
-          <div className="resource-card-img">
-            <Building2 size={40} />
-          </div>
-          <div className="resource-card-body">
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:8 }}>
-              <div className="resource-card-title">{r.name}</div>
-              <span className={`badge ${statusBadge[r.status]||'badge-gray'}`}>{r.status}</span>
-            </div>
-            <div className="resource-card-meta">
-              <div><MapPin size={11}/> {r.location}</div>
-              <div><Users size={11}/> Capacity: {r.capacity}</div>
-            </div>
-            {r.description && (
-              <p style={{ fontSize:12, color:'var(--text-3)', marginTop:8, lineHeight:1.5 }}>
-                {r.description.length > 80 ? r.description.slice(0,80)+'…' : r.description}
-              </p>
-            )}
-            <div className="resource-card-footer">
-              <span className="type-chip">{r.type.replace('_',' ')}</span>
-              {canManage && (
-                <div style={{ display:'flex', gap:6 }}>
-                  <button className="btn btn-sm btn-secondary btn-icon" onClick={()=>onEdit(r)}><Pencil size={12}/></button>
-                  <button className="btn btn-sm btn-danger   btn-icon" onClick={()=>onDelete(r.id)}><Trash2 size={12}/></button>
-                </div>
-              )}
-            </div>
-          </div>
+    <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden flex flex-col">
+
+      {/* IMAGE */}
+      <div className="h-36 bg-gray-50 flex items-center justify-center">
+        {resource.imageUrl
+          ? <img src={resource.imageUrl} alt="" className="w-full h-full object-cover" />
+          : <Building2 size={36} className="text-gray-300" />
+        }
+      </div>
+
+      {/* BODY */}
+      <div className="p-4 flex flex-col gap-3 flex-1">
+
+        {/* HEADER */}
+        <div className="flex items-start justify-between gap-2">
+          <span className="font-medium text-sm leading-snug">{resource.name}</span>
+          <span className={`text-xs font-medium px-2 py-1 rounded-full whitespace-nowrap ${statusBadge[resource.status] || 'bg-gray-100 text-gray-500'}`}>
+            {resource.status.replace(/_/g, ' ')}
+          </span>
         </div>
-      ))}
+
+        {/* META */}
+        <div className="flex flex-col gap-1.5 text-xs text-gray-500">
+          <div className="flex items-center gap-1.5">
+            <MapPin size={11} /> {resource.location}
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Users size={11} /> Capacity: {resource.capacity}
+          </div>
+          {(resource.availableFrom || resource.availableTo) && (
+            <div className="flex items-center gap-1.5">
+              <Clock size={11} />
+              {resource.availableFrom || 'Any'} – {resource.availableTo || 'Any'}
+            </div>
+          )}
+        </div>
+
+        {/* DESCRIPTION */}
+        {resource.description && (
+          <p className="text-xs text-gray-400 leading-relaxed">
+            {resource.description.length > 80
+              ? resource.description.slice(0, 80) + '…'
+              : resource.description}
+          </p>
+        )}
+
+        {/* FOOTER */}
+        <div className="flex items-center justify-between pt-3 border-t border-gray-100 mt-auto">
+          <span className="text-xs text-gray-400 bg-gray-50 border border-gray-100 rounded-lg px-2 py-1">
+            {resource.type.replace(/_/g, ' ')}
+          </span>
+
+          {canManage && (
+            <div className="flex gap-1.5">
+              <button
+                onClick={() => onEdit(resource)}
+                className="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:bg-gray-50 transition-colors"
+              >
+                <Pencil size={12} />
+              </button>
+              <button
+                onClick={() => onDelete(resource.id)}
+                className="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors"
+              >
+                <Trash2 size={12} />
+              </button>
+            </div>
+          )}
+        </div>
+
+      </div>
     </div>
   )
 }

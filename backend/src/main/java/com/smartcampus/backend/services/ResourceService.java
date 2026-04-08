@@ -1,9 +1,9 @@
 package com.smartcampus.backend.services;
 
-import com.smartcampus.backend.exception.ResourceNotFoundException;
-import com.smartcampus.backend.model.Resource;
 import com.smartcampus.backend.model.Resource.ResourceStatus;
 import com.smartcampus.backend.model.Resource.ResourceType;
+import com.smartcampus.backend.exception.ResourceNotFoundException;
+import com.smartcampus.backend.model.Resource;
 import com.smartcampus.backend.repo.ResourceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,7 +26,11 @@ public class ResourceService {
     }
 
     public List<Resource> getAvailableResources() {
-        return resourceRepository.findByStatus(ResourceStatus.ACTIVE);
+        return resourceRepository.findByStatus(ResourceStatus.AVAILABLE);
+    }
+
+    public List<Resource> getResourcesByStatus(ResourceStatus status) {
+        return resourceRepository.findByStatus(status);
     }
 
     public List<Resource> getResourcesByType(ResourceType type) {
@@ -37,8 +41,24 @@ public class ResourceService {
         return resourceRepository.findByStatusAndType(status, type);
     }
 
-    public List<Resource> searchResources(String name) {
-        return resourceRepository.findByNameContainingIgnoreCase(name);
+    public List<Resource> searchResources(String query) {
+        return resourceRepository.findByNameContainingIgnoreCase(query);
+    }
+
+    public List<Resource> filterResources(ResourceStatus status, ResourceType type, String search, String location, Integer minCapacity) {
+        return resourceRepository.findAll().stream()
+                .filter(r -> status == null || r.getStatus() == status)
+                .filter(r -> type == null || r.getType() == type)
+                .filter(r -> minCapacity == null || r.getCapacity() >= minCapacity)
+                .filter(r -> location == null || location.isBlank() || containsIgnoreCase(r.getLocation(), location))
+                .filter(r -> search == null || search.isBlank() || containsIgnoreCase(r.getName(), search)
+                        || containsIgnoreCase(r.getLocation(), search)
+                        || containsIgnoreCase(r.getDescription(), search))
+                .toList();
+    }
+
+    private boolean containsIgnoreCase(String source, String target) {
+        return source != null && target != null && source.toLowerCase().contains(target.toLowerCase());
     }
 
     public Resource createResource(Resource resource) {

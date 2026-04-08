@@ -23,7 +23,7 @@ const NavBar = () => {
             {/* Desktop Menu */}
             <div className="hidden sm:flex items-center gap-8">
                 <NavLink to="/">Home</NavLink>
-                <NavLink to="/catalogue">Catalogue</NavLink>
+                <NavLink to="/resources">Catalogue</NavLink>
                 <NavLink to="/about">About</NavLink>
                 <NavLink to="/contact">Contact</NavLink>
 

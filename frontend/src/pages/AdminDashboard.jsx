@@ -81,7 +81,7 @@ const AdminDashboard = () => {
   const handleToggleStatus = async (id) => {
     const resource = resources.find(r => r.id === id)
     const newStatus =
-      resource.status === "ACTIVE" ? "OUT_OF_SERVICE" : "ACTIVE"
+      resource.status === "AVAILABLE" ? "OUT_OF_SERVICE" : "AVAILABLE"
 
     try {
       await updateResourceStatus(id, newStatus)

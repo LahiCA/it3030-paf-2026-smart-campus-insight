@@ -1,12 +1,19 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 
-const TYPES = ['LECTURE_HALL', 'LAB', 'MEETING_ROOM', 'SPORTS', 'STUDY_ROOM', 'AUDITORIUM', 'OTHER']
-const STATUSES = ['AVAILABLE', 'OCCUPIED', 'MAINTENANCE', 'RETIRED']
+const TYPES = ['LECTURE_HALL', 'LAB', 'MEETING_ROOM', 'EQUIPMENT', 'SPORTS', 'STUDY_ROOM', 'AUDITORIUM', 'OTHER']
+const STATUSES = ['AVAILABLE', 'OUT_OF_SERVICE', 'OCCUPIED', 'MAINTENANCE', 'RETIRED']
 
 export default function ResourceForm({ initial, onSubmit, onCancel }) {
   const [form, setForm] = useState({
-    name: '', type: 'LECTURE_HALL', location: '',
-    capacity: 10, status: 'AVAILABLE', description: '',
+    name: '',
+    type: 'LECTURE_HALL',
+    location: '',
+    capacity: 10,
+    status: 'AVAILABLE', // ✅ FIXED
+    description: '',
+    availableFrom: '',
+    availableTo: '',
+    image: null,
     ...initial,
   })
 
@@ -14,48 +21,99 @@ export default function ResourceForm({ initial, onSubmit, onCancel }) {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    onSubmit({ ...form, capacity: Number(form.capacity) })
+
+    const payload = {
+      ...form,
+      capacity: Number(form.capacity),
+    }
+
+    onSubmit(payload)
   }
 
   return (
     <form onSubmit={handleSubmit}>
       <div className="form-grid">
+
         <div className="form-group">
           <label>Resource Name *</label>
           <input className="form-control" required value={form.name}
-            onChange={e => set('name', e.target.value)} placeholder="e.g. Lecture Hall A" />
+            onChange={e => set('name', e.target.value)} />
         </div>
+
         <div className="form-group">
           <label>Type *</label>
-          <select className="form-control" value={form.type} onChange={e => set('type', e.target.value)}>
-            {TYPES.map(t => <option key={t}>{t.replace('_', ' ')}</option>)}
+          <select className="form-control"
+            value={form.type}
+            onChange={e => set('type', e.target.value)}
+          >
+            {TYPES.map(t => (
+              <option key={t} value={t}>{t.replace(/_/g, ' ')}</option> // ✅ FIXED
+            ))}
           </select>
         </div>
+
         <div className="form-group">
           <label>Location *</label>
           <input className="form-control" required value={form.location}
-            onChange={e => set('location', e.target.value)} placeholder="e.g. Block A, Ground Floor" />
+            onChange={e => set('location', e.target.value)} />
         </div>
+
         <div className="form-group">
           <label>Capacity *</label>
-          <input className="form-control" type="number" required min={1} value={form.capacity}
+          <input className="form-control" type="number" min={1}
+            value={form.capacity}
             onChange={e => set('capacity', e.target.value)} />
         </div>
+
+        <div className="form-group">
+          <label>Available From</label>
+          <input type="time" className="form-control"
+            value={form.availableFrom || ''}
+            onChange={e => set('availableFrom', e.target.value)} />
+        </div>
+
+        <div className="form-group">
+          <label>Available To</label>
+          <input type="time" className="form-control"
+            value={form.availableTo || ''}
+            onChange={e => set('availableTo', e.target.value)} />
+        </div>
+
         <div className="form-group">
           <label>Status</label>
-          <select className="form-control" value={form.status} onChange={e => set('status', e.target.value)}>
-            {STATUSES.map(s => <option key={s}>{s}</option>)}
+          <select className="form-control"
+            value={form.status}
+            onChange={e => set('status', e.target.value)}
+          >
+            {STATUSES.map(s => (
+              <option key={s} value={s}>{s.replace(/_/g, ' ')}</option> // ✅ FIXED
+            ))}
           </select>
         </div>
+
+        {/* ✅ IMAGE UPLOAD */}
+        <div className="form-group">
+          <label>Image</label>
+          <input
+            type="file"
+            accept="image/*"
+            className="form-control"
+            onChange={e => set('image', e.target.files[0])}
+          />
+        </div>
+
       </div>
+
       <div className="form-group">
         <label>Description</label>
-        <textarea className="form-control" rows={3} value={form.description}
-          onChange={e => set('description', e.target.value)} placeholder="Optional description..." />
+        <textarea className="form-control"
+          value={form.description}
+          onChange={e => set('description', e.target.value)} />
       </div>
+
       <div className="form-actions">
-        <button type="button" className="btn btn-secondary" onClick={onCancel}>Cancel</button>
-        <button type="submit" className="btn btn-primary">
+        <button type="button" onClick={onCancel}>Cancel</button>
+        <button type="submit">
           {initial ? 'Update Resource' : 'Create Resource'}
         </button>
       </div>
@@ -63,15 +121,15 @@ export default function ResourceForm({ initial, onSubmit, onCancel }) {
   )
 }
 
-// import React, { useState, useEffect } from 'react'
+// import React, { useState } from 'react'
 
-// const TYPES = ['LECTURE_HALL', 'LAB', 'MEETING_ROOM', 'SPORTS', 'STUDY_ROOM', 'AUDITORIUM', 'OTHER']
-// const STATUSES = ['ACTIVE', 'OUT_OF_SERVICE', 'OCCUPIED', 'MAINTENANCE', 'RETIRED']
+// const TYPES = ['LECTURE_HALL', 'LAB', 'MEETING_ROOM', 'EQUIPMENT', 'SPORTS', 'STUDY_ROOM', 'AUDITORIUM', 'OTHER']
+// const STATUSES = ['AVAILABLE', 'OUT_OF_SERVICE', 'OCCUPIED', 'MAINTENANCE', 'RETIRED']
 
 // export default function ResourceForm({ initial, onSubmit, onCancel }) {
 //   const [form, setForm] = useState({
 //     name: '', type: 'LECTURE_HALL', location: '',
-//     capacity: 10, status: 'AVAILABLE', description: '',
+//     capacity: 10, status: 'ACTIVE', description: '',
 //     ...initial,
 //   })
 
@@ -107,9 +165,19 @@ export default function ResourceForm({ initial, onSubmit, onCancel }) {
 //             onChange={e => set('capacity', e.target.value)} />
 //         </div>
 //         <div className="form-group">
+//           <label>Available from</label>
+//           <input className="form-control" type="time" value={form.availableFrom || ''}
+//             onChange={e => set('availableFrom', e.target.value)} />
+//         </div>
+//         <div className="form-group">
+//           <label>Available to</label>
+//           <input className="form-control" type="time" value={form.availableTo || ''}
+//             onChange={e => set('availableTo', e.target.value)} />
+//         </div>
+//         <div className="form-group">
 //           <label>Status</label>
 //           <select className="form-control" value={form.status} onChange={e => set('status', e.target.value)}>
-//             {STATUSES.map(s => <option key={s}>{s}</option>)}
+//             {STATUSES.map(s => <option key={s}>{s.replace(/_/g, ' ')}</option>)}
 //           </select>
 //         </div>
 //       </div>
@@ -127,3 +195,68 @@ export default function ResourceForm({ initial, onSubmit, onCancel }) {
 //     </form>
 //   )
 // }
+
+// // import React, { useState, useEffect } from 'react'
+
+// // const TYPES = ['LECTURE_HALL', 'LAB', 'MEETING_ROOM', 'SPORTS', 'STUDY_ROOM', 'AUDITORIUM', 'OTHER']
+// // const STATUSES = ['ACTIVE', 'OUT_OF_SERVICE', 'OCCUPIED', 'MAINTENANCE', 'RETIRED']
+
+// // export default function ResourceForm({ initial, onSubmit, onCancel }) {
+// //   const [form, setForm] = useState({
+// //     name: '', type: 'LECTURE_HALL', location: '',
+// //     capacity: 10, status: 'AVAILABLE', description: '',
+// //     ...initial,
+// //   })
+
+// //   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
+
+// //   const handleSubmit = (e) => {
+// //     e.preventDefault()
+// //     onSubmit({ ...form, capacity: Number(form.capacity) })
+// //   }
+
+// //   return (
+// //     <form onSubmit={handleSubmit}>
+// //       <div className="form-grid">
+// //         <div className="form-group">
+// //           <label>Resource Name *</label>
+// //           <input className="form-control" required value={form.name}
+// //             onChange={e => set('name', e.target.value)} placeholder="e.g. Lecture Hall A" />
+// //         </div>
+// //         <div className="form-group">
+// //           <label>Type *</label>
+// //           <select className="form-control" value={form.type} onChange={e => set('type', e.target.value)}>
+// //             {TYPES.map(t => <option key={t}>{t.replace('_', ' ')}</option>)}
+// //           </select>
+// //         </div>
+// //         <div className="form-group">
+// //           <label>Location *</label>
+// //           <input className="form-control" required value={form.location}
+// //             onChange={e => set('location', e.target.value)} placeholder="e.g. Block A, Ground Floor" />
+// //         </div>
+// //         <div className="form-group">
+// //           <label>Capacity *</label>
+// //           <input className="form-control" type="number" required min={1} value={form.capacity}
+// //             onChange={e => set('capacity', e.target.value)} />
+// //         </div>
+// //         <div className="form-group">
+// //           <label>Status</label>
+// //           <select className="form-control" value={form.status} onChange={e => set('status', e.target.value)}>
+// //             {STATUSES.map(s => <option key={s}>{s}</option>)}
+// //           </select>
+// //         </div>
+// //       </div>
+// //       <div className="form-group">
+// //         <label>Description</label>
+// //         <textarea className="form-control" rows={3} value={form.description}
+// //           onChange={e => set('description', e.target.value)} placeholder="Optional description..." />
+// //       </div>
+// //       <div className="form-actions">
+// //         <button type="button" className="btn btn-secondary" onClick={onCancel}>Cancel</button>
+// //         <button type="submit" className="btn btn-primary">
+// //           {initial ? 'Update Resource' : 'Create Resource'}
+// //         </button>
+// //       </div>
+// //     </form>
+// //   )
+// // }
