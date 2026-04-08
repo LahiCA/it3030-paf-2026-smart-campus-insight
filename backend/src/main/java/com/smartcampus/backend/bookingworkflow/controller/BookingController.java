@@ -57,4 +57,9 @@ public class BookingController {
                           @RequestBody BookingCancelDto dto) {
         return service.cancelBooking(id, dto);
     }
+
+    @PatchMapping("/{id}/checkin")
+    public Booking checkIn(@PathVariable String id) {
+        return service.checkInBooking(id);
+    }
 }
