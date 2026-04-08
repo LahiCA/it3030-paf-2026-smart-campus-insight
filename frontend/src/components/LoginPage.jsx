@@ -45,7 +45,28 @@ const LoginPage = () => {
       </div>
 
       <main className="login-shell">
-        {/* LEFT COLUMN: LOGIN CARD */}
+        <div className="login-shell__container">
+        {/* LEFT COLUMN: FEATURES SHOWCASE */}
+        <section className="features-panel">
+          <div className="features-panel__header">
+            <h3>Key Features</h3>
+            <p>Designed to simplify modern campus operations end to end.</p>
+          </div>
+
+          <div className="features-grid">
+            {FEATURES.map((feature) => (
+              <article className="feature-card" key={feature.title}>
+                <div className="feature-card__icon">{feature.icon}</div>
+                <div className="feature-card__content">
+                  <h4>{feature.title}</h4>
+                  <p>{feature.description}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        {/* RIGHT COLUMN: LOGIN CARD */}
         <section className="login-card">
           <div className="login-card__glow"></div>
 
@@ -115,26 +136,7 @@ const LoginPage = () => {
             </p>
           </footer>
         </section>
-
-        {/* RIGHT COLUMN: FEATURES SHOWCASE */}
-        <section className="features-panel">
-          <div className="features-panel__header">
-            <h3>Key Features</h3>
-            <p>Designed to simplify modern campus operations end to end.</p>
-          </div>
-
-          <div className="features-grid">
-            {FEATURES.map((feature) => (
-              <article className="feature-card" key={feature.title}>
-                <div className="feature-card__icon">{feature.icon}</div>
-                <div className="feature-card__content">
-                  <h4>{feature.title}</h4>
-                  <p>{feature.description}</p>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
+        </div>
       </main>
     </div>
   );
