@@ -29,14 +29,14 @@ Full-stack reference implementation for IT3030 PAF (Spring Boot REST API + React
 
 4. Public health check: `GET /api/public/health`
 
-## Frontend (`frontend/`)
+## Frontend (`smart-campus-frontend/`)
 
-1. Copy `frontend/.env.example` to `frontend/.env` and set `VITE_GOOGLE_CLIENT_ID` to your Google OAuth client ID (must match `app.google.client-id` on the server).
+1. Copy `smart-campus-frontend/.env.example` to `smart-campus-frontend/.env` and set `VITE_GOOGLE_CLIENT_ID` to your Google OAuth client ID (must match `app.google.client-id` on the server).
 
 2. Install and run:
 
    ```bash
-   cd frontend
+   cd smart-campus-frontend
    npm install
    npm run dev
    ```
