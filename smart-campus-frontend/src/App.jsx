@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, NavLink, useLocation } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { GOOGLE_CLIENT_ID, ROUTES } from './utils/constants';
 
@@ -8,6 +8,7 @@ import { NotificationProvider } from './context/NotificationContext';
 
 import PrivateRoute from './components/PrivateRouteTailwind';
 import Layout from './components/Layout';
+import Sidebar from './components/Sidebar';
 
 // Existing system pages
 import LoginPage from './components/LoginPageTailwind';
@@ -47,10 +48,50 @@ const RoleDashboard = () => {
 };
 
 // Layout wrapper for booking system
+const BookingTabs = () => {
+  const { user, isAdmin } = useAuth();
+  
+  const tabs = [
+    { name: 'Create Booking', path: '/bw-create-booking' },
+    { name: 'My Bookings', path: '/bw-my-bookings' },
+  ];
+  if (isAdmin()) {
+    tabs.push({ name: 'Admin Bookings', path: '/bw-admin-bookings' });
+  }
+
+  return (
+    <div className="mb-6 flex space-x-4 border-b border-slate-200">
+      {tabs.map((tab) => (
+        <NavLink
+          key={tab.path}
+          to={tab.path}
+          className={({ isActive }) =>
+            `pb-3 text-sm font-medium border-b-2 transition-colors ${
+              isActive
+                ? 'border-teal-500 text-teal-600'
+                : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+            }`
+          }
+        >
+          {tab.name}
+        </NavLink>
+      ))}
+    </div>
+  );
+};
+
 const BookingLayout = ({ children }) => (
-  <div className="flex min-h-screen bg-[var(--surface)]">
-    <BWSidebar />
-    <main className="flex-1 p-8">{children}</main>
+  <div className="flex h-screen overflow-hidden bg-slate-50 font-['Poppins',sans-serif]">
+    <Sidebar />
+    <div className="flex flex-1 flex-col overflow-hidden">
+      <main className="scrollbar-ui flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-8">
+        <div className="mx-auto max-w-7xl">
+          <h1 className="text-2xl font-bold text-slate-800 mb-6">Facility Bookings</h1>
+          <BookingTabs />
+          {children}
+        </div>
+      </main>
+    </div>
   </div>
 );
 
