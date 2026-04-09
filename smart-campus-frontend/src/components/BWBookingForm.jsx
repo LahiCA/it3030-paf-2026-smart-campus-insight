@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import { createBWBooking, getAllBWBookings } from "../api/bwBookingApi";
 import { format, parseISO } from "date-fns";
+import { useAuth } from "../context/AuthContext";
 
 function BWBookingForm() {
+  const { user } = useAuth();
+  
   const [formData, setFormData] = useState({
-    userId: "",
+    userId: user?.displayId || "",
     resourceName: "",
     resourceType: "",
     bookingDate: "",
@@ -57,7 +60,8 @@ function BWBookingForm() {
   const [errorMessage, setErrorMessage] = useState("");
 
   const isValidUserId = (userId) => {
-    return /^USER\d{3}$/.test(userId);
+    // Keep it valid as long as it exists (we trust displayId from auth context)
+    return userId && userId.trim() !== "";
   };
 
   const handleChange = (e) => {
@@ -82,7 +86,7 @@ function BWBookingForm() {
     setErrorMessage("");
 
     if (!isValidUserId(formData.userId)) {
-      setErrorMessage("Invalid user ID. Use format like USER001");
+      setErrorMessage("Unable to verify User ID. Please try logging in again.");
       return;
     }
 
@@ -153,7 +157,7 @@ function BWBookingForm() {
       setSuccessMessage(`Booking created successfully. ID: ${response.data.id}`);
 
       setFormData({
-        userId: "",
+        userId: user?.displayId || "",
         resourceName: "",
         resourceType: "",
         bookingDate: "",
@@ -205,14 +209,13 @@ function BWBookingForm() {
               type="text"
               id="userId"
               name="userId"
-              placeholder="e.g., USER001"
               value={formData.userId}
-              onChange={handleChange}
-              className="w-full border border-slate-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
+              className="w-full border border-slate-300 rounded-lg p-3 bg-slate-100 text-slate-600 cursor-not-allowed focus:outline-none transition"
               required
+              readOnly
             />
-            <p className="text-xs text-slate-400 mt-1">
-              Example: USER001
+            <p className="text-xs text-teal-600 mt-1 font-medium">
+              Automatically fetched from your profile
             </p>
           </div>
 
