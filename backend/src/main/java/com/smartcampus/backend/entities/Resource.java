@@ -1,7 +1,6 @@
 package com.smartcampus.backend.entities;
 
-import com.smartcampus.backend.entities.Resource.ResourceStatus;
-import com.smartcampus.backend.entities.Resource.ResourceType;
+
 import jakarta.validation.constraints.*;
 import lombok.*;
 import org.springframework.data.annotation.Id;
