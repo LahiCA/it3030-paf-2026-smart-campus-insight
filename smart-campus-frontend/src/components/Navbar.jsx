@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaUser, FaSignOutAlt, FaCog, FaChevronDown, FaGraduationCap } from 'react-icons/fa';
-import { useAuth } from '../../../frontend/src/context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import NotificationBell from './NotificationBellTailwind';
 
 const Navbar = () => {
