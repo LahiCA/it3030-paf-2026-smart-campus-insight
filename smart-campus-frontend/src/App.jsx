@@ -110,6 +110,8 @@ function App() {
             <Navbar />
 
             <Routes>
+              {/* Root redirect */}
+              <Route path="/" element={<Navigate to={ROUTES.LOGIN} replace />} />
 
               {/* PUBLIC ROUTES */}
               <Route path={ROUTES.LOGIN} element={<LoginPage />} />
@@ -208,7 +210,7 @@ function App() {
                 path="/tickets"
                 element={
                   <PrivateRoute
-                    element={<BookingLayout><TicketDashboardPage /></BookingLayout>}
+                    element={<Layout><TicketDashboardPage /></Layout>}
                   />
                 }
               />
@@ -217,7 +219,7 @@ function App() {
                 path="/tickets/:id"
                 element={
                   <PrivateRoute
-                    element={<BookingLayout><TicketDetailsPage /></BookingLayout>}
+                    element={<Layout><TicketDetailsPage /></Layout>}
                   />
                 }
               />
@@ -226,7 +228,7 @@ function App() {
                 path="/create"
                 element={
                   <PrivateRoute
-                    element={<BookingLayout><CreateTicketPage /></BookingLayout>}
+                    element={<Layout><CreateTicketPage /></Layout>}
                   />
                 }
               />

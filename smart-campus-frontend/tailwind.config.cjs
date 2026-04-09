@@ -2,7 +2,7 @@
 module.exports = {
   content: [
     "./index.html",
-    "./src/**/*.{js,jsx,ts,tsx}", // ← include all React files
+    "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {},
