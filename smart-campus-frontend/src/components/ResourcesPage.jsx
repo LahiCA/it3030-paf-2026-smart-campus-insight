@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useAuth } from '../../../frontend/src/context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import {
   getAllResources,
   createResource,

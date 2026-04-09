@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FaBell } from 'react-icons/fa';
-import { useNotifications } from '../../../frontend/src/context/NotificationContext';
+import { useNotifications } from '../context/NotificationContext';
 
 const NotificationBellTailwind = () => {
   const { notifications, unreadCount, markAsRead, deleteNotification } = useNotifications();

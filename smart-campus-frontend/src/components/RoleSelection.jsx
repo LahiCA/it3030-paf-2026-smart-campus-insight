@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaGraduationCap, FaChalkboardTeacher } from 'react-icons/fa';
-import { useAuth } from '../../../frontend/src/context/AuthContext';
-import { completeProfile } from '../../../frontend/src/services/auth';
+import { useAuth } from '../context/AuthContext';
+import { completeProfile } from '../services/auth';
 import './RoleSelection.css';
 
 const RoleSelection = () => {

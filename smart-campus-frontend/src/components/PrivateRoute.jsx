@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../../../frontend/src/context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 
 /**
  * PrivateRoute Component
