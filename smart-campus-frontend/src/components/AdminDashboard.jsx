@@ -105,7 +105,7 @@ const AdminDashboard = () => {
                     label="Pending Bookings"
                     value="1"
                     colorClass="bg-amber-50"
-                    onClick={() => navigate('/bookings')}
+                    onClick={() => navigate('/bw-admin-bookings')}
                 />
                 <StatCard
                     icon={<FaTicketAlt size={22} className="text-red-400" />}
@@ -138,7 +138,7 @@ const AdminDashboard = () => {
                     iconBg="bg-blue-50"
                     title="Bookings"
                     description="Review, approve, or reject facility booking requests"
-                    onClick={() => navigate('/bookings')}
+                    onClick={() => navigate('/bw-admin-bookings')}
                 />
                 <ActionCard
                     icon={<FaTicketAlt size={26} className="text-orange-500" />}
