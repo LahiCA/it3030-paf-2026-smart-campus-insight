@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
 import { Search } from 'lucide-react'
 import resourceService from '../services/resourceService'
-import ResourceCard from '../component/ResourceList'
+import ResourceCard from '../components/ResourceList'
 
 const TYPES = ['LECTURE_HALL','LAB','MEETING_ROOM','EQUIPMENT','SPORTS','STUDY_ROOM','AUDITORIUM','OTHER']
 const STATUSES = ['AVAILABLE','OUT_OF_SERVICE','OCCUPIED','MAINTENANCE','RETIRED']

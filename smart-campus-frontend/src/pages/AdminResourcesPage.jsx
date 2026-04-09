@@ -3,8 +3,8 @@ import toast from 'react-hot-toast'
 import { Plus, Search } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import resourceService from '../services/resourceService'
-import ResourceCard from '../component/ResourceList'
-import ResourceForm from '../component/ResourceForm'
+import ResourceCard from '../components/ResourceList'
+import ResourceForm from '../components/ResourceForm'
 
 const TYPES = ['LECTURE_HALL','LAB','MEETING_ROOM','EQUIPMENT','SPORTS','STUDY_ROOM','AUDITORIUM','OTHER']
 const STATUSES = ['AVAILABLE','OUT_OF_SERVICE','OCCUPIED','MAINTENANCE','RETIRED']
@@ -22,7 +22,8 @@ export default function AdminResourcesPage() {
   const [showModal, setShowModal] = useState(false)
   const [editing, setEditing] = useState(null)
 
-  const canManage = user?.role === 'ADMIN' || user?.role === 'STAFF'
+  const canManage = user?.role === 'ADMIN'
+ // const canManage = true // For testing, replace with actual auth check
 
   // Load resources from backend
   const load = async () => {

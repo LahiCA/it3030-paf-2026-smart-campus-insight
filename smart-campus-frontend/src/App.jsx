@@ -34,6 +34,10 @@ import CreateTicketPage from './pages/CreateTicketPage';
 import TicketDashboardPage from './pages/TicketDashboardPage';
 import TicketDetailsPage from './pages/TicketDetailsPage';
 
+//Resource management system
+import AdminResourcesPage from './pages/AdminResourcesPage';
+import UserResourcesPage from './pages/UserResourcesPage';
+
 // Role-based dashboard
 const RoleDashboard = () => {
   const { user } = useAuth();

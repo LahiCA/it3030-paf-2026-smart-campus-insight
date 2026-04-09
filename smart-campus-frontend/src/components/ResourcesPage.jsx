@@ -22,8 +22,9 @@ const RESOURCE_TYPES = [
   'LAB',
   'MEETING_ROOM',
   'SPORTS',
-  'LIBRARY',
+  'STUDY_ROOM',
   'AUDITORIUM',
+  'EQUIPMENT',
   'OTHER',
 ];
 
@@ -34,8 +35,9 @@ const TYPE_LABELS = {
   LAB: 'Lab',
   MEETING_ROOM: 'Meeting Room',
   SPORTS: 'Sports',
-  LIBRARY: 'Library',
+  STUDY_ROOM: 'Study Room',
   AUDITORIUM: 'Auditorium',
+  EQUIPMENT: 'Equipment',
   OTHER: 'Other',
 };
 
