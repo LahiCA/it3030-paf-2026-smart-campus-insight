@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
+import  ResourceAnalytics from '../components/ResourceAnalytics'
 import {
   getAllResources,
   createResource,
@@ -200,6 +201,7 @@ const ResourcesPageTailwind = () => {
           <h1 className="text-3xl font-bold text-slate-900">Campus Resources</h1>
           <p className="mt-1 text-sm text-slate-500">Manage all campus facilities and assets</p>
         </div>
+        <ResourceAnalytics resources={resources} isAdmin={isAdmin()} />
         {isAdmin() && (
           <button
             onClick={openCreateModal}
