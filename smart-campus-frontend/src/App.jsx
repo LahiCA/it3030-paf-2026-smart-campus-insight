@@ -12,6 +12,11 @@ import BWSidebar from "./layout/BWSidebar";
 import BWCreateBooking from "./pages/BWCreateBooking";
 import BWDashboard from "./pages/BWDashboard";
 import BWMyBookings from "./pages/BWMyBookings";
+import BWAdminBookingList from "./pages/BWAdminBookingList";
+import CreateTicketPage from "./pages/CreateTicketPage";
+import TicketDashboardPage from "./pages/TicketDashboardPage";
+import TicketDetailsPage from "./pages/TicketDetailsPage";
+import Navbar from "./layout/Navbar";
 
 const App = () => {
   
@@ -35,7 +40,17 @@ const App = () => {
           <Route path="/bw-create-booking" element={<BWCreateBooking />} />
           <Route path="/bw-my-bookings" element={<BWMyBookings />} />
           
-        </Routes>
+   
+
+            <Route path="/bw-create-booking" element={<BWCreateBooking />} />
+            <Route path="/bw-my-bookings" element={<BWMyBookings />} />
+            <Route path="/bw-admin-bookings" element={<BWAdminBookingList />} />
+
+            <Route path="/tickets" element={<TicketDashboardPage />} />
+            <Route path="/tickets/:id" element={<TicketDetailsPage />} />
+            <Route path="/create" element={<CreateTicketPage />} />
+          </Routes>
+        </main>
       </div>
     </div>
   )

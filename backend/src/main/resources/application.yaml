@@ -1,9 +1,45 @@
 spring:
   application:
     name: backend
-  data:
-    mongodb:
-      uri: mongodb+srv://admin_2001:admin1234@cluster0.ceiyn.mongodb.net/smart_campus
+
+  # MongoDB Atlas Configuration
+  mongodb:
+    uri: mongodb+srv://admin:Xe6YIrDpEELZjamW@cluster0.k423yz7.mongodb.net/smartcampus?retryWrites=true&w=majority
 
 server:
   port: 8080
+
+# ============================================
+# JWT Configuration
+# ============================================
+jwt:
+  # IMPORTANT: In production, use a strong random secret (at least 32 characters)
+  # Generate one with: openssl rand -hex 32
+  # NEVER commit actual secrets to Git! Use environment variables instead.
+  secret: ${JWT_SECRET:your-secret-key-change-in-production-at-least-32-characters}
+
+# ============================================
+# Google OAuth 2.0 Configuration
+# ============================================
+google:
+  client:
+    # Get this from Google Cloud Console
+    # https://console.cloud.google.com/apis/credentials
+    id: ${GOOGLE_CLIENT_ID:539537632818-jqoqt2naq9u9t07j1h6nai6c3hvpgqb0.apps.googleusercontent.com}
+
+# ============================================
+# Admin Configuration
+# ============================================
+admin:
+  # Comma-separated list of emails that should be admin
+  # Example: "admin@sliit.edu,manager@sliit.edu"
+  # If empty, only the first registered user becomes admin
+  emails: ${ADMIN_EMAILS:Insightspark12@gmail.com}
+
+# ============================================
+# Logging Configuration
+# ============================================
+logging:
+  level:
+    root: INFO
+    com.smartcampus: DEBUG

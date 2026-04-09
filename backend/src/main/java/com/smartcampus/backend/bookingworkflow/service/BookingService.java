@@ -34,7 +34,7 @@ public class BookingService {
         }
 
         List<Booking> existingBookings =
-                repository.findByResourceIdAndBookingDate(dto.getResourceId(), date);
+                repository.findByResourceNameAndBookingDate(dto.getResourceName(), date);
 
         boolean hasConflict = existingBookings.stream()
                 .filter(b -> b.getStatus() != BookingStatus.REJECTED && b.getStatus() != BookingStatus.CANCELLED)
@@ -45,7 +45,6 @@ public class BookingService {
         }
 
         Booking booking = Booking.builder()
-                .resourceId(dto.getResourceId())
                 .userId(dto.getUserId())
                 .resourceName(dto.getResourceName())
                 .resourceType(dto.getResourceType())
@@ -111,6 +110,19 @@ public class BookingService {
 
         booking.setStatus(BookingStatus.CANCELLED);
         booking.setCancelReason(dto.getReason());
+        booking.setUpdatedAt(LocalDateTime.now());
+
+        return repository.save(booking);
+    }
+
+    public Booking checkInBooking(String id) {
+        Booking booking = getBookingById(id);
+
+        if (booking.getStatus() != BookingStatus.APPROVED) {
+            throw new InvalidBookingException("Only approved bookings can be checked in");
+        }
+
+        booking.setStatus(BookingStatus.CHECKED_IN);
         booking.setUpdatedAt(LocalDateTime.now());
 
         return repository.save(booking);

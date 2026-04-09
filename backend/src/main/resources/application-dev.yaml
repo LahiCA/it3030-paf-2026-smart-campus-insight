@@ -1,0 +1,24 @@
+spring:
+  # MongoDB Atlas Configuration for development
+  mongodb:
+    uri: mongodb+srv://admin:Xe6YIrDpEELZjamW@cluster0.k423yz7.mongodb.net/smartcampus-dev?retryWrites=true&w=majority
+
+jwt:
+  # For development, use a simple secret (in production, use env var)
+  secret: dev-secret-key-at-least-32-characters-long-xxxxx
+
+google:
+  client:
+    # Get this from Google Cloud Console
+    # For development, you can test with a specific client ID
+    id: YOUR_DEV_GOOGLE_CLIENT_ID
+
+admin:
+  # For development, make this your test account admin
+  emails: student@example.com,admin@example.com
+
+logging:
+  level:
+    root: INFO
+    com.smartcampus: DEBUG
+    org.springframework.security: DEBUG

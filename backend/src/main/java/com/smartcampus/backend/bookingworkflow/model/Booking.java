@@ -23,9 +23,6 @@ public class Booking {
     @Id
     private String id;
 
-    @NotBlank(message = "Resource ID is required")
-    private String resourceId;
-
     @NotBlank(message = "User ID is required")
     private String userId;
 
