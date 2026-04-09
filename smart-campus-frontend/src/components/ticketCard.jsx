@@ -39,7 +39,7 @@ export default function TicketCard({ ticket }) {
 
             <div className="mt-5 flex items-center justify-between text-sm">
                 <div className="text-slate-500">
-                    Reported by <span className="font-semibold text-slate-700">{ticket.userId}</span>
+                    Reported by <span className="font-semibold text-slate-700">{ticket.userDisplayId || ticket.userId}</span>
                 </div>
                 <Link
                     to={`/tickets/${ticket.id}`}

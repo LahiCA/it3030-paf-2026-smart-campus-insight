@@ -18,7 +18,7 @@ import NotificationPreferences from './components/NotificationPreferences';
 import NotificationManagementPage from './components/NotificationManagementPage';
 
 import LecturerDashboard from './components/LecturerDashboard';
-import TechnicianDashboard from './components/TechnicianDashboard';
+import TechnicianDashboard from './components/TechnicianDashboardTailwind';
 import AdminDashboard from './components/AdminDashboard';
 import AdminPanel from './components/AdminPanelTailwind';
 import ResourcesPage from './components/ResourcesPageTailwind';
@@ -50,7 +50,7 @@ const RoleDashboard = () => {
 // Layout wrapper for booking system
 const BookingTabs = () => {
   const { user, isAdmin } = useAuth();
-  
+
   const tabs = [
     { name: 'Create Booking', path: '/bw-create-booking' },
     { name: 'My Bookings', path: '/bw-my-bookings' },
@@ -66,10 +66,9 @@ const BookingTabs = () => {
           key={tab.path}
           to={tab.path}
           className={({ isActive }) =>
-            `pb-3 text-sm font-medium border-b-2 transition-colors ${
-              isActive
-                ? 'border-teal-500 text-teal-600'
-                : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+            `pb-3 text-sm font-medium border-b-2 transition-colors ${isActive
+              ? 'border-teal-500 text-teal-600'
+              : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
             }`
           }
         >
@@ -88,6 +87,19 @@ const BookingLayout = ({ children }) => (
         <div className="mx-auto max-w-7xl">
           <h1 className="text-2xl font-bold text-slate-800 mb-6">Facility Bookings</h1>
           <BookingTabs />
+          {children}
+        </div>
+      </main>
+    </div>
+  </div>
+);
+
+const TicketLayout = ({ children }) => (
+  <div className="flex h-screen overflow-hidden bg-slate-50 font-['Poppins',sans-serif]">
+    <Sidebar />
+    <div className="flex flex-1 flex-col overflow-hidden">
+      <main className="scrollbar-ui flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-8">
+        <div className="mx-auto max-w-7xl">
           {children}
         </div>
       </main>
@@ -208,7 +220,7 @@ function App() {
                 path="/tickets"
                 element={
                   <PrivateRoute
-                    element={<BookingLayout><TicketDashboardPage /></BookingLayout>}
+                    element={<TicketLayout><TicketDashboardPage /></TicketLayout>}
                   />
                 }
               />
@@ -217,16 +229,16 @@ function App() {
                 path="/tickets/:id"
                 element={
                   <PrivateRoute
-                    element={<BookingLayout><TicketDetailsPage /></BookingLayout>}
+                    element={<TicketLayout><TicketDetailsPage /></TicketLayout>}
                   />
                 }
               />
 
               <Route
-                path="/create"
+                path="/ticket-create"
                 element={
                   <PrivateRoute
-                    element={<BookingLayout><CreateTicketPage /></BookingLayout>}
+                    element={<TicketLayout><CreateTicketPage /></TicketLayout>}
                   />
                 }
               />

@@ -11,7 +11,7 @@ const STATUS_OPTIONS = ["IN_PROGRESS", "RESOLVED", "CLOSED", "REJECTED"];
 export default function TicketDetailsPage() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { role } = getCurrentUser();
+    const { role, displayId } = getCurrentUser();
     const [ticket, setTicket] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -19,7 +19,8 @@ export default function TicketDetailsPage() {
     const [technicianId, setTechnicianId] = useState("");
     const [busy, setBusy] = useState(false);
 
-    const canManageStatus = role === "ADMIN" || role === "TECHNICIAN";
+    const isAssignedTechnician = role === "TECHNICIAN" && ticket?.assignedTo && ticket.assignedTo === displayId;
+    const canManageStatus = role === "ADMIN" || isAssignedTechnician;
     const canAssign = role === "ADMIN";
 
     const loadTicket = async () => {
@@ -43,12 +44,12 @@ export default function TicketDetailsPage() {
     const nextStatuses = useMemo(() => {
         if (!ticket) return [];
         return STATUS_OPTIONS.filter((status) => {
-            if (ticket.status === "OPEN") return status === "IN_PROGRESS" || status === "REJECTED";
-            if (ticket.status === "IN_PROGRESS") return status === "RESOLVED" || status === "REJECTED";
+            if (ticket.status === "OPEN") return status === "IN_PROGRESS" || (role === "ADMIN" && status === "REJECTED");
+            if (ticket.status === "IN_PROGRESS") return status === "RESOLVED" || (role === "ADMIN" && status === "REJECTED");
             if (ticket.status === "RESOLVED") return status === "CLOSED";
             return false;
         });
-    }, [ticket]);
+    }, [role, ticket]);
 
     const handleStatusSubmit = async () => {
         setBusy(true);
@@ -130,7 +131,8 @@ export default function TicketDetailsPage() {
                             </div>
 
                             <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                                <InfoCard label="Reported by" value={ticket.userId} />
+                                <InfoCard label="Reported by" value={ticket.userDisplayId || ticket.userId} />
+                                <InfoCard label="Contact Number" value={ticket.contactNumber || "Not provided"} />
                                 <InfoCard label="Assigned to" value={ticket.assignedTo || "Unassigned"} />
                                 <InfoCard label="Created" value={formatDate(ticket.createdAt)} />
                                 <InfoCard label="Updated" value={formatDate(ticket.updatedAt)} />
@@ -250,17 +252,18 @@ export default function TicketDetailsPage() {
                             <section className="rounded-[2rem] bg-white p-6 shadow-sm">
                                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-600">Admin Control</p>
                                 <h2 className="mt-2 text-2xl font-semibold text-slate-900">Assign technician</h2>
+                                <p className="mt-2 text-sm text-slate-500">Use the technician display ID, for example <span className="font-semibold text-slate-700">TEC0001</span>.</p>
                                 <input
                                     value={technicianId}
                                     onChange={(event) => setTechnicianId(event.target.value)}
-                                    placeholder="tech-001"
+                                    placeholder="TEC0001"
                                     className="mt-5 w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-teal-400"
                                 />
                                 <button
                                     type="button"
                                     onClick={handleAssign}
                                     disabled={busy}
-                                    className="mt-4 w-full rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:bg-slate-300"
+                                    className="mt-4 w-full rounded-full bg-teal-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:bg-slate-300"
                                 >
                                     Assign
                                 </button>

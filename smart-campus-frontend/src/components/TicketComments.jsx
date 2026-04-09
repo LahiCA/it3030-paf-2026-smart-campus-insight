@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { addComment, deleteComment, editComment, getComments, getCurrentUser } from "../api/ticketApi";
 
 export default function TicketComments({ ticketId }) {
-    const { userId } = getCurrentUser();
+    const { userId, displayId } = getCurrentUser();
     const [comments, setComments] = useState([]);
     const [draft, setDraft] = useState("");
     const [editingId, setEditingId] = useState("");
@@ -29,7 +29,7 @@ export default function TicketComments({ ticketId }) {
         setBusy(true);
         setError("");
         try {
-            await addComment(ticketId, { userId, message: draft.trim() });
+            await addComment(ticketId, { userId, userDisplayId: displayId, message: draft.trim() });
             setDraft("");
             await loadComments();
         } catch (apiError) {
@@ -96,7 +96,7 @@ export default function TicketComments({ ticketId }) {
                         <article key={comment.id} className="rounded-3xl border border-slate-200 bg-slate-50 px-5 py-4">
                             <div className="flex items-start justify-between gap-4">
                                 <div>
-                                    <p className="text-sm font-semibold text-slate-900">{comment.userId}</p>
+                                    <p className="text-sm font-semibold text-slate-900">{comment.userDisplayId || comment.userId}</p>
                                     <p className="text-xs text-slate-500">
                                         {comment.updatedAt ? new Date(comment.updatedAt).toLocaleString() : "Just now"}
                                     </p>

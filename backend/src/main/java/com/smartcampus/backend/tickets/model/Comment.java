@@ -22,6 +22,7 @@ public class Comment {
 
     private String ticketId;
     private String userId;
+    private String userDisplayId;
     private String message;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
