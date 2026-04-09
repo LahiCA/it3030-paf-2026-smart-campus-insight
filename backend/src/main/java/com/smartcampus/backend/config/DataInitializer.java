@@ -80,7 +80,7 @@ public class DataInitializer implements CommandLineRunner {
 
                         resourceRepository.save(Resource.builder()
                                         .name("Library Study Room")
-                                        .type(ResourceType.LIBRARY)
+                                        .type(ResourceType.STUDY_ROOM)
                                         .location("Library, Second Floor")
                                         .capacity(20)
                                         .status(ResourceStatus.MAINTENANCE)
