@@ -191,3 +191,17 @@ export const adminDeleteNotification = async (id) => {
     return { success: false, message: error.response?.data?.message || 'Failed to delete notification' };
   }
 };
+
+/**
+ * Send a notification to a specific user (ADMIN only)
+ * Uses POST /api/notifications
+ */
+export const adminSendToUser = async ({ userId, message, type }) => {
+  try {
+    const response = await axiosInstance.post('/notifications', { userId, message, type });
+    return { success: true, notification: response.data };
+  } catch (error) {
+    console.error('Error sending notification to user:', error);
+    return { success: false, message: error.response?.data?.message || 'Failed to send notification' };
+  }
+};

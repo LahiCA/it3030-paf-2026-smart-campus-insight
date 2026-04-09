@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
+import axiosInstance from '../utils/axios-instance';
 import {
     adminGetAllNotifications,
     adminCreateNotification,
     adminUpdateNotification,
     adminDeleteNotification,
+    adminSendToUser,
 } from '../services/notifications';
 
 const TYPE_OPTIONS = [
@@ -42,6 +44,7 @@ const AUDIENCE_COLORS = {
 };
 
 const EMPTY_FORM = { message: '', type: 'GENERAL', targetAudience: 'ALL' };
+const EMPTY_USER_FORM = { userId: '', message: '', type: 'GENERAL' };
 
 const NotificationManagementPage = () => {
     const { user } = useContext(AuthContext);
@@ -68,9 +71,65 @@ const NotificationManagementPage = () => {
     const [deleteTarget, setDeleteTarget] = useState(null);
     const [deleting, setDeleting] = useState(false);
 
+    // Send to specific user
+    const [showUserModal, setShowUserModal] = useState(false);
+    const [userForm, setUserForm] = useState(EMPTY_USER_FORM);
+    const [userFormError, setUserFormError] = useState('');
+    const [sendingToUser, setSendingToUser] = useState(false);
+    const [users, setUsers] = useState([]);
+    const [usersLoading, setUsersLoading] = useState(false);
+
     useEffect(() => {
         fetchNotifications();
+        fetchUsers();
     }, []);
+
+    const fetchUsers = async () => {
+        setUsersLoading(true);
+        try {
+            const res = await axiosInstance.get('/users');
+            setUsers(Array.isArray(res.data) ? res.data : []);
+        } catch (err) {
+            console.error('Failed to fetch users:', err);
+        } finally {
+            setUsersLoading(false);
+        }
+    };
+
+    const openUserModal = () => {
+        setUserForm(EMPTY_USER_FORM);
+        setUserFormError('');
+        setShowUserModal(true);
+    };
+
+    const closeUserModal = () => {
+        setShowUserModal(false);
+        setUserForm(EMPTY_USER_FORM);
+        setUserFormError('');
+    };
+
+    const handleUserFormChange = (e) => {
+        setUserForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    };
+
+    const handleSendToUser = async (e) => {
+        e.preventDefault();
+        setUserFormError('');
+        if (!userForm.userId) { setUserFormError('Please select a user'); return; }
+        if (!userForm.message.trim()) { setUserFormError('Message is required'); return; }
+        setSendingToUser(true);
+        try {
+            const result = await adminSendToUser(userForm);
+            if (result.success) {
+                showSuccess('Notification sent to user!');
+                closeUserModal();
+            } else {
+                setUserFormError(result.message || 'Failed to send notification');
+            }
+        } finally {
+            setSendingToUser(false);
+        }
+    };
 
     const fetchNotifications = async () => {
         setLoading(true);
@@ -237,12 +296,20 @@ const NotificationManagementPage = () => {
                             ))}
                         </select>
                     </div>
-                    <button
-                        onClick={openAddModal}
-                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg text-sm transition-colors"
-                    >
-                        <span className="text-lg leading-none">+</span> Add Notification
-                    </button>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={openUserModal}
+                            className="flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white font-medium px-4 py-2 rounded-lg text-sm transition-colors"
+                        >
+                            <span className="text-lg leading-none">✉</span> Send to User
+                        </button>
+                        <button
+                            onClick={openAddModal}
+                            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg text-sm transition-colors"
+                        >
+                            <span className="text-lg leading-none">+</span> Broadcast
+                        </button>
+                    </div>
                 </div>
                 <p className="text-xs text-gray-400 mt-2">
                     {filtered.length} notification{filtered.length !== 1 ? 's' : ''} shown
@@ -425,6 +492,95 @@ const NotificationManagementPage = () => {
                                         </svg>
                                     )}
                                     {modalMode === 'add' ? 'Create Notification' : 'Save Changes'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Send to Specific User Modal */}
+            {showUserModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
+                        <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                            <h2 className="text-lg font-semibold text-gray-900">Send Notification to User</h2>
+                            <button onClick={closeUserModal} className="text-gray-400 hover:text-gray-600 text-xl leading-none">✕</button>
+                        </div>
+                        <form onSubmit={handleSendToUser} className="px-6 py-5 space-y-5">
+                            {userFormError && (
+                                <div className="rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-red-600 text-sm">
+                                    {userFormError}
+                                </div>
+                            )}
+                            {/* User selector */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Select User <span className="text-red-500">*</span>
+                                </label>
+                                <select
+                                    name="userId"
+                                    value={userForm.userId}
+                                    onChange={handleUserFormChange}
+                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
+                                >
+                                    <option value="">{usersLoading ? 'Loading users...' : '— Select a user —'}</option>
+                                    {users.map((u) => (
+                                        <option key={u.id} value={u.id}>
+                                            [{u.displayId}] {u.name} — {u.role}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            {/* Message */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Message <span className="text-red-500">*</span>
+                                </label>
+                                <textarea
+                                    name="message"
+                                    value={userForm.message}
+                                    onChange={handleUserFormChange}
+                                    rows={3}
+                                    placeholder="Enter notification message..."
+                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 resize-none"
+                                />
+                            </div>
+                            {/* Type */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                                <select
+                                    name="type"
+                                    value={userForm.type}
+                                    onChange={handleUserFormChange}
+                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
+                                >
+                                    {TYPE_OPTIONS.map((t) => (
+                                        <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            {/* Actions */}
+                            <div className="flex justify-end gap-3 pt-2">
+                                <button
+                                    type="button"
+                                    onClick={closeUserModal}
+                                    className="px-5 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={sendingToUser}
+                                    className="px-5 py-2 text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 disabled:opacity-60 rounded-lg transition-colors flex items-center gap-2"
+                                >
+                                    {sendingToUser && (
+                                        <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                        </svg>
+                                    )}
+                                    Send Notification
                                 </button>
                             </div>
                         </form>
