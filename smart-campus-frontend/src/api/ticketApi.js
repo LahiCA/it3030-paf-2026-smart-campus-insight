@@ -1,15 +1,19 @@
 import axios from "axios";
+import { getUser } from "../services/storage";
 
 const api = axios.create({
     baseURL: "/api/tickets",
 });
 
-const getRole = () => localStorage.getItem("userRole") || "USER";
-const getUserId = () => localStorage.getItem("userId") || "user-001";
+const getStoredUser = () => getUser() || {};
+const getRole = () => getStoredUser().role || "USER";
+const getUserId = () => getStoredUser().id || "user-001";
+const getDisplayId = () => getStoredUser().displayId || "";
 
 api.interceptors.request.use((config) => {
     config.headers.role = getRole();
     config.headers.userId = getUserId();
+    config.headers.displayId = getDisplayId();
     return config;
 });
 
@@ -20,12 +24,18 @@ const unwrapError = (error) => {
 export const getCurrentUser = () => ({
     userId: getUserId(),
     role: getRole(),
+    displayId: getDisplayId(),
+    user: getStoredUser(),
 });
 
 export const getTickets = async () => {
     try {
-        const { role, userId } = getCurrentUser();
-        const endpoint = role === "ADMIN" ? "" : `/user/${userId}`;
+        const { role, userId, displayId } = getCurrentUser();
+        const endpoint = role === "ADMIN"
+            ? ""
+            : role === "TECHNICIAN"
+                ? `/assigned/${displayId}`
+                : `/user/${userId}`;
         const response = await api.get(endpoint);
         return response.data;
     } catch (error) {
