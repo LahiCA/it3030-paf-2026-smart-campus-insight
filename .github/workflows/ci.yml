@@ -31,9 +31,11 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: npm
           cache-dependency-path: smart-campus-frontend/package-lock.json
+      - name: Set up npm 11
+        run: npm install -g npm@11.6.2
       - name: Install and build smart-campus-frontend
         working-directory: smart-campus-frontend
         run: |
