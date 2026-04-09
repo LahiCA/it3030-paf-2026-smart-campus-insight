@@ -114,4 +114,17 @@ public class BookingService {
 
         return repository.save(booking);
     }
+
+    public Booking checkInBooking(String id) {
+        Booking booking = getBookingById(id);
+
+        if (booking.getStatus() != BookingStatus.APPROVED) {
+            throw new InvalidBookingException("Only approved bookings can be checked in");
+        }
+
+        booking.setStatus(BookingStatus.CHECKED_IN);
+        booking.setUpdatedAt(LocalDateTime.now());
+
+        return repository.save(booking);
+    }
 }
