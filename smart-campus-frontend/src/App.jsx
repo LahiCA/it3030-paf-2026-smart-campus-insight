@@ -70,6 +70,8 @@ function App() {
 
             <Routes>
 
+              
+
               {/* PUBLIC ROUTES */}
               <Route path={ROUTES.LOGIN} element={<LoginPage />} />
               <Route path={ROUTES.ROLE_SELECTION} element={<RoleSelection />} />
