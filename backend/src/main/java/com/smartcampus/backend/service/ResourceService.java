@@ -1,102 +1,100 @@
 package com.smartcampus.backend.service;
 
-import com.smartcampus.backend.dto.request.ResourceRequest;
-import com.smartcampus.backend.dto.response.ResourceDTO;
+import com.smartcampus.backend.entities.Resource.ResourceStatus;
+import com.smartcampus.backend.entities.Resource.ResourceType;
+import com.smartcampus.backend.exception.ResourceNotFoundException;
 import com.smartcampus.backend.entities.Resource;
-import com.smartcampus.backend.enums.ResourceType;
 import com.smartcampus.backend.repository.ResourceRepository;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
-@Slf4j
 @Service
+@RequiredArgsConstructor
 public class ResourceService {
 
-    @Autowired
-    private ResourceRepository resourceRepository;
+    private final ResourceRepository resourceRepository;
 
-    public List<ResourceDTO> getAllResources() {
+    public List<Resource> getAllResources() {
+        return resourceRepository.findAll();
+    }
+
+    public Resource getResourceById(String id) {
+        return resourceRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Resource not found with id: " + id));
+    }
+
+    public List<Resource> getAvailableResources() {
+        return resourceRepository.findByStatus(ResourceStatus.AVAILABLE);
+    }
+
+    public List<Resource> getResourcesByStatus(ResourceStatus status) {
+        return resourceRepository.findByStatus(status);
+    }
+
+    public List<Resource> getResourcesByType(ResourceType type) {
+        return resourceRepository.findByType(type);
+    }
+
+    public List<Resource> getResourcesByStatusAndType(ResourceStatus status, ResourceType type) {
+        return resourceRepository.findByStatusAndType(status, type);
+    }
+
+    public List<Resource> searchResources(String query) {
+        return resourceRepository.findByNameContainingIgnoreCase(query);
+    }
+
+    public List<Resource> filterResources(ResourceStatus status, ResourceType type, String search, String location, Integer minCapacity) {
         return resourceRepository.findAll().stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList());
+                .filter(r -> status == null || r.getStatus() == status)
+                .filter(r -> type == null || r.getType() == type)
+                .filter(r -> minCapacity == null || r.getCapacity() >= minCapacity)
+                .filter(r -> location == null || location.isBlank() || containsIgnoreCase(r.getLocation(), location))
+                .filter(r -> search == null || search.isBlank() || containsIgnoreCase(r.getName(), search)
+                        || containsIgnoreCase(r.getLocation(), search)
+                        || containsIgnoreCase(r.getDescription(), search))
+                .toList();
     }
 
-    public ResourceDTO getResourceById(String id) {
-        Resource resource = resourceRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Resource not found with id: " + id));
-        return toDTO(resource);
+    private boolean containsIgnoreCase(String source, String target) {
+        return source != null && target != null && source.toLowerCase().contains(target.toLowerCase());
     }
 
-    public List<ResourceDTO> getResourcesByType(ResourceType type) {
-        return resourceRepository.findByType(type).stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList());
+    public Resource createResource(Resource resource) {
+        resource.onCreate();   // manually set timestamps
+        return resourceRepository.save(resource);
     }
 
-    public List<ResourceDTO> searchResources(String query) {
-        return resourceRepository.findByNameContainingIgnoreCase(query).stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList());
-    }
+    public Resource updateResource(String id, Resource updatedResource) {
+        Resource existing = getResourceById(id);
 
-    @Transactional
-    public ResourceDTO createResource(ResourceRequest request) {
-        Resource resource = Resource.builder()
-                .name(request.getName())
-                .type(request.getType())
-                .location(request.getLocation())
-                .capacity(request.getCapacity())
-                .status(request.getStatus())
-                .description(request.getDescription())
-                .build();
-
-        Resource saved = resourceRepository.save(resource);
-        log.info("Created resource: {} ({})", saved.getName(), saved.getId());
-        return toDTO(saved);
-    }
-
-    @Transactional
-    public ResourceDTO updateResource(String id, ResourceRequest request) {
-        Resource resource = resourceRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Resource not found with id: " + id));
-
-        resource.setName(request.getName());
-        resource.setType(request.getType());
-        resource.setLocation(request.getLocation());
-        resource.setCapacity(request.getCapacity());
-        resource.setStatus(request.getStatus());
-        resource.setDescription(request.getDescription());
-
-        Resource updated = resourceRepository.save(resource);
-        log.info("Updated resource: {} ({})", updated.getName(), updated.getId());
-        return toDTO(updated);
-    }
-
-    @Transactional
-    public void deleteResource(String id) {
-        if (!resourceRepository.existsById(id)) {
-            throw new RuntimeException("Resource not found with id: " + id);
+        existing.setName(updatedResource.getName());
+        existing.setType(updatedResource.getType());
+        existing.setLocation(updatedResource.getLocation());
+        existing.setCapacity(updatedResource.getCapacity());
+        existing.setStatus(updatedResource.getStatus());
+        existing.setDescription(updatedResource.getDescription());
+        if (updatedResource.getImageUrl() != null) {
+            existing.setImageUrl(updatedResource.getImageUrl());
         }
-        resourceRepository.deleteById(id);
-        log.info("Deleted resource: {}", id);
+
+        existing.onUpdate();   // update timestamp
+
+        return resourceRepository.save(existing);
     }
 
-    private ResourceDTO toDTO(Resource resource) {
-        return ResourceDTO.builder()
-                .id(resource.getId())
-                .name(resource.getName())
-                .type(resource.getType())
-                .location(resource.getLocation())
-                .capacity(resource.getCapacity())
-                .status(resource.getStatus())
-                .description(resource.getDescription())
-                .createdAt(resource.getCreatedAt())
-                .updatedAt(resource.getUpdatedAt())
-                .build();
+    public Resource updateStatus(String id, ResourceStatus status) {
+        Resource resource = getResourceById(id);
+        resource.setStatus(status);
+
+        resource.onUpdate();
+
+        return resourceRepository.save(resource);
+    }
+
+    public void deleteResource(String id) {
+        Resource resource = getResourceById(id);
+        resourceRepository.delete(resource);
     }
 }
