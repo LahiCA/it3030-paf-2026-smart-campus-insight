@@ -10,6 +10,7 @@ import UserResourcesPage from './pages/UserResourcesPage'
 import { useAuth } from './context/AuthContext'
 import BWSidebar from "./layout/BWSidebar";
 import BWCreateBooking from "./pages/BWCreateBooking";
+import BWDashboard from "./pages/BWDashboard";
 import BWMyBookings from "./pages/BWMyBookings";
 
 const App = () => {
