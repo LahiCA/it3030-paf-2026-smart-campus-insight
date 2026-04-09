@@ -5,16 +5,16 @@ import { GOOGLE_CLIENT_ID, ROUTES } from './utils/constants';
 import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
-import PrivateRoute from './components/PrivateRoute';
+import PrivateRoute from './components/PrivateRouteTailwind';
 import Layout from './components/Layout';
 
 // Pages
-import LoginPage from './components/LoginPage';
+import LoginPage from './components/LoginPageTailwind';
 import NotificationsPage from './components/NotificationsPage';
-import AdminPanel from './components/AdminPanel';
+import AdminPanel from './components/AdminPanelTailwind';
 import NotificationPreferences from './components/NotificationPreferences';
-import RoleSelection from './components/RoleSelection';
-import ResourcesPage from './components/ResourcesPage';
+import RoleSelection from './components/RoleSelectionTailwind';
+import ResourcesPage from './components/ResourcesPageTailwind';
 import LecturerDashboard from './components/LecturerDashboard';
 import TechnicianDashboard from './components/TechnicianDashboard';
 import AdminDashboard from './components/AdminDashboard';
@@ -35,88 +35,29 @@ function App() {
 
   if (!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID === 'YOUR_GOOGLE_CLIENT_ID_HERE') {
     return (
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: '100vh',
-          backgroundColor: '#ffebee',
-        }}
-      >
-        <div
-          style={{
-            textAlign: 'center',
-            padding: '40px',
-            backgroundColor: 'white',
-            borderRadius: '8px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-            maxWidth: '600px',
-          }}
-        >
-          <div
-            style={{
-              fontSize: '64px',
-              marginBottom: '20px',
-            }}
-          >
+      <div className="flex min-h-screen items-center justify-center bg-red-50 px-4">
+        <div className="w-full max-w-xl rounded-2xl bg-white p-10 text-center shadow-lg">
+          <div className="mb-5 text-6xl">
             ⚙️
           </div>
 
-          <h1
-            style={{
-              color: '#d32f2f',
-              marginBottom: '10px',
-            }}
-          >
+          <h1 className="mb-2 text-3xl font-bold text-red-600">
             Configuration Error
           </h1>
 
-          <p
-            style={{
-              color: '#666',
-              marginBottom: '15px',
-              fontSize: '16px',
-              lineHeight: '1.6',
-            }}
-          >
+          <p className="mb-4 text-base leading-7 text-slate-500">
             REACT_APP_GOOGLE_CLIENT_ID is not configured correctly.
           </p>
 
-          <div
-            style={{
-              backgroundColor: '#f5f5f5',
-              padding: '12px',
-              borderRadius: '4px',
-              fontSize: '14px',
-              fontFamily: 'monospace',
-              wordBreak: 'break-all',
-              marginBottom: '15px',
-            }}
-          >
+          <div className="mb-4 break-all rounded-lg bg-slate-100 px-3 py-3 font-mono text-sm text-slate-700">
             Current value: {String(GOOGLE_CLIENT_ID)}
           </div>
 
-          <p
-            style={{
-              color: '#666',
-              fontSize: '15px',
-              lineHeight: '1.6',
-            }}
-          >
+          <p className="text-[15px] leading-7 text-slate-500">
             Make sure your <code>frontend/.env</code> file contains:
           </p>
 
-          <div
-            style={{
-              backgroundColor: '#f5f5f5',
-              padding: '12px',
-              borderRadius: '4px',
-              fontSize: '14px',
-              fontFamily: 'monospace',
-              marginTop: '10px',
-            }}
-          >
+          <div className="mt-3 rounded-lg bg-slate-100 px-3 py-3 font-mono text-sm text-slate-700">
             REACT_APP_GOOGLE_CLIENT_ID=your_google_client_id
           </div>
         </div>
