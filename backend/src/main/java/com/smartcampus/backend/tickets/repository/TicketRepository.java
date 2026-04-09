@@ -9,4 +9,6 @@ import com.smartcampus.backend.tickets.model.Ticket;
 public interface TicketRepository extends MongoRepository<Ticket, String> {
 
     List<Ticket> findByUserIdOrderByCreatedAtDesc(String userId);
+
+    List<Ticket> findByAssignedToOrderByCreatedAtDesc(String assignedTo);
 }

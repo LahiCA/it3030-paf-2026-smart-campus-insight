@@ -32,6 +32,8 @@ public class Ticket {
     private String priority;
     private String status;
     private String userId;
+    private String userDisplayId;
+    private String contactNumber;
     private String assignedTo;
     private String resolutionNotes;
     private String rejectionReason;
