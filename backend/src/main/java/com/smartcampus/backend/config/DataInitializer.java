@@ -2,8 +2,8 @@ package com.smartcampus.backend.config;
 
 import com.smartcampus.backend.entities.Resource;
 import com.smartcampus.backend.entities.User;
-import com.smartcampus.backend.enums.ResourceStatus;
-import com.smartcampus.backend.enums.ResourceType;
+import com.smartcampus.backend.entities.Resource.ResourceStatus;
+import com.smartcampus.backend.entities.Resource.ResourceType;
 import com.smartcampus.backend.repository.ResourceRepository;
 import com.smartcampus.backend.repository.UserRepository;
 import com.smartcampus.backend.service.SequenceGeneratorService;
