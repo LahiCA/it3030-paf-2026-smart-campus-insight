@@ -29,3 +29,7 @@ export const rejectBWBooking = async (id, reason) => {
 export const cancelBWBooking = async (id, reason) => {
   return await axios.patch(`${API_BASE_URL}/${id}/cancel`, { reason });
 };
+
+export const checkInBWBooking = async (id) => {
+  return await axios.patch(`${API_BASE_URL}/${id}/checkin`);
+};
