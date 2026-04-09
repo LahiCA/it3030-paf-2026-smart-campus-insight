@@ -2,8 +2,8 @@ package com.smartcampus.backend.config;
 
 import com.smartcampus.backend.entities.Resource;
 import com.smartcampus.backend.entities.User;
-import com.smartcampus.backend.enums.ResourceStatus;
-import com.smartcampus.backend.enums.ResourceType;
+import com.smartcampus.backend.entities.Resource.ResourceStatus;
+import com.smartcampus.backend.entities.Resource.ResourceType;
 import com.smartcampus.backend.repository.ResourceRepository;
 import com.smartcampus.backend.repository.UserRepository;
 import com.smartcampus.backend.service.SequenceGeneratorService;
@@ -80,7 +80,7 @@ public class DataInitializer implements CommandLineRunner {
 
                         resourceRepository.save(Resource.builder()
                                         .name("Library Study Room")
-                                        .type(ResourceType.LIBRARY)
+                                        .type(ResourceType.STUDY_ROOM)
                                         .location("Library, Second Floor")
                                         .capacity(20)
                                         .status(ResourceStatus.MAINTENANCE)
