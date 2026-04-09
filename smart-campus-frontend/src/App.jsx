@@ -99,6 +99,15 @@ function App() {
               />
 
               <Route
+                path="/notifications-management"
+                element={
+                  <PrivateRoute
+                    element={<Layout><NotificationManagementPage /></Layout>}
+                  />
+                }
+              />
+
+              <Route
                 path={ROUTES.ADMIN_PANEL}
                 element={
                   <PrivateRoute
