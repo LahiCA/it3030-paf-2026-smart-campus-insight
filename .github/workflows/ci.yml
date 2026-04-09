@@ -24,7 +24,7 @@ jobs:
         working-directory: backend
         run: ./mvnw -B verify
 
-  frontend:
+  smart-campus-frontend:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -34,7 +34,7 @@ jobs:
           node-version: '20'
           cache: npm
           cache-dependency-path: smart-campus-frontend/package-lock.json
-      - name: Install and build frontend
+      - name: Install and build smart-campus-frontend
         working-directory: smart-campus-frontend
         run: |
           npm ci
