@@ -4,9 +4,8 @@ spring:
 
   # MongoDB Atlas Configuration
   data:
-     mongodb:
-       uri: mongodb+srv://admin:Xe6YIrDpEELZjamW@cluster0.k423yz7.mongodb.net/smartcampus
-  
+    mongodb:
+      uri: mongodb+srv://admin:Xe6YIrDpEELZjamW@cluster0.k423yz7.mongodb.net/smartcampus
 
 server:
   port: 8080
@@ -39,9 +38,17 @@ admin:
   emails: ${ADMIN_EMAILS:Insightspark12@gmail.com}
 
 # ============================================
+# Gemini AI Configuration
+# ============================================
+gemini:
+  api:
+    key: ${GEMINI_API_KEY:AIzaSyClA4ypYyefWvFgTciSmqvOuKGByksrM6w}
+    url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent
+
+# ============================================
 # Logging Configuration
 # ============================================
 logging:
   level:
     root: INFO
-    com.smartcampus: DEBUG
+    "[com.smartcampus]": DEBUG

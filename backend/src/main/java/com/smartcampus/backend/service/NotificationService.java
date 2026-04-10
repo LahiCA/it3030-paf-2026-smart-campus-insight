@@ -215,8 +215,19 @@ public class NotificationService {
                     return new UserNotFoundException("Notification not found with ID: " + notificationId);
                 });
 
+        // Handle broadcast notifications (no userId, has targetAudience)
+        if (notification.getTargetAudience() != null && notification.getUserId() == null) {
+            if (notification.getReadByUserIds() == null) {
+                notification.setReadByUserIds(new java.util.HashSet<>());
+            }
+            notification.getReadByUserIds().add(userId);
+            notification = notificationRepository.save(notification);
+            log.info("Broadcast notification {} marked as read by user {}", notificationId, userId);
+            return convertToDTO(notification, userId);
+        }
+
         // Security check: Ensure notification belongs to the requesting user
-        if (!notification.getUserId().equals(userId)) {
+        if (!userId.equals(notification.getUserId())) {
             log.warn("User {} tried to mark notification {} they don't own", userId, notificationId);
             throw new IllegalArgumentException("You can only mark your own notifications as read");
         }
@@ -243,8 +254,17 @@ public class NotificationService {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new UserNotFoundException("Notification not found with ID: " + notificationId));
 
+        // Handle broadcast notifications
+        if (notification.getTargetAudience() != null && notification.getUserId() == null) {
+            if (notification.getReadByUserIds() != null) {
+                notification.getReadByUserIds().remove(userId);
+            }
+            notification = notificationRepository.save(notification);
+            return convertToDTO(notification, userId);
+        }
+
         // Security check
-        if (!notification.getUserId().equals(userId)) {
+        if (!userId.equals(notification.getUserId())) {
             throw new IllegalArgumentException("You can only update your own notifications");
         }
 
@@ -309,11 +329,29 @@ public class NotificationService {
             throw new UserNotFoundException("User not found with ID: " + userId);
         }
 
+        // Mark personal notifications as read
         List<Notification> unread = notificationRepository.findByUserIdAndReadFalseOrderByCreatedAtDesc(userId);
         unread.forEach(Notification::markAsRead);
         notificationRepository.saveAll(unread);
 
-        log.info("Marked {} notifications as read for user {}", unread.size(), userId);
+        // Mark broadcast notifications as read for this user
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new UserNotFoundException("User not found with ID: " + userId));
+        String role = user.getRole() != null ? user.getRole().toUpperCase() : "LECTURER";
+        List<Notification> broadcasts = notificationRepository
+                .findByTargetAudienceInOrderByCreatedAtDesc(List.of("ALL", role));
+        for (Notification broadcast : broadcasts) {
+            if (broadcast.getReadByUserIds() == null) {
+                broadcast.setReadByUserIds(new java.util.HashSet<>());
+            }
+            broadcast.getReadByUserIds().add(userId);
+        }
+        if (!broadcasts.isEmpty()) {
+            notificationRepository.saveAll(broadcasts);
+        }
+
+        log.info("Marked {} personal + {} broadcast notifications as read for user {}", unread.size(),
+                broadcasts.size(), userId);
     }
 
     /**
@@ -343,12 +381,24 @@ public class NotificationService {
      * @return The DTO
      */
     private NotificationDTO convertToDTO(Notification notification) {
+        return convertToDTO(notification, null);
+    }
+
+    /**
+     * Convert with per-user read state for broadcast notifications.
+     */
+    private NotificationDTO convertToDTO(Notification notification, String userId) {
+        Boolean isRead = notification.getRead();
+        // For broadcast notifications, check per-user read tracking
+        if (userId != null && notification.getTargetAudience() != null && notification.getUserId() == null) {
+            isRead = notification.getReadByUserIds() != null && notification.getReadByUserIds().contains(userId);
+        }
         return NotificationDTO.builder()
                 .id(notification.getId())
                 .displayId(notification.getDisplayId())
                 .message(notification.getMessage())
                 .type(notification.getType() != null ? notification.getType().name() : null)
-                .read(notification.getRead())
+                .read(isRead)
                 .relatedEntityId(notification.getRelatedEntityId())
                 .relatedEntityType(notification.getRelatedEntityType())
                 .targetAudience(notification.getTargetAudience())
@@ -416,7 +466,8 @@ public class NotificationService {
     }
 
     /**
-     * Get all notifications (personal + broadcast) for a user including their role-based broadcasts.
+     * Get all notifications (personal + broadcast) for a user including their
+     * role-based broadcasts.
      * Used by the NotificationController when a user fetches their notifications.
      */
     public List<NotificationDTO> getUserNotificationsWithBroadcasts(String userId) {
@@ -444,7 +495,7 @@ public class NotificationService {
         merged.addAll(broadcasts);
         merged.sort((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()));
 
-        return merged.stream().map(this::convertToDTO).collect(Collectors.toList());
+        return merged.stream().map(n -> convertToDTO(n, userId)).collect(Collectors.toList());
     }
 
     /**
@@ -459,9 +510,15 @@ public class NotificationService {
         String role = user.getRole() != null ? user.getRole().toUpperCase() : "LECTURER";
 
         long personal = notificationRepository.countByUserIdAndReadFalse(userId);
-        long broadcasts = notificationRepository
-                .countByTargetAudienceInAndReadFalse(List.of("ALL", role));
-        return personal + broadcasts;
+
+        // Count broadcast notifications not yet read by this user
+        List<Notification> broadcasts = notificationRepository
+                .findByTargetAudienceInOrderByCreatedAtDesc(List.of("ALL", role));
+        long unreadBroadcasts = broadcasts.stream()
+                .filter(b -> b.getReadByUserIds() == null || !b.getReadByUserIds().contains(userId))
+                .count();
+
+        return personal + unreadBroadcasts;
     }
 
     // ==================== Notification Preferences ====================

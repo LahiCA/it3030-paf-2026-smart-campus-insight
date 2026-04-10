@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.smartcampus.backend.tickets.dto.AssignTechnicianRequest;
 import com.smartcampus.backend.tickets.dto.CommentCreateRequest;
 import com.smartcampus.backend.tickets.dto.CommentUpdateRequest;
+import com.smartcampus.backend.tickets.dto.RateTicketRequest;
 import com.smartcampus.backend.tickets.dto.StatusUpdateRequest;
 import com.smartcampus.backend.tickets.dto.TicketCreateRequest;
 import com.smartcampus.backend.tickets.dto.TicketUpdateRequest;
@@ -37,6 +38,8 @@ public class TicketService {
 
     private static final String ROLE_ADMIN = "ADMIN";
     private static final String ROLE_TECHNICIAN = "TECHNICIAN";
+    private static final String ROLE_LECTURER = "LECTURER";
+    private static final String ROLE_USER = "USER";
     private static final String STATUS_OPEN = "OPEN";
     private static final String STATUS_IN_PROGRESS = "IN_PROGRESS";
     private static final String STATUS_RESOLVED = "RESOLVED";
@@ -102,7 +105,8 @@ public class TicketService {
         String normalizedAssignedTo = assignedTo == null ? "" : assignedTo.trim();
         String normalizedRequesterDisplayId = requesterDisplayId == null ? "" : requesterDisplayId.trim();
 
-        if (ROLE_TECHNICIAN.equals(normalizedRequesterRole) && !normalizedAssignedTo.equalsIgnoreCase(normalizedRequesterDisplayId)) {
+        if (ROLE_TECHNICIAN.equals(normalizedRequesterRole)
+                && !normalizedAssignedTo.equalsIgnoreCase(normalizedRequesterDisplayId)) {
             throw new RuntimeException("Technicians can only view tickets assigned to themselves");
         }
 
@@ -142,14 +146,16 @@ public class TicketService {
         ticketRepository.delete(ticket);
     }
 
-    public Ticket updateStatus(String id, StatusUpdateRequest request, String requesterRole, String requesterDisplayId) {
+    public Ticket updateStatus(String id, StatusUpdateRequest request, String requesterRole,
+            String requesterDisplayId) {
         requireAnyRole(requesterRole, STATUS_MANAGERS);
         Ticket ticket = findTicket(id);
         String nextStatus = normalize(request.getStatus());
         String normalizedRequesterRole = normalize(requesterRole);
 
         if (ROLE_TECHNICIAN.equals(normalizedRequesterRole)) {
-            if (!StringUtils.hasText(ticket.getAssignedTo()) || !ticket.getAssignedTo().trim().equalsIgnoreCase(requesterDisplayId == null ? "" : requesterDisplayId.trim())) {
+            if (!StringUtils.hasText(ticket.getAssignedTo()) || !ticket.getAssignedTo().trim()
+                    .equalsIgnoreCase(requesterDisplayId == null ? "" : requesterDisplayId.trim())) {
                 throw new RuntimeException("Technicians can only update tickets assigned to them");
             }
             if (STATUS_REJECTED.equals(nextStatus)) {
@@ -166,6 +172,14 @@ public class TicketService {
             throw new RuntimeException("Rejection reason is required when rejecting a ticket");
         }
 
+        LocalDateTime now = LocalDateTime.now();
+        if (STATUS_IN_PROGRESS.equals(nextStatus) && ticket.getFirstResponseAt() == null) {
+            ticket.setFirstResponseAt(now);
+        }
+        if (STATUS_RESOLVED.equals(nextStatus) && ticket.getResolvedAt() == null) {
+            ticket.setResolvedAt(now);
+        }
+
         ticket.setStatus(nextStatus);
         if (StringUtils.hasText(request.getResolutionNotes())) {
             ticket.setResolutionNotes(request.getResolutionNotes().trim());
@@ -177,7 +191,7 @@ public class TicketService {
             ticket.setAssignedTo(null);
             ticket.setResolutionNotes(null);
         }
-        ticket.setUpdatedAt(LocalDateTime.now());
+        ticket.setUpdatedAt(now);
 
         return hydrate(ticketRepository.save(ticket));
     }
@@ -194,7 +208,46 @@ public class TicketService {
 
         if (STATUS_OPEN.equals(ticket.getStatus())) {
             ticket.setStatus(STATUS_IN_PROGRESS);
+            if (ticket.getFirstResponseAt() == null) {
+                ticket.setFirstResponseAt(LocalDateTime.now());
+            }
         }
+
+        return hydrate(ticketRepository.save(ticket));
+    }
+
+    public Ticket rateTicket(String id, RateTicketRequest request, String requesterUserId, String requesterDisplayId,
+            String requesterRole) {
+        Ticket ticket = findTicket(id);
+
+        // Only lecturer or user owners may submit ratings
+        if (!ROLE_LECTURER.equals(requesterRole) && !ROLE_USER.equals(requesterRole)) {
+            throw new RuntimeException("Only the ticket owner can submit a rating");
+        }
+
+        if (!Objects.equals(ticket.getUserId(), requesterUserId)
+                || !Objects.equals(ticket.getUserDisplayId(), requesterDisplayId)) {
+            throw new RuntimeException("Only the ticket owner can submit a rating");
+        }
+
+        if (request.getRating() == null || request.getRating() < 1 || request.getRating() > 5) {
+            throw new RuntimeException("Rating must be between 1 and 5");
+        }
+
+        if (!STATUS_CLOSED.equals(ticket.getStatus())) {
+            throw new RuntimeException("Rating can only be submitted for closed tickets");
+        }
+
+        if (ticket.getRating() != null) {
+            throw new RuntimeException("Rating has already been submitted for this ticket");
+        }
+
+        ticket.setRating(request.getRating());
+        if (StringUtils.hasText(request.getFeedback())) {
+            ticket.setFeedback(request.getFeedback().trim());
+        }
+        ticket.setRatedAt(LocalDateTime.now());
+        ticket.setUpdatedAt(LocalDateTime.now());
 
         return hydrate(ticketRepository.save(ticket));
     }
@@ -252,7 +305,8 @@ public class TicketService {
         Comment comment = Comment.builder()
                 .ticketId(ticketId)
                 .userId(request.getUserId().trim())
-                .userDisplayId(StringUtils.hasText(request.getUserDisplayId()) ? request.getUserDisplayId().trim() : null)
+                .userDisplayId(
+                        StringUtils.hasText(request.getUserDisplayId()) ? request.getUserDisplayId().trim() : null)
                 .message(request.getMessage().trim())
                 .createdAt(now)
                 .updatedAt(now)

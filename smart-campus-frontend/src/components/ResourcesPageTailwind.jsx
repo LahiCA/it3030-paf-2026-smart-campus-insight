@@ -72,6 +72,7 @@ const ResourcesPageTailwind = () => {
     status: 'AVAILABLE',
     description: '',
   });
+  const [imageFile, setImageFile] = useState(null);
 
   useEffect(() => {
     fetchResources();
@@ -92,7 +93,7 @@ const ResourcesPageTailwind = () => {
       setLoading(true);
       const data = await getAllResources();
       setResources(data);
-    } catch (err) {
+    } catch {
       setError('Failed to load resources');
     } finally {
       setLoading(false);
@@ -144,6 +145,7 @@ const ResourcesPageTailwind = () => {
       status: 'AVAILABLE',
       description: '',
     });
+    setImageFile(null);
     setShowModal(true);
   };
 
@@ -157,17 +159,25 @@ const ResourcesPageTailwind = () => {
       status: resource.status,
       description: resource.description || '',
     });
+    setImageFile(null);
     setShowModal(true);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const fd = new FormData();
+      Object.entries(formData).forEach(([key, value]) => {
+        fd.append(key, value);
+      });
+      if (imageFile) {
+        fd.append('images', imageFile);
+      }
       if (editingResource) {
-        await updateResource(editingResource.id, formData);
+        await updateResource(editingResource.id, fd);
         setSuccess('Resource updated successfully');
       } else {
-        await createResource(formData);
+        await createResource(fd);
         setSuccess('Resource created successfully');
       }
       setShowModal(false);
@@ -183,7 +193,7 @@ const ResourcesPageTailwind = () => {
       await deleteResource(id);
       setSuccess('Resource deleted successfully');
       fetchResources();
-    } catch (err) {
+    } catch {
       setError('Failed to delete resource');
     }
   };
@@ -378,7 +388,7 @@ const ResourcesPageTailwind = () => {
 
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 px-4 py-6">
-          <div className="max-h-[90vh] w-full max-w-[520px] overflow-y-auto rounded-2xl bg-white shadow-2xl scrollbar-ui">
+          <div className="max-h-[90vh] w-full max-w-130 overflow-y-auto rounded-2xl bg-white shadow-2xl scrollbar-ui">
             <div className="flex items-center justify-between px-6 pb-4 pt-6">
               <h2 className="text-2xl font-bold text-slate-900">
                 {editingResource ? 'Edit Resource' : 'Add Resource'}
@@ -452,14 +462,8 @@ const ResourcesPageTailwind = () => {
               </div>
 
               <div className="mb-4">
-                <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-700">
-                  Status
-                </label>
-                <select
-                  value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  className={`${inputClassName} max-w-[200px]`}
-                >
+                <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-700">Status</label>
+                <select value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })} className={`${inputClassName} max-w-50`}>
                   {STATUS_OPTIONS.map((s) => (
                     <option key={s} value={s}>{s}</option>
                   ))}
@@ -479,6 +483,15 @@ const ResourcesPageTailwind = () => {
                 />
               </div>
 
+              <div className="mb-4">
+                <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-700">Image</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={e => setImageFile(e.target.files[0])}
+                  className={inputClassName}
+                />
+              </div>
               <div className="mt-2 flex justify-end gap-3">
                 <button
                   type="button"

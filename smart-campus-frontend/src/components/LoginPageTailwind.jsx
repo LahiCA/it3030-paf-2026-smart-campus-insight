@@ -83,7 +83,9 @@ const LoginPageTailwind = () => {
                 Campus Operations Platform
               </div>
 
-              <div className="mb-3 text-5xl sm:text-6xl">SC</div>
+              <div className="mb-3">
+                <span className="text-6xl sm:text-7xl">🎓</span>
+              </div>
               <h1 className="mb-1 bg-[linear-gradient(135deg,#0a1929_0%,#0f766e_100%)] bg-clip-text text-[28px] font-extrabold tracking-[-0.04em] text-transparent sm:text-[30px]">
                 Smart Campus Insight
               </h1>
@@ -123,7 +125,7 @@ const LoginPageTailwind = () => {
             )}
 
             <section className="mb-3 flex flex-col items-center">
-              <div className="mb-2 flex w-full max-w-[360px] justify-center [&_.google-login-button-container]:!flex [&_.google-login-button-container]:!w-full [&_.google-login-button-container]:!justify-center [&_.google-login-button-container>div]:!flex [&_.google-login-button-container>div]:!w-full [&_.google-login-button-container>div]:!justify-center [&_.google-login-button-container>div>div]:!flex [&_.google-login-button-container>div>div]:!w-full [&_.google-login-button-container>div>div]:!justify-center [&_.google-login-button-container_button]:!flex [&_.google-login-button-container_button]:!max-w-[320px] [&_.google-login-button-container_button]:!w-full [&_.google-login-button-container_button]:!items-center [&_.google-login-button-container_button]:!justify-center [&_.google-login-button-container_button]:!rounded-xl [&_.google-login-button-container_button]:!border-[1.5px] [&_.google-login-button-container_button]:!border-sky-300 [&_.google-login-button-container_button]:!bg-[#187014] [&_.google-login-button-container_button]:!px-6 [&_.google-login-button-container_button]:!py-2.5 [&_.google-login-button-container_button]:!text-sm [&_.google-login-button-container_button]:!font-semibold [&_.google-login-button-container_button]:!text-white [&_.google-login-button-container_button]:!shadow-[0_4px_16px_rgba(0,0,0,0.1)] hover:[&_.google-login-button-container_button]:!translate-y-[-2px] hover:[&_.google-login-button-container_button]:!border-teal-500 hover:[&_.google-login-button-container_button]:!shadow-[0_12px_32px_rgba(59,130,246,0.25),0_4px_12px_rgba(0,0,0,0.12)]">
+              <div className="mb-2 flex w-full max-w-[360px] justify-center">
                 <GoogleLoginButton
                   onSuccess={handleLoginSuccess}
                   onError={handleLoginError}
@@ -141,7 +143,7 @@ const LoginPageTailwind = () => {
                 Protected with OAuth 2.0 and JWT authentication
               </p>
               <p className="text-[11px] tracking-[0.02em] text-slate-500">
-                Copyright 2026 Smart Campus Operations. All rights reserved.
+                &copy; 2026 Smart Campus Operations. All rights reserved.
               </p>
             </footer>
           </section>
