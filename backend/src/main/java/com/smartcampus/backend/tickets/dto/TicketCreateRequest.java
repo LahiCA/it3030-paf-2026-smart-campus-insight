@@ -25,4 +25,11 @@ public class TicketCreateRequest {
 
     @NotBlank(message = "User ID is required")
     private String userId;
+
+    @NotBlank(message = "User display ID is required")
+    private String userDisplayId;
+
+    @NotBlank(message = "Contact number is required")
+    @Pattern(regexp = "^[0-9+()\\-\\s]{7,20}$", message = "Contact number format is invalid")
+    private String contactNumber;
 }

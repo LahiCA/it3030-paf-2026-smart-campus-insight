@@ -52,9 +52,9 @@ const Sidebar = () => {
   }
 
   return (
-    <aside className="sticky top-0 flex h-screen w-[72px] min-w-[72px] flex-col border-r border-slate-100 bg-white font-['Poppins',sans-serif] md:w-[260px] md:min-w-[260px]">
+    <aside className="sticky top-0 flex h-screen w-18 min-w-18 flex-col border-r border-slate-100 bg-white font-['Poppins',sans-serif] md:w-65 md:min-w-65">
       <div className="flex justify-center gap-3 border-b border-slate-100 px-3 py-5 md:justify-start md:px-5 md:pb-5 md:pt-6">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-gradient-to-br from-teal-500 to-teal-800 text-xl text-white">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-linear-to-br from-teal-500 to-teal-800 text-xl text-white">
           <FaGraduationCap />
         </div>
         <div className="hidden flex-col md:flex">
@@ -86,7 +86,7 @@ const Sidebar = () => {
 
       <div className="border-t border-slate-100 p-4">
         <div className="flex items-center justify-center gap-3 md:justify-start">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-teal-500 to-teal-800 text-sm font-semibold text-white">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-teal-500 to-teal-800 text-sm font-semibold text-white">
             {displayName.charAt(0).toUpperCase()}
           </div>
           <div className="hidden min-w-0 flex-1 md:block">

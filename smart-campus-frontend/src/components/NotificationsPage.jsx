@@ -29,6 +29,7 @@ const NotificationsPage = () => {
   const [filterStatus, setFilterStatus] = useState('all'); // all, read, unread
   const [filterType, setFilterType] = useState('all'); // all, or notification type
   const [sortOrder, setSortOrder] = useState('newest'); // newest, oldest
+  const [expandedId, setExpandedId] = useState(null);
 
   /**
    * Filter and sort notifications
@@ -69,13 +70,10 @@ const NotificationsPage = () => {
   };
 
   /**
-   * Handle notification item click
+   * Handle notification item click — expand/collapse and mark as read
    */
   const handleNotificationClick = (notification) => {
-    // Could navigate to related page
-    // if (notification.relatedEntityType === 'BOOKING') {
-    //   navigate(`/bookings/${notification.relatedEntityId}`);
-    // }
+    setExpandedId(prev => prev === notification.id ? null : notification.id);
   };
 
   /**
@@ -202,6 +200,7 @@ const NotificationsPage = () => {
                 key={notification.id}
                 notification={notification}
                 onItemClick={handleNotificationClick}
+                isExpanded={expandedId === notification.id}
               />
             ))}
           </div>

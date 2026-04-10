@@ -6,13 +6,16 @@ const INITIAL_FORM = {
     description: "",
     category: "",
     priority: "MEDIUM",
+    contactNumber: "",
 };
 
 const CATEGORY_OPTIONS = ["Electrical", "Network", "Hardware", "Software", "Facility", "Safety", "Other"];
 const PRIORITY_OPTIONS = ["LOW", "MEDIUM", "HIGH", "CRITICAL"];
+const ALLOWED_TYPES = ["image/jpeg", "image/png"];
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 export default function CreateTicketPage({ onTicketCreated, onClose, embedded = false }) {
-    const { userId } = getCurrentUser();
+    const { userId, displayId } = getCurrentUser();
     const [form, setForm] = useState(INITIAL_FORM);
     const [files, setFiles] = useState([]);
     const [errors, setErrors] = useState({});
@@ -21,9 +24,14 @@ export default function CreateTicketPage({ onTicketCreated, onClose, embedded = 
 
     const validate = () => {
         const nextErrors = {};
-        if (form.title.trim().length < 3) nextErrors.title = "Title must be at least 3 characters";
+        if (form.title.trim().length < 3) nextErrors.title = "Resource / location must be at least 3 characters";
         if (form.description.trim().length < 10) nextErrors.description = "Description must be at least 10 characters";
         if (!form.category) nextErrors.category = "Select a category";
+        if (!form.contactNumber.trim()) {
+            nextErrors.contactNumber = "Contact number is required";
+        } else if (!/^[0-9+()\-\s]{7,20}$/.test(form.contactNumber.trim())) {
+            nextErrors.contactNumber = "Enter a valid contact number";
+        }
         if (files.length > 3) nextErrors.files = "Only 3 images are allowed";
         setErrors(nextErrors);
         return Object.keys(nextErrors).length === 0;
@@ -44,6 +52,8 @@ export default function CreateTicketPage({ onTicketCreated, onClose, embedded = 
                 category: form.category,
                 priority: form.priority,
                 userId,
+                userDisplayId: displayId,
+                contactNumber: form.contactNumber.trim(),
             });
 
             let completeTicket = ticket;
@@ -65,12 +75,26 @@ export default function CreateTicketPage({ onTicketCreated, onClose, embedded = 
 
     const handleFileChange = (event) => {
         const selectedFiles = Array.from(event.target.files || []);
-        setFiles(selectedFiles.slice(0, 3));
+        const limitedFiles = selectedFiles.slice(0, 3);
+        let fileError = "";
+
         if (selectedFiles.length > 3) {
-            setErrors((current) => ({ ...current, files: "Only the first 3 images will be used" }));
-        } else {
-            setErrors((current) => ({ ...current, files: "" }));
+            fileError = "Only the first 3 images will be used";
         }
+
+        for (const file of limitedFiles) {
+            if (!ALLOWED_TYPES.includes(file.type)) {
+                fileError = "Only JPG and PNG files are allowed";
+                break;
+            }
+            if (file.size > MAX_FILE_SIZE) {
+                fileError = `${file.name} exceeds the 5MB limit`;
+                break;
+            }
+        }
+
+        setFiles(fileError && fileError !== "Only the first 3 images will be used" ? [] : limitedFiles);
+        setErrors((current) => ({ ...current, files: fileError }));
     };
 
     return (
@@ -83,6 +107,11 @@ export default function CreateTicketPage({ onTicketCreated, onClose, embedded = 
                         <p className="mt-2 text-sm text-slate-500">
                             Capture the issue clearly so admins and technicians can respond faster.
                         </p>
+                        {displayId ? (
+                            <p className="mt-3 inline-flex rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-700">
+                                Reporter ID: {displayId}
+                            </p>
+                        ) : null}
                     </div>
                     {onClose ? (
                         <button type="button" onClick={onClose} className="rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">
@@ -99,12 +128,12 @@ export default function CreateTicketPage({ onTicketCreated, onClose, embedded = 
 
                 <div className="grid gap-5 md:grid-cols-2">
                     <div className="md:col-span-2">
-                        <label className="mb-2 block text-sm font-semibold text-slate-700">Title</label>
+                        <label className="mb-2 block text-sm font-semibold text-slate-700">Resource / Location</label>
                         <input
                             value={form.title}
                             onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))}
                             className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-teal-400"
-                            placeholder="Broken projector in Lab 03"
+                            placeholder="Projector room - Lab 03"
                         />
                         {errors.title ? <p className="mt-1 text-xs text-red-600">{errors.title}</p> : null}
                     </div>
@@ -149,16 +178,29 @@ export default function CreateTicketPage({ onTicketCreated, onClose, embedded = 
                         </select>
                     </div>
 
+                    <div>
+                        <label className="mb-2 block text-sm font-semibold text-slate-700">Contact Number</label>
+                        <input
+                            value={form.contactNumber}
+                            onChange={(event) => setForm((current) => ({ ...current, contactNumber: event.target.value }))}
+                            className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-teal-400"
+                            placeholder="071 234 5678"
+                        />
+                        {errors.contactNumber ? <p className="mt-1 text-xs text-red-600">{errors.contactNumber}</p> : null}
+                    </div>
+
                     <div className="md:col-span-2 rounded-3xl border border-dashed border-teal-300 bg-teal-50 p-5">
                         <label className="mb-2 block text-sm font-semibold text-slate-700">Attachments</label>
-                        <input type="file" accept="image/*" multiple onChange={handleFileChange} className="block w-full text-sm" />
-                        <p className="mt-2 text-xs text-slate-500">Up to 3 images can be uploaded with the ticket.</p>
+                        <input type="file" accept=".jpg,.jpeg,.png" multiple onChange={handleFileChange} className="block w-full text-sm" />
+                        <p className="mt-2 text-xs text-slate-500">Up to 3 JPG or PNG images, 5MB each.</p>
                         {files.length ? (
-                            <div className="mt-3 flex flex-wrap gap-2">
+                            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                                 {files.map((file) => (
-                                    <span key={file.name} className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-700">
-                                        {file.name}
-                                    </span>
+                                    <div key={file.name} className="rounded-2xl border border-teal-100 bg-white p-3">
+                                        <img src={URL.createObjectURL(file)} alt={file.name} className="h-24 w-full rounded-xl object-cover" />
+                                        <p className="mt-2 truncate text-xs font-semibold text-slate-700">{file.name}</p>
+                                        <p className="text-[11px] text-slate-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                                    </div>
                                 ))}
                             </div>
                         ) : null}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
+import ResourceAnalytics from './ResourceAnalytics';
 import {
   getAllResources,
   createResource,
@@ -77,7 +78,8 @@ const ResourcesPage = () => {
       setLoading(true);
       const data = await getAllResources();
       setResources(data);
-    } catch (err) {
+    } catch (_err) {
+      console.error('Failed to load resources', _err);
       setError('Failed to load resources');
     } finally {
       setLoading(false);
@@ -139,8 +141,9 @@ const ResourcesPage = () => {
       }
       setShowModal(false);
       fetchResources();
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to save resource');
+    } catch (_err) {
+      console.error('Failed to save resource', _err);
+      setError(_err.response?.data?.message || 'Failed to save resource');
     }
   };
 
@@ -150,7 +153,8 @@ const ResourcesPage = () => {
       await deleteResource(id);
       setSuccess('Resource deleted successfully');
       fetchResources();
-    } catch (err) {
+    } catch (_err) {
+      console.error('Failed to delete resource', _err);
       setError('Failed to delete resource');
     }
   };

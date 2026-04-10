@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     FaUsers,
@@ -16,6 +16,9 @@ import {
 } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
+import { getAllResources } from '../services/resources';
+import { getAllBWBookings } from '../api/bwBookingApi';
+import { getTickets } from '../api/ticketApi';
 
 const getGreeting = () => {
     const hour = new Date().getHours();
@@ -29,7 +32,7 @@ const StatCard = ({ icon, label, value, colorClass, onClick }) => (
         onClick={onClick}
         className={`flex items-center gap-4 bg-white rounded-xl p-5 shadow-sm border border-slate-100 ${onClick ? 'cursor-pointer hover:shadow-md transition-shadow' : ''}`}
     >
-        <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${colorClass}`}>
+        <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${colorClass}`}>
             {icon}
         </div>
         <div>
@@ -44,7 +47,7 @@ const ActionCard = ({ icon, iconBg, title, description, onClick }) => (
         onClick={onClick}
         className="group flex flex-col gap-4 bg-white rounded-xl p-6 shadow-sm border-2 border-transparent hover:border-teal-500 hover:shadow-lg transition-all duration-200 cursor-pointer"
     >
-        <div className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 ${iconBg}`}>
+        <div className={`w-14 h-14 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>
             {icon}
         </div>
         <div className="flex-1">
@@ -60,7 +63,40 @@ const ActionCard = ({ icon, iconBg, title, description, onClick }) => (
 const AdminDashboard = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
-    const { unreadCount } = useNotifications();
+    const _notifications = useNotifications();
+
+    const [stats, setStats] = useState({
+        totalResources: 0,
+        availableNow: 0,
+        pendingBookings: 0,
+        openTickets: 0,
+    });
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const [resources, bookingsRes, ticketsRes] = await Promise.all([
+                    getAllResources(),
+                    getAllBWBookings(),
+                    getTickets(),
+                ]);
+
+                const resourceList = Array.isArray(resources) ? resources : [];
+                const bookingList = Array.isArray(bookingsRes) ? bookingsRes : (bookingsRes?.data || []);
+                const ticketList = Array.isArray(ticketsRes) ? ticketsRes : (ticketsRes?.data || []);
+
+                setStats({
+                    totalResources: resourceList.length,
+                    availableNow: resourceList.filter(r => r.status === 'AVAILABLE').length,
+                    pendingBookings: bookingList.filter(b => b.status === 'PENDING').length,
+                    openTickets: ticketList.filter(t => t.status === 'OPEN').length,
+                });
+            } catch (err) {
+                console.error('Failed to fetch dashboard stats', err);
+            }
+        };
+        fetchStats();
+    }, []);
 
     const displayName = user?.name || user?.email?.split('@')[0] || 'Admin';
 
@@ -68,7 +104,7 @@ const AdminDashboard = () => {
         <div className="max-w-7xl mx-auto px-6 py-10 font-sans">
 
             {/* Welcome Banner */}
-            <div className="flex items-center justify-between gap-6 rounded-2xl bg-gradient-to-r from-teal-500 to-teal-800 text-white px-10 py-10 mb-10 shadow-lg shadow-teal-300">
+            <div className="flex items-center justify-between gap-6 rounded-2xl bg-linear-to-r from-teal-500 to-teal-800 text-white px-10 py-10 mb-10 shadow-lg shadow-teal-300">
                 <div>
                     <p className="text-xl opacity-85 mb-1">{getGreeting()},</p>
                     <h1 className="text-3xl font-bold mb-3">{displayName} 👋</h1>
@@ -79,7 +115,7 @@ const AdminDashboard = () => {
                         Role: Administrator &nbsp;·&nbsp; {user?.displayId || ''}
                     </span>
                 </div>
-                <div className="hidden md:flex items-center justify-center text-8xl opacity-60 flex-shrink-0">
+                <div className="hidden md:flex items-center justify-center text-8xl opacity-60 shrink-0">
                     <FaShieldAlt />
                 </div>
             </div>
@@ -89,28 +125,28 @@ const AdminDashboard = () => {
                 <StatCard
                     icon={<FaBuilding size={22} className="text-slate-600" />}
                     label="Total Resources"
-                    value="5"
+                    value={stats.totalResources}
                     colorClass="bg-slate-100"
                     onClick={() => navigate('/resources')}
                 />
                 <StatCard
                     icon={<FaCheckCircle size={22} className="text-emerald-600" />}
                     label="Available Now"
-                    value="4"
+                    value={stats.availableNow}
                     colorClass="bg-emerald-50"
                     onClick={() => navigate('/resources')}
                 />
                 <StatCard
                     icon={<FaHourglassHalf size={22} className="text-amber-500" />}
                     label="Pending Bookings"
-                    value="1"
+                    value={stats.pendingBookings}
                     colorClass="bg-amber-50"
                     onClick={() => navigate('/bw-admin-bookings')}
                 />
                 <StatCard
                     icon={<FaTicketAlt size={22} className="text-red-400" />}
                     label="Open Tickets"
-                    value="0"
+                    value={stats.openTickets}
                     colorClass="bg-red-50"
                     onClick={() => navigate('/tickets')}
                 />
@@ -165,7 +201,7 @@ const AdminDashboard = () => {
 
             {/* Admin Notice */}
             <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 flex items-start gap-3">
-                <FaChartBar size={18} className="text-slate-500 mt-0.5 flex-shrink-0" />
+                <FaChartBar size={18} className="text-slate-500 mt-0.5 shrink-0" />
                 <div>
                     <h4 className="text-sm font-semibold text-slate-700 mb-1">Admin Overview</h4>
                     <p className="text-sm text-slate-500 leading-relaxed">

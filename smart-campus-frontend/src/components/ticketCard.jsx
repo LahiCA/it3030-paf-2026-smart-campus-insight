@@ -25,6 +25,21 @@ export default function TicketCard({ ticket }) {
                 {ticket.description.length > 160 ? `${ticket.description.slice(0, 160)}...` : ticket.description}
             </p>
 
+            {ticket.rating ? (
+                <div className="mt-4 rounded-3xl bg-slate-50 p-4 text-sm text-slate-700">
+                    <div className="font-semibold text-slate-900">Rating received</div>
+                    <div className="mt-2 flex items-center gap-2 text-amber-600">
+                        {Array.from({ length: 5 }, (_, index) => (
+                            <span key={index} className={ticket.rating > index ? "text-yellow-400" : "text-slate-300"}>
+                                ★
+                            </span>
+                        ))}
+                        <span className="font-semibold text-slate-700">{ticket.rating}/5</span>
+                    </div>
+                    {ticket.feedback ? <p className="mt-3 text-slate-600">"{ticket.feedback}"</p> : null}
+                </div>
+            ) : null}
+
             <div className="mt-4 flex flex-wrap items-center gap-2">
                 <span className={`rounded-full px-3 py-1 text-xs font-semibold ${PRIORITY_STYLES[ticket.priority] || "bg-slate-100 text-slate-700"}`}>
                     {ticket.priority}
@@ -37,9 +52,14 @@ export default function TicketCard({ ticket }) {
                 </span>
             </div>
 
+            <div className="mt-4 space-y-1 text-sm text-slate-500">
+                <p>First Response: {formatSlaDuration(ticket.createdAt, ticket.firstResponseAt)}</p>
+                <p>Resolution Time: {formatSlaDuration(ticket.createdAt, ticket.resolvedAt)}</p>
+            </div>
+
             <div className="mt-5 flex items-center justify-between text-sm">
                 <div className="text-slate-500">
-                    Reported by <span className="font-semibold text-slate-700">{ticket.userId}</span>
+                    Reported by <span className="font-semibold text-slate-700">{ticket.userDisplayId || ticket.userId}</span>
                 </div>
                 <Link
                     to={`/tickets/${ticket.id}`}
@@ -51,3 +71,21 @@ export default function TicketCard({ ticket }) {
         </article>
     );
 }
+
+function formatSlaDuration(createdAt, milestoneAt) {
+    if (!createdAt || !milestoneAt) return "Pending";
+    const start = new Date(createdAt);
+    const end = new Date(milestoneAt);
+    const totalMinutes = Math.floor((end.getTime() - start.getTime()) / 60000);
+    if (Number.isNaN(totalMinutes) || totalMinutes < 0) return "Pending";
+    if (totalMinutes < 1) return "Less than a minute";
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    if (hours > 0) {
+        return minutes > 0
+            ? `${hours} hr${hours !== 1 ? "s" : ""} ${minutes} min${minutes !== 1 ? "s" : ""}`
+            : `${hours} hr${hours !== 1 ? "s" : ""}`;
+    }
+    return `${totalMinutes} min${totalMinutes !== 1 ? "s" : ""}`;
+}
+

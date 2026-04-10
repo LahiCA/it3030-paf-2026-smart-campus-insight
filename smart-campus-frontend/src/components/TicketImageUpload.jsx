@@ -3,6 +3,7 @@ import { uploadImages } from "../api/ticketApi";
 
 const MAX_IMAGES = 3;
 const MAX_SIZE = 5 * 1024 * 1024;
+const ALLOWED_TYPES = ["image/jpeg", "image/png"];
 
 export default function TicketImageUpload({ ticketId, currentCount = 0, onUploaded }) {
     const [files, setFiles] = useState([]);
@@ -20,8 +21,8 @@ export default function TicketImageUpload({ ticketId, currentCount = 0, onUpload
             return `You can upload only ${MAX_IMAGES - currentCount} more image(s)`;
         }
         for (const file of selectedFiles) {
-            if (!file.type.startsWith("image/")) {
-                return `${file.name} is not an image`;
+            if (!ALLOWED_TYPES.includes(file.type)) {
+                return `${file.name} must be a JPG or PNG image`;
             }
             if (file.size > MAX_SIZE) {
                 return `${file.name} exceeds the 5MB limit`;
@@ -71,7 +72,7 @@ export default function TicketImageUpload({ ticketId, currentCount = 0, onUpload
                 <input
                     ref={inputRef}
                     type="file"
-                    accept="image/*"
+                    accept=".jpg,.jpeg,.png"
                     multiple
                     className="hidden"
                     onChange={handleChange}
@@ -80,7 +81,7 @@ export default function TicketImageUpload({ ticketId, currentCount = 0, onUpload
                     Evidence Upload
                 </span>
                 <p className="mt-2 text-lg font-semibold text-slate-900">Select up to 3 screenshots or photos</p>
-                <p className="mt-1 text-sm text-slate-500">PNG, JPG, or WEBP. Max 5MB each.</p>
+                <p className="mt-1 text-sm text-slate-500">PNG or JPG only. Max 5MB each.</p>
             </label>
 
             {error ? (

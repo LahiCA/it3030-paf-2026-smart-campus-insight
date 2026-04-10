@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.smartcampus.backend.tickets.dto.AssignTechnicianRequest;
 import com.smartcampus.backend.tickets.dto.CommentCreateRequest;
 import com.smartcampus.backend.tickets.dto.CommentUpdateRequest;
+import com.smartcampus.backend.tickets.dto.RateTicketRequest;
 import com.smartcampus.backend.tickets.dto.StatusUpdateRequest;
 import com.smartcampus.backend.tickets.dto.TicketCreateRequest;
 import com.smartcampus.backend.tickets.dto.TicketUpdateRequest;
@@ -37,12 +38,15 @@ public class TicketService {
 
     private static final String ROLE_ADMIN = "ADMIN";
     private static final String ROLE_TECHNICIAN = "TECHNICIAN";
+    private static final String ROLE_LECTURER = "LECTURER";
+    private static final String ROLE_USER = "USER";
     private static final String STATUS_OPEN = "OPEN";
     private static final String STATUS_IN_PROGRESS = "IN_PROGRESS";
     private static final String STATUS_RESOLVED = "RESOLVED";
     private static final String STATUS_CLOSED = "CLOSED";
     private static final String STATUS_REJECTED = "REJECTED";
     private static final int MAX_ATTACHMENTS = 3;
+    private static final long MAX_IMAGE_SIZE_BYTES = 5L * 1024 * 1024;
     private static final Set<String> STATUS_MANAGERS = Set.of(ROLE_ADMIN, ROLE_TECHNICIAN);
 
     private final TicketRepository ticketRepository;
@@ -68,6 +72,8 @@ public class TicketService {
                 .priority(request.getPriority().trim().toUpperCase())
                 .status(STATUS_OPEN)
                 .userId(request.getUserId().trim())
+                .userDisplayId(request.getUserDisplayId().trim())
+                .contactNumber(request.getContactNumber().trim())
                 .createdAt(now)
                 .updatedAt(now)
                 .build();
@@ -93,6 +99,22 @@ public class TicketService {
                 .toList();
     }
 
+    public List<Ticket> getTicketsAssignedTo(String assignedTo, String requesterRole, String requesterDisplayId) {
+        requireAnyRole(requesterRole, Set.of(ROLE_ADMIN, ROLE_TECHNICIAN));
+        String normalizedRequesterRole = normalize(requesterRole);
+        String normalizedAssignedTo = assignedTo == null ? "" : assignedTo.trim();
+        String normalizedRequesterDisplayId = requesterDisplayId == null ? "" : requesterDisplayId.trim();
+
+        if (ROLE_TECHNICIAN.equals(normalizedRequesterRole)
+                && !normalizedAssignedTo.equalsIgnoreCase(normalizedRequesterDisplayId)) {
+            throw new RuntimeException("Technicians can only view tickets assigned to themselves");
+        }
+
+        return ticketRepository.findByAssignedToOrderByCreatedAtDesc(normalizedAssignedTo).stream()
+                .map(this::hydrate)
+                .toList();
+    }
+
     public Ticket updateTicket(String id, TicketUpdateRequest request, String requesterUserId, String requesterRole) {
         Ticket ticket = findTicket(id);
         if (!ROLE_ADMIN.equals(normalize(requesterRole)) && !Objects.equals(ticket.getUserId(), requesterUserId)) {
@@ -106,6 +128,7 @@ public class TicketService {
         ticket.setDescription(request.getDescription().trim());
         ticket.setCategory(request.getCategory().trim());
         ticket.setPriority(request.getPriority().trim().toUpperCase());
+        ticket.setContactNumber(request.getContactNumber().trim());
         ticket.setUpdatedAt(LocalDateTime.now());
 
         return hydrate(ticketRepository.save(ticket));
@@ -123,10 +146,23 @@ public class TicketService {
         ticketRepository.delete(ticket);
     }
 
-    public Ticket updateStatus(String id, StatusUpdateRequest request, String requesterRole) {
+    public Ticket updateStatus(String id, StatusUpdateRequest request, String requesterRole,
+            String requesterDisplayId) {
         requireAnyRole(requesterRole, STATUS_MANAGERS);
         Ticket ticket = findTicket(id);
         String nextStatus = normalize(request.getStatus());
+        String normalizedRequesterRole = normalize(requesterRole);
+
+        if (ROLE_TECHNICIAN.equals(normalizedRequesterRole)) {
+            if (!StringUtils.hasText(ticket.getAssignedTo()) || !ticket.getAssignedTo().trim()
+                    .equalsIgnoreCase(requesterDisplayId == null ? "" : requesterDisplayId.trim())) {
+                throw new RuntimeException("Technicians can only update tickets assigned to them");
+            }
+            if (STATUS_REJECTED.equals(nextStatus)) {
+                throw new RuntimeException("Only ADMIN can reject a ticket");
+            }
+        }
+
         validateTransition(ticket.getStatus(), nextStatus);
 
         if (STATUS_RESOLVED.equals(nextStatus) && !StringUtils.hasText(request.getResolutionNotes())) {
@@ -134,6 +170,14 @@ public class TicketService {
         }
         if (STATUS_REJECTED.equals(nextStatus) && !StringUtils.hasText(request.getRejectionReason())) {
             throw new RuntimeException("Rejection reason is required when rejecting a ticket");
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        if (STATUS_IN_PROGRESS.equals(nextStatus) && ticket.getFirstResponseAt() == null) {
+            ticket.setFirstResponseAt(now);
+        }
+        if (STATUS_RESOLVED.equals(nextStatus) && ticket.getResolvedAt() == null) {
+            ticket.setResolvedAt(now);
         }
 
         ticket.setStatus(nextStatus);
@@ -145,8 +189,9 @@ public class TicketService {
         }
         if (STATUS_REJECTED.equals(nextStatus)) {
             ticket.setAssignedTo(null);
+            ticket.setResolutionNotes(null);
         }
-        ticket.setUpdatedAt(LocalDateTime.now());
+        ticket.setUpdatedAt(now);
 
         return hydrate(ticketRepository.save(ticket));
     }
@@ -163,7 +208,46 @@ public class TicketService {
 
         if (STATUS_OPEN.equals(ticket.getStatus())) {
             ticket.setStatus(STATUS_IN_PROGRESS);
+            if (ticket.getFirstResponseAt() == null) {
+                ticket.setFirstResponseAt(LocalDateTime.now());
+            }
         }
+
+        return hydrate(ticketRepository.save(ticket));
+    }
+
+    public Ticket rateTicket(String id, RateTicketRequest request, String requesterUserId, String requesterDisplayId,
+            String requesterRole) {
+        Ticket ticket = findTicket(id);
+
+        // Only lecturer or user owners may submit ratings
+        if (!ROLE_LECTURER.equals(requesterRole) && !ROLE_USER.equals(requesterRole)) {
+            throw new RuntimeException("Only the ticket owner can submit a rating");
+        }
+
+        if (!Objects.equals(ticket.getUserId(), requesterUserId)
+                || !Objects.equals(ticket.getUserDisplayId(), requesterDisplayId)) {
+            throw new RuntimeException("Only the ticket owner can submit a rating");
+        }
+
+        if (request.getRating() == null || request.getRating() < 1 || request.getRating() > 5) {
+            throw new RuntimeException("Rating must be between 1 and 5");
+        }
+
+        if (!STATUS_CLOSED.equals(ticket.getStatus())) {
+            throw new RuntimeException("Rating can only be submitted for closed tickets");
+        }
+
+        if (ticket.getRating() != null) {
+            throw new RuntimeException("Rating has already been submitted for this ticket");
+        }
+
+        ticket.setRating(request.getRating());
+        if (StringUtils.hasText(request.getFeedback())) {
+            ticket.setFeedback(request.getFeedback().trim());
+        }
+        ticket.setRatedAt(LocalDateTime.now());
+        ticket.setUpdatedAt(LocalDateTime.now());
 
         return hydrate(ticketRepository.save(ticket));
     }
@@ -221,6 +305,8 @@ public class TicketService {
         Comment comment = Comment.builder()
                 .ticketId(ticketId)
                 .userId(request.getUserId().trim())
+                .userDisplayId(
+                        StringUtils.hasText(request.getUserDisplayId()) ? request.getUserDisplayId().trim() : null)
                 .message(request.getMessage().trim())
                 .createdAt(now)
                 .updatedAt(now)
@@ -320,8 +406,12 @@ public class TicketService {
             throw new RuntimeException("Uploaded image cannot be empty");
         }
         String contentType = file.getContentType();
-        if (contentType == null || !contentType.startsWith("image/")) {
-            throw new RuntimeException("Only image files are allowed");
+        if (contentType == null || (!MediaType.IMAGE_JPEG_VALUE.equals(contentType)
+                && !MediaType.IMAGE_PNG_VALUE.equals(contentType))) {
+            throw new RuntimeException("Only JPG and PNG image files are allowed");
+        }
+        if (file.getSize() > MAX_IMAGE_SIZE_BYTES) {
+            throw new RuntimeException("Each image must be 5MB or smaller");
         }
     }
 

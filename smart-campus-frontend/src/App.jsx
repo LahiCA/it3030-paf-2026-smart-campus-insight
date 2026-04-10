@@ -5,6 +5,7 @@ import { GOOGLE_CLIENT_ID, ROUTES } from './utils/constants';
 
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
+import { ChatbotProvider, FloatingChatButton, ChatbotPanel } from './chatbot';
 
 import PrivateRoute from './components/PrivateRouteTailwind';
 import Layout from './components/Layout';
@@ -18,7 +19,7 @@ import NotificationPreferences from './components/NotificationPreferences';
 import NotificationManagementPage from './components/NotificationManagementPage';
 
 import LecturerDashboard from './components/LecturerDashboard';
-import TechnicianDashboard from './components/TechnicianDashboard';
+import TechnicianDashboard from './components/TechnicianDashboardTailwind';
 import AdminDashboard from './components/AdminDashboard';
 import AdminPanel from './components/AdminPanelTailwind';
 import ResourcesPage from './components/ResourcesPageTailwind';
@@ -30,6 +31,7 @@ import BWSidebar from './layout/BWSidebar';
 import BWCreateBooking from './pages/BWCreateBooking';
 import BWMyBookings from './pages/BWMyBookings';
 import BWAdminBookingList from './pages/BWAdminBookingList';
+import BWAdminBookingTable from './components/BWAdminBookingTable';
 
 import CreateTicketPage from './pages/CreateTicketPage';
 import TicketDashboardPage from './pages/TicketDashboardPage';
@@ -50,7 +52,7 @@ const RoleDashboard = () => {
 // Layout wrapper for booking system
 const BookingTabs = () => {
   const { user, isAdmin } = useAuth();
-  
+
   const tabs = [
     { name: 'Create Booking', path: '/bw-create-booking' },
     { name: 'My Bookings', path: '/bw-my-bookings' },
@@ -66,10 +68,9 @@ const BookingTabs = () => {
           key={tab.path}
           to={tab.path}
           className={({ isActive }) =>
-            `pb-3 text-sm font-medium border-b-2 transition-colors ${
-              isActive
-                ? 'border-teal-500 text-teal-600'
-                : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+            `pb-3 text-sm font-medium border-b-2 transition-colors ${isActive
+              ? 'border-teal-500 text-teal-600'
+              : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
             }`
           }
         >
@@ -95,6 +96,30 @@ const BookingLayout = ({ children }) => (
   </div>
 );
 
+const TicketLayout = ({ children }) => (
+  <div className="flex h-screen overflow-hidden bg-slate-50 font-['Poppins',sans-serif]">
+    <Sidebar />
+    <div className="flex flex-1 flex-col overflow-hidden">
+      <main className="scrollbar-ui flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-8">
+        <div className="mx-auto max-w-7xl">
+          {children}
+        </div>
+      </main>
+    </div>
+  </div>
+);
+
+function ChatbotWrapper() {
+  const location = useLocation();
+  if (location.pathname === ROUTES.LOGIN || location.pathname === '/') return null;
+  return (
+    <>
+      <FloatingChatButton />
+      <ChatbotPanel />
+    </>
+  );
+}
+
 function App() {
   if (!GOOGLE_CLIENT_ID) {
     return <div>Missing Google Client ID</div>;
@@ -104,10 +129,14 @@ function App() {
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <AuthProvider>
         <NotificationProvider>
+          <ChatbotProvider>
           <Router>
 
             {/* Global Navbar */}
             <Navbar />
+
+            {/* AI Chatbot – floating on all pages except login */}
+            <ChatbotWrapper />
 
             <Routes>
               {/* Root redirect */}
@@ -225,7 +254,7 @@ function App() {
               />
 
               <Route
-                path="/create"
+                path="/ticket-create"
                 element={
                   <PrivateRoute
                     element={<Layout><CreateTicketPage /></Layout>}
@@ -238,6 +267,7 @@ function App() {
 
             </Routes>
           </Router>
+          </ChatbotProvider>
         </NotificationProvider>
       </AuthProvider>
     </GoogleOAuthProvider>
