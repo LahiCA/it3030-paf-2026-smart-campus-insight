@@ -22,7 +22,9 @@ const RESOURCE_TYPES = [
   'LECTURE_HALL',
   'LAB',
   'MEETING_ROOM',
+  'EQUIPMENT',
   'SPORTS',
+  'STUDY_ROOM',
   'LIBRARY',
   'AUDITORIUM',
   'OTHER',
@@ -34,10 +36,24 @@ const TYPE_LABELS = {
   LECTURE_HALL: 'Lecture Hall',
   LAB: 'Lab',
   MEETING_ROOM: 'Meeting Room',
+  EQUIPMENT: 'Equipment',
   SPORTS: 'Sports',
+  STUDY_ROOM: 'Study Room',
   LIBRARY: 'Library',
   AUDITORIUM: 'Auditorium',
   OTHER: 'Other',
+};
+
+const RESOURCE_NAMES_BY_TYPE = {
+  LECTURE_HALL: ['Lecture Hall A', 'Lecture Hall B', 'Lecture Hall C', 'Lecture Hall D', 'Lecture Hall E'],
+  LAB: ['Computer Lab A', 'Computer Lab B', 'Physics Lab', 'Chemistry Lab', 'Electronics Lab'],
+  MEETING_ROOM: ['Meeting Room 1', 'Meeting Room 2', 'Meeting Room 3', 'Conference Room A', 'Conference Room B'],
+  EQUIPMENT: ['Projector', 'High-end Camera', 'Microphone', 'Whiteboard', 'Laptops'],
+  SPORTS: ['Basketball Court', 'Tennis Court', 'Football Field', 'Indoor Gym', 'Swimming Pool'],
+  STUDY_ROOM: ['Study Room 1', 'Study Room 2', 'Study Room 3', 'Group Study A'],
+  LIBRARY: ['Main Library', 'Study Area 1', 'Study Area 2', 'Discussion Room A'],
+  AUDITORIUM: ['Main Auditorium', 'Mini Auditorium'],
+  OTHER: ['Cafeteria', 'Student Center', 'Medical Center', 'Parking Lot A', 'Other'],
 };
 
 const ResourcesPage = () => {
@@ -51,7 +67,7 @@ const ResourcesPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingResource, setEditingResource] = useState(null);
   const [formData, setFormData] = useState({
-    name: '',
+    name: RESOURCE_NAMES_BY_TYPE['LECTURE_HALL'][0],
     type: 'LECTURE_HALL',
     location: '',
     capacity: 10,
@@ -106,7 +122,7 @@ const ResourcesPage = () => {
   const openCreateModal = () => {
     setEditingResource(null);
     setFormData({
-      name: '',
+      name: RESOURCE_NAMES_BY_TYPE['LECTURE_HALL'][0],
       type: 'LECTURE_HALL',
       location: '',
       capacity: 10,
@@ -299,16 +315,50 @@ const ResourcesPage = () => {
               <form onSubmit={handleSubmit} className="rs-form">
                 <div className="rs-form-row">
                   <div className="rs-form-group">
-                    <label className="rs-label">Resource Name <span className="rs-req">*</span></label>
-                    <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="e.g. Lecture Hall A" required className="rs-input" />
-                  </div>
-                  <div className="rs-form-group">
                     <label className="rs-label">Type <span className="rs-req">*</span></label>
-                    <select value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value })} className="rs-select">
+                    <select 
+                      value={formData.type} 
+                      onChange={(e) => {
+                        const newType = e.target.value;
+                        setFormData({ 
+                          ...formData, 
+                          type: newType,
+                          name: RESOURCE_NAMES_BY_TYPE[newType][0] // auto-select first name option
+                        });
+                      }} 
+                      className="rs-select"
+                    >
                       {RESOURCE_TYPES.map((t) => (
                         <option key={t} value={t}>{TYPE_LABELS[t]}</option>
                       ))}
                     </select>
+                  </div>
+                  <div className="rs-form-group">
+                    <label className="rs-label">Resource Name <span className="rs-req">*</span></label>
+                    <select 
+                      value={(formData.type && formData.name && !RESOURCE_NAMES_BY_TYPE[formData.type]?.includes(formData.name)) ? 'Other' : formData.name} 
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })} 
+                      required 
+                      className="rs-select"
+                    >
+                      {RESOURCE_NAMES_BY_TYPE[formData.type]?.map((nameOption) => (
+                        <option key={nameOption} value={nameOption}>
+                          {nameOption}
+                        </option>
+                      ))}
+                    </select>
+                    {(formData.name === 'Other' || (formData.type && formData.name && !RESOURCE_NAMES_BY_TYPE[formData.type]?.includes(formData.name))) && (
+                      <div className="mt-3" style={{marginTop: '10px'}}>
+                        <input
+                          type="text"
+                          placeholder={formData.type === 'OTHER' ? "Please specify what you need" : "Please specify the equipment"}
+                          value={formData.name === 'Other' ? '' : formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value || 'Other' })}
+                          className="rs-input"
+                          required
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="rs-form-row">

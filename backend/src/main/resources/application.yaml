@@ -2,6 +2,10 @@ spring:
   application:
     name: backend
 
+  # Load .env file (key=value format) so env vars like GEMINI_API_KEY are available
+  config:
+    import: optional:file:.env[.properties]
+
   # MongoDB Atlas Configuration
   data:
     mongodb:
@@ -42,7 +46,7 @@ admin:
 # ============================================
 gemini:
   api:
-    key: ${GEMINI_API_KEY:AIzaSyClA4ypYyefWvFgTciSmqvOuKGByksrM6w}
+    key: ${GEMINI_API_KEY:mock-api-key-for-testing}
     url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent
 
 # ============================================

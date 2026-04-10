@@ -66,6 +66,7 @@ const NotificationManagementPage = () => {
     const [editingId, setEditingId] = useState(null);
     const [formData, setFormData] = useState(EMPTY_FORM);
     const [formError, setFormError] = useState('');
+    const [fieldErrors, setFieldErrors] = useState({});
     const [submitting, setSubmitting] = useState(false);
 
     // Delete confirm
@@ -99,6 +100,7 @@ const NotificationManagementPage = () => {
     const openAddModal = () => {
         setFormData(EMPTY_FORM);
         setFormError('');
+        setFieldErrors({});
         setEditingId(null);
         setModalMode('add');
         setShowModal(true);
@@ -107,6 +109,7 @@ const NotificationManagementPage = () => {
     const openEditModal = (n) => {
         setFormData({ message: n.message, type: n.type, targetAudience: n.targetAudience || 'ALL' });
         setFormError('');
+        setFieldErrors({});
         setEditingId(n.id);
         setModalMode('edit');
         setShowModal(true);
@@ -116,18 +119,38 @@ const NotificationManagementPage = () => {
         setShowModal(false);
         setFormData(EMPTY_FORM);
         setFormError('');
+        setFieldErrors({});
         setEditingId(null);
     };
 
     const handleFormChange = (e) => {
-        setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+        const { name, value } = e.target;
+        setFormData((prev) => ({ ...prev, [name]: value }));
+        setFieldErrors((prev) => ({ ...prev, [name]: '' }));
+    };
+
+    const validateNotificationForm = () => {
+        const errors = {};
+        const msg = formData.message.trim();
+        if (!msg) {
+            errors.message = 'Message is required.';
+        } else if (msg.length < 5) {
+            errors.message = 'Message must be at least 5 characters.';
+        } else if (msg.length > 500) {
+            errors.message = 'Message cannot exceed 500 characters.';
+        }
+        if (formData.targetAudience === 'SPECIFIC_USER' && !formData.selectedUserId) {
+            errors.selectedUserId = 'Please select a user.';
+        }
+        return errors;
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setFormError('');
-        if (!formData.message.trim()) {
-            setFormError('Message is required');
+        const errors = validateNotificationForm();
+        if (Object.keys(errors).length > 0) {
+            setFieldErrors(errors);
             return;
         }
         setSubmitting(true);
@@ -135,11 +158,6 @@ const NotificationManagementPage = () => {
             let result;
             if (modalMode === 'add') {
                 if (formData.targetAudience === 'SPECIFIC_USER') {
-                    if (!formData.selectedUserId) {
-                        setFormError('Please select a user');
-                        setSubmitting(false);
-                        return;
-                    }
                     result = await adminCreatePersonalNotification({
                         userId: formData.selectedUserId,
                         message: formData.message,
@@ -390,8 +408,20 @@ const NotificationManagementPage = () => {
                                     onChange={handleFormChange}
                                     rows={3}
                                     placeholder="Enter notification message..."
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
+                                    className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 resize-none ${
+                                        fieldErrors.message
+                                            ? 'border-red-400 focus:ring-red-300'
+                                            : 'border-gray-300 focus:ring-blue-400'
+                                    }`}
                                 />
+                                <div className="flex justify-between mt-1">
+                                    {fieldErrors.message
+                                        ? <p className="text-xs text-red-500">{fieldErrors.message}</p>
+                                        : <span />}
+                                    <span className={`text-xs ${
+                                        formData.message.length > 500 ? 'text-red-500' : 'text-gray-400'
+                                    }`}>{formData.message.length}/500</span>
+                                </div>
                             </div>
 
                             {/* Type */}
@@ -434,7 +464,11 @@ const NotificationManagementPage = () => {
                                         name="selectedUserId"
                                         value={formData.selectedUserId}
                                         onChange={handleFormChange}
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                        className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 ${
+                                            fieldErrors.selectedUserId
+                                                ? 'border-red-400 focus:ring-red-300'
+                                                : 'border-gray-300 focus:ring-blue-400'
+                                        }`}
                                     >
                                         <option value="">-- Select a user --</option>
                                         {users.map((u) => (
@@ -443,6 +477,9 @@ const NotificationManagementPage = () => {
                                             </option>
                                         ))}
                                     </select>
+                                    {fieldErrors.selectedUserId && (
+                                        <p className="mt-1 text-xs text-red-500">{fieldErrors.selectedUserId}</p>
+                                    )}
                                 </div>
                             )}
 

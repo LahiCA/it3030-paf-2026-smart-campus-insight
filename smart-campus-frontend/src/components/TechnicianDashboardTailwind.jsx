@@ -207,9 +207,14 @@ const TechnicianDashboardTailwind = () => {
                           </span>
                         </div>
                       </div>
-                      <Link to={`/tickets/${ticket.id}`} className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-teal-700 shadow-sm transition hover:bg-teal-50">
-                        View details
-                      </Link>
+                      <div className="flex flex-col gap-2 sm:flex-row">
+                        <Link to={`/tickets/${ticket.id}`} className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-teal-700 shadow-sm transition hover:bg-teal-50">
+                          View details
+                        </Link>
+                        <Link to={`/technician/tickets/${ticket.id}/timeline`} className="rounded-full bg-teal-50 px-4 py-2 text-sm font-semibold text-teal-700 transition hover:bg-teal-100">
+                          View Timeline
+                        </Link>
+                      </div>
                     </div>
 
                     <div className="mt-5 grid gap-4 md:grid-cols-2">

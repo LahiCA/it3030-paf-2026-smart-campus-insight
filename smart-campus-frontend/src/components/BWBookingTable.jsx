@@ -86,13 +86,21 @@ function BWBookingTable({ bookings, onCancelBooking, actionLoadingId }) {
                     </div>
                   </td>
                   <td className="px-6 py-5">
-                    <BWBookingStatusBadge status={booking.status} />
-                    {booking.status === "REJECTED" && (
-                      <p className="text-xs text-red-500 mt-2 max-w-45 bg-red-50 p-2 rounded-md shadow-sm border border-red-100" title={getRemarks(booking)}>{getRemarks(booking)}</p>
-                    )}
-                    {booking.status === "CANCELLED" && (
-                       <p className="text-xs text-slate-500 mt-2 max-w-45 bg-slate-100 p-2 rounded-md shadow-sm border border-slate-200" title={getRemarks(booking)}>{getRemarks(booking)}</p>
-                    )}
+                    <div className="flex flex-col gap-2 relative">
+                      <BWBookingStatusBadge status={booking.status} />
+                      {booking.status === "REJECTED" && (
+                        <p className="text-xs text-red-600 mt-1 max-w-[180px] bg-red-50 p-2 rounded-md shadow-sm border border-red-100" title={getRemarks(booking)}>
+                          <span className="font-semibold block mb-0.5 border-b border-red-200 pb-0.5">Reason:</span>
+                          {getRemarks(booking)}
+                        </p>
+                      )}
+                      {booking.status === "CANCELLED" && (
+                         <p className="text-xs text-slate-600 mt-1 max-w-[180px] bg-slate-100 p-2 rounded-md shadow-sm border border-slate-200" title={getRemarks(booking)}>
+                           <span className="font-semibold block mb-0.5 border-b border-slate-200 pb-0.5">Cancel Reason:</span>
+                           {getRemarks(booking)}
+                         </p>
+                      )}
+                    </div>
                   </td>
                   <td className="px-6 py-5">
                     {booking.status === "APPROVED" ? (
