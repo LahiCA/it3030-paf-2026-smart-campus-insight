@@ -46,7 +46,7 @@ admin:
 # ============================================
 gemini:
   api:
-    key: ${GEMINI_API_KEY}
+    key: ${GEMINI_API_KEY:mock-api-key-for-testing}
     url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent
 
 # ============================================
