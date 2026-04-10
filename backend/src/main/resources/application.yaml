@@ -2,6 +2,10 @@ spring:
   application:
     name: backend
 
+  # Load .env file (key=value format) so env vars like GEMINI_API_KEY are available
+  config:
+    import: optional:file:.env[.properties]
+
   # MongoDB Atlas Configuration
   data:
     mongodb:

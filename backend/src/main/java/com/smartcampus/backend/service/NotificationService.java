@@ -308,7 +308,18 @@ public class NotificationService {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new UserNotFoundException("Notification not found with ID: " + notificationId));
 
-        // Security check
+        // Broadcast notification: don't delete from DB, just dismiss for this user
+        if (notification.getTargetAudience() != null && notification.getUserId() == null) {
+            if (notification.getDismissedByUserIds() == null) {
+                notification.setDismissedByUserIds(new java.util.HashSet<>());
+            }
+            notification.getDismissedByUserIds().add(userId);
+            notificationRepository.save(notification);
+            log.info("Broadcast notification {} dismissed by user {}", notificationId, userId);
+            return;
+        }
+
+        // Personal notification: security check then delete
         if (!notification.getUserId().equals(userId)) {
             throw new IllegalArgumentException("You can only delete your own notifications");
         }
@@ -485,9 +496,12 @@ public class NotificationService {
         // Personal notifications
         List<Notification> personal = notificationRepository.findByUserIdOrderByCreatedAtDesc(userId);
 
-        // Broadcast notifications for this role + ALL
+        // Broadcast notifications for this role + ALL (exclude dismissed ones)
         List<Notification> broadcasts = notificationRepository
-                .findByTargetAudienceInOrderByCreatedAtDesc(List.of("ALL", role));
+                .findByTargetAudienceInOrderByCreatedAtDesc(List.of("ALL", role))
+                .stream()
+                .filter(b -> b.getDismissedByUserIds() == null || !b.getDismissedByUserIds().contains(userId))
+                .collect(Collectors.toList());
 
         // Merge and sort by createdAt desc
         List<Notification> merged = new java.util.ArrayList<>();
@@ -511,10 +525,11 @@ public class NotificationService {
 
         long personal = notificationRepository.countByUserIdAndReadFalse(userId);
 
-        // Count broadcast notifications not yet read by this user
+        // Count broadcast notifications not yet read and not dismissed by this user
         List<Notification> broadcasts = notificationRepository
                 .findByTargetAudienceInOrderByCreatedAtDesc(List.of("ALL", role));
         long unreadBroadcasts = broadcasts.stream()
+                .filter(b -> b.getDismissedByUserIds() == null || !b.getDismissedByUserIds().contains(userId))
                 .filter(b -> b.getReadByUserIds() == null || !b.getReadByUserIds().contains(userId))
                 .count();
 

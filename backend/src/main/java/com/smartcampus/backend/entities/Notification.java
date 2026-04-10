@@ -55,6 +55,14 @@ public class Notification {
     @lombok.Builder.Default
     private Set<String> readByUserIds = new HashSet<>();
 
+    /**
+     * Set of user IDs who have dismissed/deleted this broadcast notification.
+     * Only used for broadcast notifications (where targetAudience is set).
+     * Dismissed broadcasts are excluded from the user's notification list.
+     */
+    @lombok.Builder.Default
+    private Set<String> dismissedByUserIds = new HashSet<>();
+
     @lombok.Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
