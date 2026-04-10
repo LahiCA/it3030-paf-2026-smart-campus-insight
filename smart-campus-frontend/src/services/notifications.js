@@ -191,3 +191,23 @@ export const adminDeleteNotification = async (id) => {
     return { success: false, message: error.response?.data?.message || 'Failed to delete notification' };
   }
 };
+
+export const getAllUsers = async () => {
+  try {
+    const response = await axiosInstance.get('/users');
+    return { success: true, users: Array.isArray(response.data) ? response.data : [] };
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    return { success: false, users: [], message: error.response?.data?.message || 'Failed to fetch users' };
+  }
+};
+
+export const adminCreatePersonalNotification = async ({ userId, message, type }) => {
+  try {
+    const response = await axiosInstance.post('/notifications', { userId, message, type });
+    return { success: true, notification: response.data };
+  } catch (error) {
+    console.error('Error creating personal notification:', error);
+    return { success: false, message: error.response?.data?.message || 'Failed to create notification' };
+  }
+};
