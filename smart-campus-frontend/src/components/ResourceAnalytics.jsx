@@ -13,7 +13,7 @@ const CAP_BUCKETS = [
   { label: 'Large (61–150)',     min: 61,  max: 150 },
   { label: 'Extra large (150+)', min: 151, max: Infinity },
 ];
-const CAP_COLORS = ['#818cf8', '#6366f1', '#4f46e5', '#3730a3'];
+const CAP_COLORS = ['#2dd4bf', '#14b8a6', '#0d9488', '#0f766e'];
 
 export default function ResourceAnalytics({ resources = [] }) {
   const [open, setOpen] = useState(false);
@@ -72,11 +72,11 @@ export default function ResourceAnalytics({ resources = [] }) {
         datasets: [{
           label: 'Resources',
           data: Object.values(stats.byType),
-          backgroundColor: '#6366f1cc',
-          borderColor: '#6366f1',
+          backgroundColor: '#2dd4bf99',
+          borderColor: '#14b8a6',
           borderWidth: 1,
           borderRadius: 5,
-          hoverBackgroundColor: '#4f46e5',
+          hoverBackgroundColor: '#0d9488',
         }],
       },
       options: {

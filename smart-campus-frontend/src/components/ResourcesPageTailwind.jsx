@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import  ResourceAnalytics from '../components/ResourceAnalytics'
+//import Chatbot from './ChatBot';
 import {
   getAllResources,
   createResource,
@@ -47,7 +48,8 @@ const statusClassMap = {
 };
 
 const inputClassName =
-  'w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10';
+  //'w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10';
+  'w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10';
 
 const ResourcesPageTailwind = () => {
   const { isAdmin } = useAuth();
@@ -196,22 +198,32 @@ const ResourcesPageTailwind = () => {
 
   return (
     <div className="mx-auto w-full max-w-[1400px] px-4 py-8 font-['Poppins',sans-serif] sm:px-6">
-      <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900">Campus Resources</h1>
-          <p className="mt-1 text-sm text-slate-500">Manage all campus facilities and assets</p>
+      <div className="mb-6">
+        {/* Header always on top */}
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900">Campus Resources</h1>
+            <p className="mt-1 text-sm text-slate-500">Manage all campus facilities and assets</p>
+          </div>
         </div>
+
+        {/* Analytics below header */}
         <ResourceAnalytics resources={resources} isAdmin={isAdmin()} />
+
+        {/* Add Resource button below analytics */}
         {isAdmin() && (
-          <button
-            onClick={openCreateModal}
-            className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 hover:shadow-lg hover:shadow-indigo-500/20"
-          >
-            <FaPlus size={14} />
-            Add Resource
-          </button>
+          <div className="flex justify-end mt-3">
+            <button
+              onClick={openCreateModal}
+              className="inline-flex items-center gap-2 rounded-xl bg-teal-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-600 hover:shadow-lg hover:shadow-teal-500/20"
+            >
+              <FaPlus size={14} />
+              Add Resource
+            </button>
+          </div>
         )}
-      </div>
+</div>
+      
 
       {success && (
         <div className="mb-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
@@ -304,7 +316,7 @@ const ResourcesPageTailwind = () => {
               key={resource.id}
               className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
             >
-              <div className="flex h-28 items-center justify-center bg-[linear-gradient(135deg,#e0e7ff_0%,#f5f3ff_50%,#dbeafe_100%)]">
+              <div className="flex h-28 items-center justify-center bg-[linear-gradient(135deg,#F0FDFA_0%,#CCFBF1_50%,#99F6E4_100%)]">
                 <FaBuilding size={40} className="text-indigo-400/40" />
               </div>
               <div className="p-4">
@@ -343,7 +355,7 @@ const ResourcesPageTailwind = () => {
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => openEditModal(resource)}
-                        className="rounded-lg p-2 text-slate-400 transition hover:bg-indigo-50 hover:text-indigo-600"
+                        className="rounded-lg p-2 text-slate-400 transition hover:bg-teal-50 hover:text-teal-600"
                         title="Edit"
                       >
                         <FaEdit size={14} />
@@ -477,7 +489,7 @@ const ResourcesPageTailwind = () => {
                 </button>
                 <button
                   type="submit"
-                  className="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 hover:shadow-lg hover:shadow-indigo-500/20"
+                  className="rounded-xl bg-teal-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-600 hover:shadow-lg hover:shadow-teal-500/20"
                 >
                   {editingResource ? 'Update Resource' : 'Create Resource'}
                 </button>
@@ -725,7 +737,7 @@ export default ResourcesPageTailwind;
 //         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
 //           {filteredResources.map((resource) => (
 //             <div key={resource.id} className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
-//               <div className="flex h-28 items-center justify-center bg-[linear-gradient(135deg,#e0e7ff_0%,#f5f3ff_50%,#dbeafe_100%)]">
+//               <div className="flex h-28 items-center justify-center bg-[linear-(135deg,#e0e7ff_0%,#f5f3ff_50%,#dbeafe_100%)]">
 //                 <FaBuilding size={40} className="text-indigo-400/40" />
 //               </div>
 //               <div className="p-4">
