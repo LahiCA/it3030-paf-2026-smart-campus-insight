@@ -104,6 +104,10 @@ export default function TicketDetailsPage() {
     };
 
     const handleDelete = async () => {
+        const confirmDelete = window.confirm("Are you sure you want to delete this ticket? This action cannot be undone.");
+
+        if (!confirmDelete) return; // ❗ stop if user clicks Cancel
+
         setBusy(true);
         setError("");
         try {
