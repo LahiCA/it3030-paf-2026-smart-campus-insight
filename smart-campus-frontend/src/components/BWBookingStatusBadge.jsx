@@ -1,3 +1,7 @@
+/**
+ * Module B: Booking Management (Member 2)
+ * Helper component to render a consistent UI badge for different booking statuses.
+ */
 function BWBookingStatusBadge({ status }) {
   const getStatusStyle = () => {
     switch (status) {

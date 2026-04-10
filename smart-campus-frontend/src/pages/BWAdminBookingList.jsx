@@ -8,15 +8,26 @@ import {
 import BWAdminBookingTable from "../components/BWAdminBookingTable";
 import BWBookingCalendar from "../components/BWBookingCalendar";
 
+/**
+ * Module B: Booking Management Dashboard (Member 2)
+ * Handles state logic, filtering, scaling the UI widgets like Calendars and Tables.
+ * Integrates Axios service logic back to the Spring Boot REST API for administrative view.
+ */
 function BWAdminBookingList() {
+  // Booking component core states
   const [bookings, setBookings] = useState([]);
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  
+  // Loading tracking per booking id iteration
   const [actionLoadingId, setActionLoadingId] = useState("");
+  
+  // Focus variables from the calendar widget
   const [highlightedBookingId, setHighlightedBookingId] = useState(null);
 
+  // Read all booking resources wrapper
   const fetchBookings = async () => {
     try {
       const response = await getAllBWBookings();
@@ -50,6 +61,7 @@ function BWAdminBookingList() {
     return result;
   }, [bookings, statusFilter, searchQuery]);
 
+  // Invokes PATCH action (Admin)
   const handleApproveBooking = async (bookingId) => {
     setSuccessMessage("");
     setErrorMessage("");
@@ -70,6 +82,7 @@ function BWAdminBookingList() {
     }
   };
 
+  // Invokes PATCH action + Reject message (Admin)
   const handleRejectBooking = async (bookingId, reason) => {
     setSuccessMessage("");
     setErrorMessage("");
@@ -90,6 +103,8 @@ function BWAdminBookingList() {
     }
   };
 
+  // Implements the DELETE HTTP method to completely erase a log 
+  // Forces reason text validation via basic DOM window prompts
   const handleDeleteBooking = async (booking) => {
     let reasonText = "";
     

@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
 import BWBookingStatusBadge from "./BWBookingStatusBadge";
 
+/**
+ * Module B: Booking Management (Member 2)
+ * Responsible for rendering the Admin Booking Management Table UI.
+ * Displays all bookings and provides actionable buttons to Trigger workflows (Approve, Reject, Delete).
+ */
 function BWAdminBookingTable({
   bookings,
   onApproveBooking,
