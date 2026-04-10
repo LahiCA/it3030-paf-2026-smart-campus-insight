@@ -106,9 +106,6 @@ const TicketLayout = ({ children }) => (
         </div>
       </main>
     </div>
-  <div className="flex min-h-screen bg-(--surface)">
-    <BWSidebar />
-    <main className="flex-1 p-8">{children}</main>
   </div>
 );
 
