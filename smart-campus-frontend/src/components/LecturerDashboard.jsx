@@ -114,14 +114,14 @@ const LecturerDashboard = () => {
           label="Active Bookings"
           value="3"
           colorClass="bg-teal-50"
-          onClick={() => navigate('/bookings')}
+          onClick={() => navigate('/bw-my-bookings')}
         />
         <StatCard
           icon={<FaHourglassHalf size={22} className="text-amber-500" />}
           label="Pending Approvals"
           value="1"
           colorClass="bg-amber-50"
-          onClick={() => navigate('/bookings')}
+          onClick={() => navigate('/bw-my-bookings')}
         />
         <StatCard
           icon={<FaTicketAlt size={22} className="text-orange-500" />}
@@ -147,14 +147,14 @@ const LecturerDashboard = () => {
           iconBg="bg-teal-50"
           title="Book a Facility"
           description="Reserve lecture halls, labs, and meeting rooms"
-          onClick={() => navigate('/bookings')}
+          onClick={() => navigate('/bw-create-booking')}
         />
         <ActionCard
           icon={<FaClipboardList size={26} className="text-blue-600" />}
           iconBg="bg-blue-50"
           title="My Bookings"
           description="View and manage your current facility reservations"
-          onClick={() => navigate('/bookings')}
+          onClick={() => navigate('/bw-my-bookings')}
         />
         <ActionCard
           icon={<FaTicketAlt size={26} className="text-orange-500" />}
@@ -200,7 +200,7 @@ const LecturerDashboard = () => {
             ))}
           </ul>
           <button
-            onClick={() => navigate('/bookings')}
+            onClick={() => navigate('/bw-my-bookings')}
             className="mt-4 w-full text-sm text-teal-600 font-semibold hover:text-teal-800 text-center transition-colors"
           >
             View all bookings →

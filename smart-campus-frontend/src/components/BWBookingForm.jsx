@@ -1,10 +1,14 @@
 import { useState, useEffect } from "react";
 import { createBWBooking, getAllBWBookings } from "../api/bwBookingApi";
 import { format, parseISO } from "date-fns";
+import { useAuth } from "../context/AuthContext";
+import { FaExclamationCircle, FaCheckCircle } from "react-icons/fa";
 
 function BWBookingForm() {
+  const { user } = useAuth();
+  
   const [formData, setFormData] = useState({
-    userId: "",
+    userId: user?.displayId || "",
     resourceName: "",
     resourceType: "",
     bookingDate: "",
@@ -57,7 +61,8 @@ function BWBookingForm() {
   const [errorMessage, setErrorMessage] = useState("");
 
   const isValidUserId = (userId) => {
-    return /^USER\d{3}$/.test(userId);
+    // Keep it valid as long as it exists (we trust displayId from auth context)
+    return userId && userId.trim() !== "";
   };
 
   const handleChange = (e) => {
@@ -82,7 +87,7 @@ function BWBookingForm() {
     setErrorMessage("");
 
     if (!isValidUserId(formData.userId)) {
-      setErrorMessage("Invalid user ID. Use format like USER001");
+      setErrorMessage("Unable to verify User ID. Please try logging in again.");
       return;
     }
 
@@ -150,10 +155,10 @@ function BWBookingForm() {
 
       const response = await createBWBooking(payload);
 
-      setSuccessMessage(`Booking created successfully. ID: ${response.data.id}`);
+      setSuccessMessage(`Your booking request for ${formData.resourceName} has been successfully submitted. An administrator will review your request and you will be notified upon approval.`);
 
       setFormData({
-        userId: "",
+        userId: user?.displayId || "",
         resourceName: "",
         resourceType: "",
         bookingDate: "",
@@ -183,14 +188,35 @@ function BWBookingForm() {
         </p>
 
         {successMessage && (
-          <div className="mb-4 rounded-lg bg-green-50 text-green-700 border border-green-200 px-4 py-3">
-            {successMessage}
+          <div className="mb-6 flex items-start gap-3 rounded-xl bg-teal-50 border border-teal-200 p-4 shadow-sm">
+            <FaCheckCircle className="mt-0.5 h-5 w-5 text-teal-500 flex-shrink-0" />
+            <div>
+              <h3 className="text-sm font-semibold text-teal-800">Booking Successful</h3>
+              <p className="mt-1 text-sm text-teal-700">{successMessage}</p>
+            </div>
           </div>
         )}
 
         {errorMessage && (
-          <div className="mb-4 rounded-lg bg-red-50 text-red-700 border border-red-200 px-4 py-3">
-            {errorMessage}
+          <div className="mb-6 flex items-start gap-3 rounded-xl bg-rose-50 border border-red-200 p-4 shadow-sm">
+            <FaExclamationCircle className="mt-0.5 h-5 w-5 text-red-500 flex-shrink-0" />
+            <div className="flex-1">
+              <h3 className="text-sm font-semibold text-red-800">Booking Conflict or Error</h3>
+              <div className="mt-1 flex flex-col gap-1 text-sm text-red-700 leading-relaxed">
+                {errorMessage.split('. ').map((sentence, idx, arr) => {
+                  if (!sentence.trim()) return null;
+                  const isLast = idx === arr.length - 1 || sentence.endsWith('.');
+                  const text = sentence.trim() + (isLast ? '' : '.');
+                  
+                  // Let's highlight alternatives
+                  if (text.includes("Available alternatives:")) {
+                    return <p key={idx} className="font-medium">{text}</p>;
+                  }
+                  
+                  return <p key={idx}>{text}</p>;
+                })}
+              </div>
+            </div>
           </div>
         )}
 
@@ -205,14 +231,13 @@ function BWBookingForm() {
               type="text"
               id="userId"
               name="userId"
-              placeholder="e.g., USER001"
               value={formData.userId}
-              onChange={handleChange}
-              className="w-full border border-slate-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
+              className="w-full border border-slate-300 rounded-lg p-3 bg-slate-100 text-slate-600 cursor-not-allowed focus:outline-none transition"
               required
+              readOnly
             />
-            <p className="text-xs text-slate-400 mt-1">
-              Example: USER001
+            <p className="text-xs text-teal-600 mt-1 font-medium">
+              Automatically fetched from your profile
             </p>
           </div>
 
@@ -329,14 +354,26 @@ function BWBookingForm() {
             </div>
           </div>
 
-          {/* Expected Attendees */}
+          {/* Expected Attendees / Quantity */}
           <div>
-            <label htmlFor="expectedAttendees" className="block text-sm font-medium text-slate-600 mb-1">Expected Attendees</label>
+            <label htmlFor="expectedAttendees" className="block text-sm font-medium text-slate-600 mb-1">
+              {["EQUIPMENT", "SPORTS"].includes(formData.resourceType) 
+                ? "Quantity Required" 
+                : formData.resourceType === "OTHER"
+                ? "Expected Attendees / Quantity"
+                : "Expected Attendees"}
+            </label>
             <input
               type="number"
               id="expectedAttendees"
               name="expectedAttendees"
-              placeholder="e.g., 25"
+              placeholder={
+                ["EQUIPMENT", "SPORTS"].includes(formData.resourceType) 
+                  ? "e.g., 2" 
+                  : formData.resourceType === "OTHER"
+                  ? "e.g., 25 attendees or 2 items"
+                  : "e.g., 25"
+              }
               value={formData.expectedAttendees}
               onChange={handleChange}
               min="1"

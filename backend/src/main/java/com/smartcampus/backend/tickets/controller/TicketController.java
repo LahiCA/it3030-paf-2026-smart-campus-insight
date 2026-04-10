@@ -65,6 +65,14 @@ public class TicketController {
         return ticketService.getTicketsByUserId(userId);
     }
 
+    @GetMapping("/assigned/{assignedTo}")
+    public List<Ticket> getAssignedTickets(
+            @PathVariable String assignedTo,
+            @RequestHeader(name = "role", defaultValue = "USER") String role,
+            @RequestHeader(name = "displayId", defaultValue = "") String displayId) {
+        return ticketService.getTicketsAssignedTo(assignedTo, role, displayId);
+    }
+
     @PutMapping("/{id}")
     public Ticket updateTicket(
             @PathVariable String id,
@@ -86,8 +94,9 @@ public class TicketController {
     public Ticket updateStatus(
             @PathVariable String id,
             @Valid @RequestBody StatusUpdateRequest request,
-            @RequestHeader(name = "role", defaultValue = "USER") String role) {
-        return ticketService.updateStatus(id, request, role);
+            @RequestHeader(name = "role", defaultValue = "USER") String role,
+            @RequestHeader(name = "displayId", defaultValue = "") String displayId) {
+        return ticketService.updateStatus(id, request, role, displayId);
     }
 
     @PutMapping("/{id}/assign")
