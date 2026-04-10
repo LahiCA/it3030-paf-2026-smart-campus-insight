@@ -102,7 +102,8 @@ public class TicketService {
         String normalizedAssignedTo = assignedTo == null ? "" : assignedTo.trim();
         String normalizedRequesterDisplayId = requesterDisplayId == null ? "" : requesterDisplayId.trim();
 
-        if (ROLE_TECHNICIAN.equals(normalizedRequesterRole) && !normalizedAssignedTo.equalsIgnoreCase(normalizedRequesterDisplayId)) {
+        if (ROLE_TECHNICIAN.equals(normalizedRequesterRole)
+                && !normalizedAssignedTo.equalsIgnoreCase(normalizedRequesterDisplayId)) {
             throw new RuntimeException("Technicians can only view tickets assigned to themselves");
         }
 
@@ -142,14 +143,16 @@ public class TicketService {
         ticketRepository.delete(ticket);
     }
 
-    public Ticket updateStatus(String id, StatusUpdateRequest request, String requesterRole, String requesterDisplayId) {
+    public Ticket updateStatus(String id, StatusUpdateRequest request, String requesterRole,
+            String requesterDisplayId) {
         requireAnyRole(requesterRole, STATUS_MANAGERS);
         Ticket ticket = findTicket(id);
         String nextStatus = normalize(request.getStatus());
         String normalizedRequesterRole = normalize(requesterRole);
 
         if (ROLE_TECHNICIAN.equals(normalizedRequesterRole)) {
-            if (!StringUtils.hasText(ticket.getAssignedTo()) || !ticket.getAssignedTo().trim().equalsIgnoreCase(requesterDisplayId == null ? "" : requesterDisplayId.trim())) {
+            if (!StringUtils.hasText(ticket.getAssignedTo()) || !ticket.getAssignedTo().trim()
+                    .equalsIgnoreCase(requesterDisplayId == null ? "" : requesterDisplayId.trim())) {
                 throw new RuntimeException("Technicians can only update tickets assigned to them");
             }
             if (STATUS_REJECTED.equals(nextStatus)) {
@@ -166,6 +169,14 @@ public class TicketService {
             throw new RuntimeException("Rejection reason is required when rejecting a ticket");
         }
 
+        LocalDateTime now = LocalDateTime.now();
+        if (STATUS_IN_PROGRESS.equals(nextStatus) && ticket.getFirstResponseAt() == null) {
+            ticket.setFirstResponseAt(now);
+        }
+        if (STATUS_RESOLVED.equals(nextStatus) && ticket.getResolvedAt() == null) {
+            ticket.setResolvedAt(now);
+        }
+
         ticket.setStatus(nextStatus);
         if (StringUtils.hasText(request.getResolutionNotes())) {
             ticket.setResolutionNotes(request.getResolutionNotes().trim());
@@ -177,7 +188,7 @@ public class TicketService {
             ticket.setAssignedTo(null);
             ticket.setResolutionNotes(null);
         }
-        ticket.setUpdatedAt(LocalDateTime.now());
+        ticket.setUpdatedAt(now);
 
         return hydrate(ticketRepository.save(ticket));
     }
@@ -194,6 +205,9 @@ public class TicketService {
 
         if (STATUS_OPEN.equals(ticket.getStatus())) {
             ticket.setStatus(STATUS_IN_PROGRESS);
+            if (ticket.getFirstResponseAt() == null) {
+                ticket.setFirstResponseAt(LocalDateTime.now());
+            }
         }
 
         return hydrate(ticketRepository.save(ticket));
@@ -252,7 +266,8 @@ public class TicketService {
         Comment comment = Comment.builder()
                 .ticketId(ticketId)
                 .userId(request.getUserId().trim())
-                .userDisplayId(StringUtils.hasText(request.getUserDisplayId()) ? request.getUserDisplayId().trim() : null)
+                .userDisplayId(
+                        StringUtils.hasText(request.getUserDisplayId()) ? request.getUserDisplayId().trim() : null)
                 .message(request.getMessage().trim())
                 .createdAt(now)
                 .updatedAt(now)

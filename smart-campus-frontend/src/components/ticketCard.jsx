@@ -37,6 +37,11 @@ export default function TicketCard({ ticket }) {
                 </span>
             </div>
 
+            <div className="mt-4 space-y-1 text-sm text-slate-500">
+                <p>First Response: {formatSlaDuration(ticket.createdAt, ticket.firstResponseAt)}</p>
+                <p>Resolution Time: {formatSlaDuration(ticket.createdAt, ticket.resolvedAt)}</p>
+            </div>
+
             <div className="mt-5 flex items-center justify-between text-sm">
                 <div className="text-slate-500">
                     Reported by <span className="font-semibold text-slate-700">{ticket.userDisplayId || ticket.userId}</span>
@@ -51,3 +56,21 @@ export default function TicketCard({ ticket }) {
         </article>
     );
 }
+
+function formatSlaDuration(createdAt, milestoneAt) {
+    if (!createdAt || !milestoneAt) return "Pending";
+    const start = new Date(createdAt);
+    const end = new Date(milestoneAt);
+    const totalMinutes = Math.floor((end.getTime() - start.getTime()) / 60000);
+    if (Number.isNaN(totalMinutes) || totalMinutes < 0) return "Pending";
+    if (totalMinutes < 1) return "Less than a minute";
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    if (hours > 0) {
+        return minutes > 0
+            ? `${hours} hr${hours !== 1 ? "s" : ""} ${minutes} min${minutes !== 1 ? "s" : ""}`
+            : `${hours} hr${hours !== 1 ? "s" : ""}`;
+    }
+    return `${totalMinutes} min${totalMinutes !== 1 ? "s" : ""}`;
+}
+
