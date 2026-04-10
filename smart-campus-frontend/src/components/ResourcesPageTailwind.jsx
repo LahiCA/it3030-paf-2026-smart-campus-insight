@@ -215,7 +215,7 @@ const ResourcesPageTailwind = () => {
           <div className="flex justify-end mt-3">
             <button
               onClick={openCreateModal}
-              className="inline-flex items-center gap-2 rounded-xl bg-teal-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-600 hover:shadow-lg hover:shadow-teal-500/20"
+              className="inline-flex items-center gap-2 rounded-xl bg-teal-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-600 hover:shadow-lg hover:shadow-teal-500/10"
             >
               <FaPlus size={14} />
               Add Resource
@@ -317,7 +317,7 @@ const ResourcesPageTailwind = () => {
               className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
             >
               <div className="flex h-28 items-center justify-center bg-[linear-gradient(135deg,#F0FDFA_0%,#CCFBF1_50%,#99F6E4_100%)]">
-                <FaBuilding size={40} className="text-indigo-400/40" />
+                <FaBuilding size={40} className="text-teal-500/40" />
               </div>
               <div className="p-4">
                 <div className="mb-3 flex items-start justify-between gap-2">

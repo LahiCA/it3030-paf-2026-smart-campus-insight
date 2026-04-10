@@ -112,8 +112,8 @@ export default function ResourceAnalytics({ resources = [] }) {
         onClick={() => setOpen(o => !o)}
         className="w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl border border-slate-100 bg-white shadow-sm hover:bg-slate-50 transition text-left"
       >
-        <div className="w-7 h-7 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0">
-          <svg className="w-3.5 h-3.5 text-indigo-600" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <div className="w-7 h-7 rounded-lg bg-teal-50 flex items-center justify-center shrink-0">
+          <svg className="w-3.5 h-3.5 text-teal-600" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
             <rect x="1" y="8" width="3" height="7" rx="1"/><rect x="6" y="5" width="3" height="10" rx="1"/><rect x="11" y="2" width="3" height="13" rx="1"/>
           </svg>
         </div>
