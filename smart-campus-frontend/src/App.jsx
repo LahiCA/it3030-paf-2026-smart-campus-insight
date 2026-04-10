@@ -36,6 +36,10 @@ import BWAdminBookingTable from './components/BWAdminBookingTable';
 import CreateTicketPage from './pages/CreateTicketPage';
 import TicketDashboardPage from './pages/TicketDashboardPage';
 import TicketDetailsPage from './pages/TicketDetailsPage';
+import TicketTimelinePage from './pages/TicketTimelinePage';
+
+import AnalyticsDashboard from './pages/AnalyticsDashboard';
+import ExportReports from './pages/ExportReports';
 
 // Role-based dashboard
 const RoleDashboard = () => {
@@ -126,6 +130,16 @@ function ChatbotWrapper() {
     </>
   );
 }
+
+const AdminOnly = ({ children }) => {
+  const { user } = useAuth();
+
+  if (user?.role !== 'ADMIN') {
+    return <Navigate to={ROUTES.DASHBOARD} replace />;
+  }
+
+  return children;
+};
 
 function App() {
   if (!GOOGLE_CLIENT_ID) {
@@ -261,6 +275,15 @@ function App() {
               />
 
               <Route
+                path="/technician/tickets/:id/timeline"
+                element={
+                  <PrivateRoute
+                    element={<Layout><TicketTimelinePage /></Layout>}
+                  />
+                }
+              />
+
+              <Route
                 path="/ticket-create"
                 element={
                   <PrivateRoute
@@ -268,6 +291,34 @@ function App() {
                   />
                 }
               />
+
+              <Route path="/analytics"
+                    element={
+                      <PrivateRoute
+                        element={
+                          <Layout>
+                            <AdminOnly>
+                              <AnalyticsDashboard />
+                            </AdminOnly>
+                          </Layout>
+                        }
+                      />
+                    }
+                  />
+                  <Route
+                    path="/reports"
+                    element={
+                      <PrivateRoute
+                        element={
+                          <Layout>
+                            <AdminOnly>
+                              <ExportReports />
+                            </AdminOnly>
+                          </Layout>
+                        }
+                      />
+                    }
+                  />
 
               {/* FALLBACK */}
               <Route path="*" element={<Navigate to={ROUTES.DASHBOARD} replace />} />
