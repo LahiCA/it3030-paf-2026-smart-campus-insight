@@ -88,7 +88,7 @@ function BWAdminBookingList() {
       <div className="bg-white rounded-2xl shadow-md p-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h2 className="text-xl font-bold text-[var(--deep-teal)]">
+            <h2 className="text-xl font-bold text-(--deep-teal)">
               Booking Filters
             </h2>
             <p className="text-slate-500 text-sm">
@@ -100,7 +100,7 @@ function BWAdminBookingList() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+              className="border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-(--accent)"
             >
               <option value="ALL">All Statuses</option>
               <option value="PENDING">Pending</option>

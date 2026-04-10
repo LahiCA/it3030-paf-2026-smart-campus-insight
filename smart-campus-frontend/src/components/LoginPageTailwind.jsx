@@ -83,7 +83,9 @@ const LoginPageTailwind = () => {
                 Campus Operations Platform
               </div>
 
-              <div className="mb-3 text-5xl sm:text-6xl">SC</div>
+              <div className="mb-3">
+                <span className="text-6xl sm:text-7xl">🎓</span>
+              </div>
               <h1 className="mb-1 bg-[linear-gradient(135deg,#0a1929_0%,#0f766e_100%)] bg-clip-text text-[28px] font-extrabold tracking-[-0.04em] text-transparent sm:text-[30px]">
                 Smart Campus Insight
               </h1>
@@ -141,7 +143,7 @@ const LoginPageTailwind = () => {
                 Protected with OAuth 2.0 and JWT authentication
               </p>
               <p className="text-[11px] tracking-[0.02em] text-slate-500">
-                Copyright 2026 Smart Campus Operations. All rights reserved.
+                &copy; 2026 Smart Campus Operations. All rights reserved.
               </p>
             </footer>
           </section>

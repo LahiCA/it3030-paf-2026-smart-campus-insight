@@ -80,7 +80,7 @@ function BWBookingTable({ bookings, onCancelBooking, actionLoadingId }) {
                       <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                       <p className="font-semibold text-slate-700">{booking.bookingDate}</p>
                     </div>
-                    <div className="inline-flex items-center gap-2 text-sm text-slate-600 block">
+                    <div className="inline-flex items-center gap-2 text-sm text-slate-600">
                       <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                       {booking.startTime} <span className="text-slate-400 mx-1">to</span> {booking.endTime}
                     </div>
@@ -88,10 +88,10 @@ function BWBookingTable({ bookings, onCancelBooking, actionLoadingId }) {
                   <td className="px-6 py-5">
                     <BWBookingStatusBadge status={booking.status} />
                     {booking.status === "REJECTED" && (
-                      <p className="text-xs text-red-500 mt-2 max-w-[180px] bg-red-50 p-2 rounded-md shadow-sm border border-red-100" title={getRemarks(booking)}>{getRemarks(booking)}</p>
+                      <p className="text-xs text-red-500 mt-2 max-w-45 bg-red-50 p-2 rounded-md shadow-sm border border-red-100" title={getRemarks(booking)}>{getRemarks(booking)}</p>
                     )}
                     {booking.status === "CANCELLED" && (
-                       <p className="text-xs text-slate-500 mt-2 max-w-[180px] bg-slate-100 p-2 rounded-md shadow-sm border border-slate-200" title={getRemarks(booking)}>{getRemarks(booking)}</p>
+                       <p className="text-xs text-slate-500 mt-2 max-w-45 bg-slate-100 p-2 rounded-md shadow-sm border border-slate-200" title={getRemarks(booking)}>{getRemarks(booking)}</p>
                     )}
                   </td>
                   <td className="px-6 py-5">

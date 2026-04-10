@@ -78,7 +78,7 @@ const NotificationItem = ({ notification, onItemClick = null, isExpanded = false
       ].join(' ')}
     >
       {/* Status icon */}
-      <div className="mt-0.5 w-7 h-7 flex-shrink-0 flex items-center justify-center rounded-full bg-gray-100">
+      <div className="mt-0.5 w-7 h-7 shrink-0 flex items-center justify-center rounded-full bg-gray-100">
         {notification.read
           ? <FaCheckCircle className="text-green-500" size={14} />
           : <FaCircle className="text-blue-500" size={11} />}
@@ -86,7 +86,7 @@ const NotificationItem = ({ notification, onItemClick = null, isExpanded = false
 
       {/* Content */}
       <div className="flex-1 min-w-0">
-        <p className={`text-sm leading-snug break-words ${notification.read ? 'text-gray-600 font-normal' : 'text-gray-800 font-medium'}`}>
+        <p className={`text-sm leading-snug wrap-break-word ${notification.read ? 'text-gray-600 font-normal' : 'text-gray-800 font-medium'}`}>
           {notification.message}
         </p>
         <div className="flex flex-wrap items-center gap-2 mt-1.5">
@@ -117,7 +117,7 @@ const NotificationItem = ({ notification, onItemClick = null, isExpanded = false
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-1 flex-shrink-0 ml-2">
+      <div className="flex items-center gap-1 shrink-0 ml-2">
         <button
           onClick={handleToggleRead}
           disabled={isTogglingRead}

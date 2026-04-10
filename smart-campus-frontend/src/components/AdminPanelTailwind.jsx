@@ -306,7 +306,7 @@ const AdminPanelTailwind = () => {
                 <label className="mb-1.5 block text-sm font-semibold text-slate-600">Phone Number</label>
                 <div className="flex gap-2">
                   <select
-                    className="w-[140px] min-w-[140px] shrink-0 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
+                    className="w-35 min-w-35 shrink-0 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
                     value={formData.countryCode || '+94'}
                     onChange={(e) => setFormData({ ...formData, countryCode: e.target.value })}
                   >

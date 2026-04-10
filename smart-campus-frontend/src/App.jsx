@@ -5,6 +5,7 @@ import { GOOGLE_CLIENT_ID, ROUTES } from './utils/constants';
 
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
+import { ChatbotProvider, FloatingChatButton, ChatbotPanel } from './chatbot';
 
 import PrivateRoute from './components/PrivateRouteTailwind';
 import Layout from './components/Layout';
@@ -49,7 +50,7 @@ const RoleDashboard = () => {
 
 // Layout wrapper for booking system
 const BookingLayout = ({ children }) => (
-  <div className="flex min-h-screen bg-[var(--surface)]">
+  <div className="flex min-h-screen bg-(--surface)">
     <BWSidebar />
     <main className="flex-1 p-8">{children}</main>
   </div>
@@ -64,10 +65,15 @@ function App() {
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <AuthProvider>
         <NotificationProvider>
+          <ChatbotProvider>
           <Router>
 
             {/* Global Navbar */}
             <Navbar />
+
+            {/* AI Chatbot – floating on all pages */}
+            <FloatingChatButton />
+            <ChatbotPanel />
 
             <Routes>
 
@@ -196,6 +202,7 @@ function App() {
 
             </Routes>
           </Router>
+          </ChatbotProvider>
         </NotificationProvider>
       </AuthProvider>
     </GoogleOAuthProvider>
