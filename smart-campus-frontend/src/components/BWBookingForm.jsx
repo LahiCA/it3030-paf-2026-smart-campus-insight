@@ -4,6 +4,42 @@ import { format, parseISO } from "date-fns";
 import { useAuth } from "../context/AuthContext";
 import { FaExclamationCircle, FaCheckCircle } from "react-icons/fa";
 
+const RESOURCE_TYPES = [
+  'LECTURE_HALL',
+  'LAB',
+  'MEETING_ROOM',
+  'EQUIPMENT',
+  'SPORTS',
+  'STUDY_ROOM',
+  'LIBRARY',
+  'AUDITORIUM',
+  'OTHER',
+];
+
+const TYPE_LABELS = {
+  LECTURE_HALL: 'Lecture Hall',
+  LAB: 'Lab',
+  MEETING_ROOM: 'Meeting Room',
+  EQUIPMENT: 'Equipment',
+  SPORTS: 'Sports',
+  STUDY_ROOM: 'Study Room',
+  LIBRARY: 'Library',
+  AUDITORIUM: 'Auditorium',
+  OTHER: 'Other',
+};
+
+const RESOURCE_NAMES_BY_TYPE = {
+  LECTURE_HALL: ['Lecture Hall A', 'Lecture Hall B', 'Lecture Hall C', 'Lecture Hall D', 'Lecture Hall E'],
+  LAB: ['Computer Lab A', 'Computer Lab B', 'Physics Lab', 'Chemistry Lab', 'Electronics Lab'],
+  MEETING_ROOM: ['Meeting Room 1', 'Meeting Room 2', 'Meeting Room 3', 'Conference Room A', 'Conference Room B'],
+  EQUIPMENT: ['Projector', 'High-end Camera', 'Microphone', 'Whiteboard', 'Laptops', 'Other'],
+  SPORTS: ['Basketball Court', 'Tennis Court', 'Football Field', 'Indoor Gym', 'Swimming Pool'],
+  STUDY_ROOM: ['Study Room 1', 'Study Room 2', 'Study Room 3', 'Group Study A'],
+  LIBRARY: ['Main Library', 'Study Area 1', 'Study Area 2', 'Discussion Room A'],
+  AUDITORIUM: ['Main Auditorium', 'Mini Auditorium'],
+  OTHER: ['Cafeteria', 'Student Center', 'Medical Center', 'Parking Lot A', 'Other'],
+};
+
 function BWBookingForm() {
   const { user } = useAuth();
   
@@ -255,100 +291,62 @@ function BWBookingForm() {
               required
             >
               <option value="">Select Resource Type</option>
-              <option value="LECTURE_HALL">Lecture Hall</option>
-              <option value="LAB">Lab</option>
-              <option value="MEETING_ROOM">Meeting Room</option>
-              <option value="EQUIPMENT">Equipment</option>
-              <option value="SPORTS">Sports</option>
-              <option value="STUDY_ROOM">Study Room</option>
-              <option value="AUDITORIUM">Auditorium</option>
-              <option value="OTHER">Other</option>
-            </select>
-          </div>
+                {RESOURCE_TYPES.map((type) => (
+                  <option key={type} value={type}>
+                    {TYPE_LABELS[type]}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          {/* Resource Name */}
-          <div>
-            <label htmlFor="resourceName" className="block text-sm font-medium text-slate-600 mb-1">Resource Name</label>
-            {formData.resourceType === "LECTURE_HALL" ? (
+            {/* Resource Name */}
+            <div>
+              <label htmlFor="resourceName" className="block text-sm font-medium text-slate-600 mb-1">Resource Name</label>
               <select
                 id="resourceName"
                 name="resourceName"
-                value={formData.resourceName}
+                value={(formData.resourceType && formData.resourceName && !RESOURCE_NAMES_BY_TYPE[formData.resourceType]?.includes(formData.resourceName)) ? 'Other' : formData.resourceName}
                 onChange={handleChange}
                 className="w-full border border-slate-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500 transition bg-white"
-                required
-              >
-                <option value="">Select Lecture Hall</option>
-                <option value="Lecture Hall A">Lecture Hall A</option>
-                <option value="Lecture Hall B">Lecture Hall B</option>
-                <option value="Lecture Hall C">Lecture Hall C</option>
-              </select>
-            ) : formData.resourceType === "LAB" ? (
-              <select
-                id="resourceName"
-                name="resourceName"
-                value={formData.resourceName}
-                onChange={handleChange}
-                className="w-full border border-slate-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500 transition bg-white"
-                required
-              >
-                <option value="">Select Lab</option>
-                <option value="Lab 1">Lab 1</option>
-                <option value="Lab 2">Lab 2</option>
-                <option value="Lab 3">Lab 3</option>
-              </select>
-            ) : formData.resourceType === "EQUIPMENT" ? (
-              <input
-                type="text"
-                id="resourceName"
-                name="resourceName"
-                placeholder="e.g., Projector, High-end Camera"
-                value={formData.resourceName}
-                onChange={handleChange}
-                className="w-full border border-slate-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
-                required
-              />
-            ) : formData.resourceType === "OTHER" ? (
-              <input
-                type="text"
-                id="resourceName"
-                name="resourceName"
-                placeholder="Please specify what you need..."
-                value={formData.resourceName}
-                onChange={handleChange}
-                className="w-full border border-slate-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
-                required
-              />
-            ) : (
-              <input
-                type="text"
-                id="resourceName"
-                name="resourceName"
-                placeholder="e.g., Main Auditorium, Room 101"
-                value={formData.resourceName}
-                onChange={handleChange}
-                className="w-full border border-slate-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
                 required
                 disabled={!formData.resourceType}
-              />
-            )}
-            {!formData.resourceType && (
-              <p className="text-xs text-slate-400 mt-1">Please select a Resource Type first.</p>
-            )}
-          </div>
+              >
+                <option value="">Select Resource Name</option>
+                {formData.resourceType && RESOURCE_NAMES_BY_TYPE[formData.resourceType]?.map((nameOption) => (
+                  <option key={nameOption} value={nameOption}>
+                    {nameOption}
+                  </option>
+                ))}
+              </select>
+              {(formData.resourceName === 'Other' || (formData.resourceType && formData.resourceName && !RESOURCE_NAMES_BY_TYPE[formData.resourceType]?.includes(formData.resourceName))) && (
+                <div className="mt-3">
+                  <input
+                    type="text"
+                    placeholder={formData.resourceType === 'OTHER' ? "Please specify what you need" : "Please specify the equipment"}
+                    value={formData.resourceName === 'Other' ? '' : formData.resourceName}
+                    onChange={(e) => setFormData({ ...formData, resourceName: e.target.value || 'Other' })}
+                    className="w-full border border-slate-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
+                    required
+                  />
+                </div>
+              )}
+              {!formData.resourceType && (
+                <p className="text-xs text-slate-400 mt-1">Please select a Resource Type first.</p>
+              )}
+            </div>
 
-          {/* Booking Date */}
-          <div className="relative">
-            <label htmlFor="bookingDate" className="block text-sm font-medium text-slate-600 mb-1">Booking Date</label>
-            <input
-              type="date"
-              id="bookingDate"
-              name="bookingDate"
-              value={formData.bookingDate}
-              onChange={handleChange}
-              className="w-full border border-slate-300 rounded-lg p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
-              required
-            />
+            {/* Booking Date */}
+            <div className="relative">
+              <label htmlFor="bookingDate" className="block text-sm font-medium text-slate-600 mb-1">Booking Date</label>
+              <input
+                type="date"
+                id="bookingDate"
+                name="bookingDate"
+                value={formData.bookingDate}
+                onChange={handleChange}
+                className="w-full border border-slate-300 rounded-lg p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
+                required
+              />
             <div className="absolute inset-y-0 right-0 top-7 pr-3 flex items-center pointer-events-none">
               <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
