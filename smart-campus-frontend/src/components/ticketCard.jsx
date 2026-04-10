@@ -25,6 +25,21 @@ export default function TicketCard({ ticket }) {
                 {ticket.description.length > 160 ? `${ticket.description.slice(0, 160)}...` : ticket.description}
             </p>
 
+            {ticket.rating ? (
+                <div className="mt-4 rounded-3xl bg-slate-50 p-4 text-sm text-slate-700">
+                    <div className="font-semibold text-slate-900">Rating received</div>
+                    <div className="mt-2 flex items-center gap-2 text-amber-600">
+                        {Array.from({ length: 5 }, (_, index) => (
+                            <span key={index} className={ticket.rating > index ? "text-yellow-400" : "text-slate-300"}>
+                                ★
+                            </span>
+                        ))}
+                        <span className="font-semibold text-slate-700">{ticket.rating}/5</span>
+                    </div>
+                    {ticket.feedback ? <p className="mt-3 text-slate-600">"{ticket.feedback}"</p> : null}
+                </div>
+            ) : null}
+
             <div className="mt-4 flex flex-wrap items-center gap-2">
                 <span className={`rounded-full px-3 py-1 text-xs font-semibold ${PRIORITY_STYLES[ticket.priority] || "bg-slate-100 text-slate-700"}`}>
                     {ticket.priority}
