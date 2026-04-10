@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { GOOGLE_CLIENT_ID, ROUTES } from './utils/constants';
 
@@ -56,6 +56,17 @@ const BookingLayout = ({ children }) => (
   </div>
 );
 
+function ChatbotWrapper() {
+  const location = useLocation();
+  if (location.pathname === ROUTES.LOGIN || location.pathname === '/') return null;
+  return (
+    <>
+      <FloatingChatButton />
+      <ChatbotPanel />
+    </>
+  );
+}
+
 function App() {
   if (!GOOGLE_CLIENT_ID) {
     return <div>Missing Google Client ID</div>;
@@ -71,9 +82,8 @@ function App() {
             {/* Global Navbar */}
             <Navbar />
 
-            {/* AI Chatbot – floating on all pages */}
-            <FloatingChatButton />
-            <ChatbotPanel />
+            {/* AI Chatbot – floating on all pages except login */}
+            <ChatbotWrapper />
 
             <Routes>
 
