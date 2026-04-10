@@ -19,6 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.smartcampus.backend.enums.NotificationType;
+import com.smartcampus.backend.service.NotificationService;
 import com.smartcampus.backend.tickets.dto.AssignTechnicianRequest;
 import com.smartcampus.backend.tickets.dto.CommentCreateRequest;
 import com.smartcampus.backend.tickets.dto.CommentUpdateRequest;
@@ -33,6 +35,9 @@ import com.smartcampus.backend.tickets.repository.CommentRepository;
 import com.smartcampus.backend.tickets.repository.TicketImageRepository;
 import com.smartcampus.backend.tickets.repository.TicketRepository;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class TicketService {
 
@@ -52,15 +57,18 @@ public class TicketService {
     private final TicketRepository ticketRepository;
     private final CommentRepository commentRepository;
     private final TicketImageRepository ticketImageRepository;
+    private final NotificationService notificationService;
     private final Path uploadDirectory = Paths.get(System.getProperty("user.dir"), "uploads");
 
     public TicketService(
             TicketRepository ticketRepository,
             CommentRepository commentRepository,
-            TicketImageRepository ticketImageRepository) {
+            TicketImageRepository ticketImageRepository,
+            NotificationService notificationService) {
         this.ticketRepository = ticketRepository;
         this.commentRepository = commentRepository;
         this.ticketImageRepository = ticketImageRepository;
+        this.notificationService = notificationService;
     }
 
     public Ticket createTicket(TicketCreateRequest request) {
@@ -193,7 +201,36 @@ public class TicketService {
         }
         ticket.setUpdatedAt(now);
 
-        return hydrate(ticketRepository.save(ticket));
+        Ticket saved = hydrate(ticketRepository.save(ticket));
+
+        try {
+            String statusLabel = nextStatus.replace("_", " ");
+            String notifMsg;
+            if (STATUS_IN_PROGRESS.equals(nextStatus)) {
+                notifMsg = "Your ticket \"" + saved.getTitle() + "\" is now being processed (IN PROGRESS).";
+            } else if (STATUS_RESOLVED.equals(nextStatus)) {
+                notifMsg = "Your ticket \"" + saved.getTitle() + "\" has been resolved.";
+            } else if (STATUS_REJECTED.equals(nextStatus)) {
+                String reason = StringUtils.hasText(saved.getRejectionReason())
+                        ? " Reason: " + saved.getRejectionReason()
+                        : "";
+                notifMsg = "Your ticket \"" + saved.getTitle() + "\" has been rejected." + reason;
+            } else if (STATUS_CLOSED.equals(nextStatus)) {
+                notifMsg = "Your ticket \"" + saved.getTitle() + "\" has been closed.";
+            } else {
+                notifMsg = "Your ticket \"" + saved.getTitle() + "\" status changed to " + statusLabel + ".";
+            }
+            notificationService.sendNotification(
+                    saved.getUserId(),
+                    notifMsg,
+                    NotificationType.TICKET_UPDATED,
+                    saved.getId(),
+                    "TICKET");
+        } catch (Exception e) {
+            log.error("Failed to send ticket status notification for ticket {}: {}", saved.getId(), e.getMessage());
+        }
+
+        return saved;
     }
 
     public Ticket assignTechnician(String id, AssignTechnicianRequest request, String requesterRole) {
@@ -300,7 +337,7 @@ public class TicketService {
     }
 
     public Comment addComment(String ticketId, CommentCreateRequest request) {
-        findTicket(ticketId);
+        Ticket ticket = findTicket(ticketId);
         LocalDateTime now = LocalDateTime.now();
         Comment comment = Comment.builder()
                 .ticketId(ticketId)
@@ -314,6 +351,27 @@ public class TicketService {
 
         Comment savedComment = commentRepository.save(comment);
         touchTicket(ticketId);
+
+        // Notify ticket owner when someone else adds a comment
+        try {
+            if (ticket.getUserId() != null && !ticket.getUserId().equals(request.getUserId().trim())) {
+                String commenterName = StringUtils.hasText(request.getUserDisplayId())
+                        ? request.getUserDisplayId().trim()
+                        : "Someone";
+                String commentPreview = request.getMessage().trim().length() > 100
+                        ? request.getMessage().trim().substring(0, 100) + "..."
+                        : request.getMessage().trim();
+                notificationService.sendNotification(
+                        ticket.getUserId(),
+                        commenterName + " commented on your ticket \"" + ticket.getTitle() + "\": " + commentPreview,
+                        NotificationType.COMMENT_ADDED,
+                        ticketId,
+                        "TICKET");
+            }
+        } catch (Exception e) {
+            log.error("Failed to send comment notification for ticket {}: {}", ticketId, e.getMessage());
+        }
+
         return savedComment;
     }
 
