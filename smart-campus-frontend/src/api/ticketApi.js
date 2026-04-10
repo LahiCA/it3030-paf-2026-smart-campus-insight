@@ -88,6 +88,15 @@ export const assignTechnician = async (id, assignedTo) => {
     }
 };
 
+export const rateTicket = async (id, data) => {
+    try {
+        const response = await api.put(`/${id}/rate`, data);
+        return response.data;
+    } catch (error) {
+        unwrapError(error);
+    }
+};
+
 export const uploadImages = async (id, files) => {
     try {
         const formData = new FormData();

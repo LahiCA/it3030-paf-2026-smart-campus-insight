@@ -41,6 +41,9 @@ public class Ticket {
     private LocalDateTime firstResponseAt;
     private LocalDateTime resolvedAt;
     private LocalDateTime updatedAt;
+    private Integer rating;
+    private String feedback;
+    private LocalDateTime ratedAt;
 
     @Builder.Default
     @Transient

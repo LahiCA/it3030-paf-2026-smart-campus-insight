@@ -4,7 +4,7 @@ import PriorityBadge from "../components/PriorityBadge";
 import TicketComments from "../components/TicketComments";
 import TicketImageUpload from "../components/TicketImageUpload";
 import TicketStatusBadge from "../components/TicketStatusBadge";
-import { assignTechnician, deleteTicket, getAttachmentUrl, getCurrentUser, getTicket, updateStatus } from "../api/ticketApi";
+import { assignTechnician, deleteTicket, getAttachmentUrl, getCurrentUser, getTicket, rateTicket, updateStatus } from "../api/ticketApi";
 
 const STATUS_OPTIONS = ["IN_PROGRESS", "RESOLVED", "CLOSED", "REJECTED"];
 
@@ -18,10 +18,13 @@ export default function TicketDetailsPage() {
     const [statusForm, setStatusForm] = useState({ status: "IN_PROGRESS", resolutionNotes: "", rejectionReason: "" });
     const [technicianId, setTechnicianId] = useState("");
     const [busy, setBusy] = useState(false);
+    const [ratingForm, setRatingForm] = useState({ rating: 0, feedback: "" });
 
     const isAssignedTechnician = role === "TECHNICIAN" && ticket?.assignedTo && ticket.assignedTo === displayId;
     const canManageStatus = role === "ADMIN" || isAssignedTechnician;
     const canAssign = role === "ADMIN";
+    const isTicketOwner = ticket?.userDisplayId && ticket.userDisplayId === displayId;
+    const canSubmitRating = ticket?.status === "CLOSED" && ticket?.rating == null && isTicketOwner && (role === "LECTURER" || role === "USER");
 
     const loadTicket = async () => {
         setLoading(true);
@@ -83,6 +86,23 @@ export default function TicketDetailsPage() {
         }
     };
 
+    const handleRateSubmit = async () => {
+        if (ratingForm.rating < 1 || ratingForm.rating > 5) {
+            setError("Please select a rating between 1 and 5");
+            return;
+        }
+        setBusy(true);
+        setError("");
+        try {
+            const updated = await rateTicket(id, ratingForm);
+            setTicket(updated);
+        } catch (apiError) {
+            setError(apiError.message || "Failed to submit rating");
+        } finally {
+            setBusy(false);
+        }
+    };
+
     const handleDelete = async () => {
         setBusy(true);
         setError("");
@@ -107,9 +127,7 @@ export default function TicketDetailsPage() {
     return (
         <div className="min-h-screen bg-slate-50 px-4 py-8">
             <div className="mx-auto max-w-7xl">
-                <Link to="/tickets" className="mb-5 inline-flex rounded-full bg-white px-4 py-2 text-sm font-semibold text-teal-700 shadow-sm">
-                    Back to dashboard
-                </Link>
+
 
                 {error ? (
                     <div className="mb-5 rounded-3xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">{error}</div>
@@ -154,6 +172,72 @@ export default function TicketDetailsPage() {
                                 </div>
                             ) : null}
                         </section>
+
+                        {canSubmitRating ? (
+                            <section className="rounded-[2rem] bg-white p-6 shadow-sm">
+                                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-600">Feedback</p>
+                                <h2 className="mt-2 text-2xl font-semibold text-slate-900">Rate our service</h2>
+                                <div className="mt-5 space-y-4">
+                                    <label className="block">
+                                        <span className="mb-2 block text-sm font-semibold text-slate-700">Rating (1-5 stars)</span>
+                                        <div className="flex gap-1">
+                                            {[1, 2, 3, 4, 5].map((star) => (
+                                                <button
+                                                    key={star}
+                                                    type="button"
+                                                    onClick={() => setRatingForm((current) => ({ ...current, rating: star }))}
+                                                    className={`text-2xl ${ratingForm.rating >= star ? "text-yellow-400" : "text-slate-300"} hover:text-yellow-400`}
+                                                >
+                                                    ★
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </label>
+
+                                    <label className="block">
+                                        <span className="mb-2 block text-sm font-semibold text-slate-700">Feedback (optional)</span>
+                                        <textarea
+                                            value={ratingForm.feedback}
+                                            onChange={(event) => setRatingForm((current) => ({ ...current, feedback: event.target.value }))}
+                                            rows="4"
+                                            className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-teal-400"
+                                            placeholder="Tell us about your experience..."
+                                        />
+                                    </label>
+
+                                    <button
+                                        type="button"
+                                        onClick={handleRateSubmit}
+                                        disabled={busy || ratingForm.rating < 1}
+                                        className="w-full rounded-full bg-teal-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:bg-slate-300"
+                                    >
+                                        Submit Rating
+                                    </button>
+                                </div>
+                            </section>
+                        ) : ticket.rating != null ? (
+                            <section className="rounded-[2rem] bg-white p-6 shadow-sm">
+                                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-600">Feedback</p>
+                                <h2 className="mt-2 text-2xl font-semibold text-slate-900">Service Rating</h2>
+                                <div className="mt-4">
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex gap-1">
+                                            {[1, 2, 3, 4, 5].map((star) => (
+                                                <span key={star} className={`text-xl ${ticket.rating >= star ? "text-yellow-400" : "text-slate-300"}`}>
+                                                    ★
+                                                </span>
+                                            ))}
+                                        </div>
+                                        <span className="text-sm font-semibold text-slate-700">{ticket.rating}/5</span>
+                                    </div>
+                                    {ticket.feedback ? (
+                                        <div className="mt-3 rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                                            <p className="text-sm text-slate-700">{ticket.feedback}</p>
+                                        </div>
+                                    ) : null}
+                                </div>
+                            </section>
+                        ) : null}
 
                         <section className="rounded-[2rem] bg-white p-6 shadow-sm">
                             <div className="mb-5 flex items-center justify-between">

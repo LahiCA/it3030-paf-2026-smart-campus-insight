@@ -23,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.smartcampus.backend.tickets.dto.AssignTechnicianRequest;
 import com.smartcampus.backend.tickets.dto.CommentCreateRequest;
 import com.smartcampus.backend.tickets.dto.CommentUpdateRequest;
+import com.smartcampus.backend.tickets.dto.RateTicketRequest;
 import com.smartcampus.backend.tickets.dto.StatusUpdateRequest;
 import com.smartcampus.backend.tickets.dto.TicketCreateRequest;
 import com.smartcampus.backend.tickets.dto.TicketUpdateRequest;
@@ -105,6 +106,16 @@ public class TicketController {
             @Valid @RequestBody AssignTechnicianRequest request,
             @RequestHeader(name = "role", defaultValue = "USER") String role) {
         return ticketService.assignTechnician(id, request, role);
+    }
+
+    @PutMapping("/{id}/rate")
+    public Ticket rateTicket(
+            @PathVariable String id,
+            @Valid @RequestBody RateTicketRequest request,
+            @RequestHeader(name = "userId", defaultValue = "") String userId,
+            @RequestHeader(name = "displayId", defaultValue = "") String displayId,
+            @RequestHeader(name = "role", defaultValue = "USER") String role) {
+        return ticketService.rateTicket(id, request, userId, displayId, role);
     }
 
     @PostMapping("/{id}/upload")
