@@ -3,6 +3,7 @@ import {
   approveBWBooking,
   getAllBWBookings,
   rejectBWBooking,
+  deleteBWBooking,
 } from "../api/bwBookingApi";
 import BWAdminBookingTable from "../components/BWAdminBookingTable";
 import BWBookingCalendar from "../components/BWBookingCalendar";
@@ -89,6 +90,41 @@ function BWAdminBookingList() {
     }
   };
 
+  const handleDeleteBooking = async (booking) => {
+    let reasonText = "";
+    
+    if (booking.status === "APPROVED") {
+      const input = window.prompt("Why do you want to delete this approved booking?");
+      if (input === null) return; // User cancelled
+      if (!input.trim()) {
+        alert("A reason is required to delete an approved booking.");
+        return;
+      }
+      reasonText = input.trim();
+    } else {
+      const confirm = window.confirm("Are you sure you want to delete this booking?");
+      if (!confirm) return;
+    }
+
+    setSuccessMessage("");
+    setErrorMessage("");
+    setActionLoadingId(booking.id);
+
+    try {
+      await deleteBWBooking(booking.id, reasonText);
+      setSuccessMessage("Booking deleted successfully.");
+      await fetchBookings();
+    } catch (error) {
+      setErrorMessage(
+        error.response?.data?.message ||
+          error.response?.data?.error ||
+          "Failed to delete booking"
+      );
+    } finally {
+      setActionLoadingId("");
+    }
+  };
+
   return (
     <div className="space-y-4">
       {successMessage && (
@@ -151,6 +187,7 @@ function BWAdminBookingList() {
         bookings={filteredBookings}
         onApproveBooking={handleApproveBooking}
         onRejectBooking={handleRejectBooking}
+        onDeleteBooking={handleDeleteBooking}
         actionLoadingId={actionLoadingId}
         highlightedBookingId={highlightedBookingId}
       />

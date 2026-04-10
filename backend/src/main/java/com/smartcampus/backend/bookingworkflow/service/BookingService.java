@@ -174,6 +174,30 @@ public class BookingService {
         return repository.save(booking);
     }
 
+    public void deleteBooking(String id, String reason) {
+        Booking booking = getBookingById(id);
+
+        // Try to send notification before deleting
+        try {
+            String msg = "Your booking for \"" + booking.getResourceName() + "\" on " + booking.getBookingDate()
+                    + " has been deleted by an administrator."
+                    + (reason != null && !reason.isBlank() ? " Reason: " + reason : "");
+            resolveRecipientId(booking.getUserId()).ifPresentOrElse(
+                    recipientId -> notificationService.sendNotification(
+                            recipientId,
+                            msg,
+                            NotificationType.BOOKING_REJECTED, 
+                            booking.getId(),
+                            "BOOKING"),
+                    () -> log.warn("No user found for booking userId '{}' — deletion notification skipped",
+                            booking.getUserId()));
+        } catch (Exception e) {
+            log.error("Failed to send booking deleted notification for booking {}: {}", booking.getId(), e.getMessage());
+        }
+
+        repository.delete(booking);
+    }
+
     /**
      * Resolve a notification recipient's MongoDB _id from whatever was stored as
      * userId on the booking. The booking form stores the user's displayId

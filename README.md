@@ -1,287 +1,76 @@
-# Smart Campus Insight – Booking Workflow Module (Member 2)
+# Smart Campus Operations Hub 🎓
 
-## Module Owner
-**Member 2 – Booking Workflow / Resource Reservation**
+**IT3030 – PAF Assignment 2026 (Semester 1) - Faculty of Computing – SLIIT**
 
-This module is responsible for handling the complete **resource booking workflow** in the Smart Campus system.
+A complete, production-inspired web system designed to manage facility and asset bookings, maintenance/incident handling, and advanced backend campus operations. 
 
----
+## 👥 Team Members & Contribution
 
-# Tech Stack
+| Member | ID | Responsibilities & Implemented Features |
+| :--- | :--- | :--- |
+| **Member 1** | ITXXXXXXXX | **Module A: Facilities & Assets Catalogue** <br>- Resource management REST endpoints (CRUD).<br>- React catalogue UI with search, filtering, and metadata tracking.<br>- File uploads for resource images and status toggling (`ACTIVE` / `OUT_OF_SERVICE`). |
+| **Member 2** | ITXXXXXXXX | **Module B: Booking Management** <br>- End-to-end booking workflow (`PENDING` -> `APPROVED` / `REJECTED`).<br>- Automated conflict checking & overlapping time prevention across resources.<br>- Admin booking dashboard and user booking history views. |
+| **Member 3** | ITXXXXXXXX | **Module C: Maintenance & Incident Ticketing** <br>- Ticketing workflows (`OPEN` -> `IN_PROGRESS` -> `RESOLVED` -> `CLOSED`).<br>- Complex form handling with up to 3 image attachments for issue evidence.<br>- Technician updates, ticket timeline views, and threaded commenting system. |
+| **Member 4** | ITXXXXXXXX | **Module D & E: Notifications, Auth & Innovation** <br>- OAuth 2.0 Auth (Google Sign-In) & Role-Based Access Control (`USER`, `ADMIN`, `TECHNICIAN`).<br>- Real-time notification panel & notification logic.<br>- Gemini AI Chatbot Integration for smart campus queries (Innovation).<br>- Usage analytics dashboard & PDF/Excel reporting exports (Innovation). |
 
-## Frontend
-- **React**
-- **Vite**
-- **Tailwind CSS**
-- **Axios**
-- **React Router DOM**
+## 🛠️ Technology Stack
 
-## Backend
-- **Spring Boot**
-- **Spring Web**
-- **Spring Data MongoDB**
-- **Spring Validation**
-- **Maven**
+- **Frontend:** React (Vite), TailwindCSS, Context API, Axios, jsPDF
+- **Backend:** Java, Spring Boot 3.x, Spring Security (JWT + OAuth2)
+- **Database:** MongoDB Atlas (NoSQL)
+- **CI/CD:** GitHub Actions (Automated Build & Test)
+- **AI Integration:** Google Gemini API 
 
-## Database
-- **MongoDB Atlas**
-
----
-
-# Module Scope
-
-This module allows users to:
-
-- Create booking requests
-- View their own bookings
-- Track booking status
-- Cancel approved bookings
-
-This module also supports workflow status transitions:
-
-- `PENDING`
-- `APPROVED`
-- `REJECTED`
-- `CANCELLED`
-
----
-
-# Backend Implementation
-
-The backend follows a **layered Spring Boot architecture**.
-
----
-
-## Backend Folder Structure
+## 📂 Folder Structure
 
 ```text
-backend/
-└── src/main/java/com/smartcampus/backend/
-    └── bookingworkflow/
-        ├── controller/
-        │   └── BookingController.java
-        │
-        ├── dto/
-        │   ├── BookingRequestDto.java
-        │   ├── BookingDecisionDto.java
-        │   └── BookingCancelDto.java
-        │
-        ├── exception/
-        │   ├── BookingConflictException.java
-        │   ├── InvalidBookingException.java
-        │   └── ResourceNotFoundException.java
-        │
-        ├── model/
-        │   ├── Booking.java
-        │   └── BookingStatus.java
-        │
-        ├── repository/
-        │   └── BookingRepository.java
-        │
-        └── service/
-            └── BookingService.java
+smart-campus-insight/
+├── backend/                          # Spring Boot Backend Application
+│   ├── src/main/java/com/smartcampus/backend/
+│   │   ├── bookingworkflow/          # Booking workflows & conflict logic (Member 2)
+│   │   ├── controller/               # REST API Controllers (Member 1, 3, 4)
+│   │   ├── model/                    # Data Models & Enums
+│   │   ├── service/                  # Business logic (Ticketing, Chatbot, Resources)
+│   │   └── tickets/                  # Incident management (Member 3)
+│   ├── src/main/resources/           # App configuration (application.yaml)
+│   ├── src/test/                     # Unit and Integration Tests
+│   ├── uploads/                      # Asset image uploads & ticketing evidence
+│   └── pom.xml                       # Maven dependencies
+│
+├── smart-campus-frontend/            # React (Vite) Frontend Application
+│   ├── src/
+│   │   ├── api/                      # Axios API client integrations
+│   │   ├── assets/                   # Static assets
+│   │   ├── chatbot/                  # AI Chatbot components (Innovation)
+│   │   ├── components/               # Reusable UI widgets & Dashboards
+│   │   ├── context/                  # React Contexts (AuthContext, etc.)
+│   │   ├── pages/                    # Main application pages (ExportReports, etc.)
+│   │   └── services/                 # Frontend services
+│   ├── package.json                  # Node dependencies
+│   ├── tailwind.config.cjs           # Tailwind styling configuration
+│   └── vite.config.js                # Vite build configuration
+│
+├── .github/workflows/                # CI/CD GitHub Actions pipelines
+├── README.md                         # Project documentation
+└── Smart-Campus-API.postman_collection.json # Postman collection for API testing
 ```
-## Backend Features Completed
-### 1. Booking Creation
 
-Implemented:
+## 🚀 Getting Started
 
-`POST /api/bookings`
+### Prerequisites
+- JDK 17+
+- Node.js 18+
+- Maven
+- MongoDB Atlas Account
 
-This endpoint:
+### Backend Setup
+1. Navigate to the backend folder: `cd backend`
+2. Configure environment variables in `application.yaml` (MongoDB URI, JWT Secret, Gemini API Key).
+3. Run the Spring Boot app: `./mvnw spring-boot:run`
+4. The API will start on `http://localhost:8080`
 
-- validates request data
-- checks time conflicts
-- saves booking in MongoDB
-- sets status as PENDING
-
-### 2. Get User Bookings
-
-Implemented:
-
-`GET /api/bookings/user/{userId}`
-
-Allows users to view only their own bookings.
-
-### 3. Get Booking by ID
-
-Implemented:
-
-`GET /api/bookings/{id}`
-
-Used for booking details retrieval.
-
-### 4. Workflow Actions
-
-Implemented:
-
-- `PATCH /api/bookings/{id}/approve`
-- `PATCH /api/bookings/{id}/reject`
-- `PATCH /api/bookings/{id}/cancel`
-
-### 5. Conflict Checking Logic
-
-The system prevents overlapping bookings for the same resource and date.
-
-Example:
-
-| Existing | New       |
-| :------- | :-------- |
-| 10:00 - 12:00 | 11:00 - 01:00 |
-
-Result:
-
-`BookingConflictException`
-
-# Frontend Implementation
-
-Frontend is built using `React` + `Vite` + `Tailwind CSS`
-
-## Frontend Folder Structure
-```text
-smart-campus-frontend/
-└── src/
-    ├── api/
-    │   └── bwBookingApi.js
-    │
-    ├── components/
-    │   ├── BWBookingForm.jsx
-    │   ├── BWBookingTable.jsx
-    │   └── BWBookingStatusBadge.jsx
-    │
-    ├── layout/
-    │   └── BWSidebar.jsx
-    │
-    ├── pages/
-    │   ├── BWCreateBooking.jsx
-    │   └── BWMyBookings.jsx
-    │
-    ├── App.jsx
-    └── index.css
-```
-## Frontend Features Completed
-### 1. Sidebar Navigation
-
-Implemented user workflow sidebar with:
-
-- Dashboard
-- Create Booking
-- My Bookings
-
-### 2. Create Booking Page
-
-Users can submit:
-
-- resource ID
-- resource name
-- resource type
-- booking date
-- start time
-- end time
-- purpose
-- expected attendees
-
-Integrated with backend using Axios.
-
-### 3. My Bookings Page
-
-Displays user-specific bookings.
-
-Includes:
-
-- resource
-- type
-- date
-- time
-- purpose
-- status
-
-### 4. Status Badges
-
-Dynamic status display:
-
-- green → approved
-- yellow → pending
-- red → rejected
-- gray → cancelled
-
-### 5. Cancel Booking
-
-Users can cancel only `approved` bookings
-
-Includes:
-
-- confirmation popup
-- loading state
-- success / error alerts
-
-## UI Theme
-
-Theme used:
-
-| Color     | Hex       |
-| :-------- | :-------- |
-| Deep Teal | `#134e4a` |
-| Teal      | `#0f766e` |
-| Accent    | `#14b8a6` |
-| Pale Teal | `#ccfbf1` |
-| Surface   | `#f8fafc` |
-
-Design goal:
-
-- clean
-- academic
-- readable
-- calm user experience
-
-## API Integration
-
-Frontend uses `Axios`:
-
-- `createBWBooking()`
-- `getBWBookingsByUser()`
-- `cancelBWBooking()`
-
-All API calls connect to Spring Boot backend:
-
-`http://localhost:8080/api/bookings`
-
-## Current Workflow
-1. User creates booking
-2. Spring Boot validates
-3. Conflict check
-4. MongoDB save
-5. Status = `PENDING`
-6. User can view booking
-7. User can cancel if `APPROVED`
-
-## Future Enhancements
-
-Planned:
-
-- role-based login integration
-- admin booking approval dashboard
-- approve / reject UI
-- booking analytics cards
-- date/time filters
-- notifications
-
-## Important Notes
-
-Admin and User are separate actors.
-
-Role-based login will be integrated by another team member.
-
-Current implementation focuses on Member 2 booking workflow responsibilities.
-
-## Contribution Summary
-
-This module was implemented as Member 2 contribution and includes:
-
-- backend booking workflow
-- MongoDB persistence
-- API integration
-- React frontend pages
-- status workflow
-- user cancellation flow
-- UI theme and layout
+### Frontend Setup
+1. Navigate to the frontend folder: `cd smart-campus-frontend`
+2. Install dependencies: `npm install`
+3. Run the development server: `npm run dev`
+4. Open the application at `http://localhost:5173`
