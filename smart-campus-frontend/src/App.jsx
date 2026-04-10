@@ -36,6 +36,7 @@ import BWAdminBookingTable from './components/BWAdminBookingTable';
 import CreateTicketPage from './pages/CreateTicketPage';
 import TicketDashboardPage from './pages/TicketDashboardPage';
 import TicketDetailsPage from './pages/TicketDetailsPage';
+import TicketTimelinePage from './pages/TicketTimelinePage';
 
 import AnalyticsDashboard from './pages/AnalyticsDashboard';
 import ExportReports from './pages/ExportReports';
@@ -269,6 +270,15 @@ function App() {
                 element={
                   <PrivateRoute
                     element={<Layout><TicketDetailsPage /></Layout>}
+                  />
+                }
+              />
+
+              <Route
+                path="/technician/tickets/:id/timeline"
+                element={
+                  <PrivateRoute
+                    element={<Layout><TicketTimelinePage /></Layout>}
                   />
                 }
               />
