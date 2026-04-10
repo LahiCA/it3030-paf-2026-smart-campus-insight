@@ -105,8 +105,8 @@ const GoogleLoginButton = ({ onSuccess, onError, text = 'signin_with', size = 'l
   };
 
   return (
-    <div className="google-login-button-container relative">
-      {!isAuthenticated && (
+    <div className="google-login-button-container relative w-full flex justify-center">
+      {true && (
         <>
           {/* Custom green button overlay */}
           <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">

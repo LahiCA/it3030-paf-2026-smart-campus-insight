@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.smartcampus.backend.tickets.dto.AssignTechnicianRequest;
 import com.smartcampus.backend.tickets.dto.CommentCreateRequest;
 import com.smartcampus.backend.tickets.dto.CommentUpdateRequest;
+import com.smartcampus.backend.tickets.dto.RateTicketRequest;
 import com.smartcampus.backend.tickets.dto.StatusUpdateRequest;
 import com.smartcampus.backend.tickets.dto.TicketCreateRequest;
 import com.smartcampus.backend.tickets.dto.TicketUpdateRequest;
@@ -37,6 +38,8 @@ public class TicketService {
 
     private static final String ROLE_ADMIN = "ADMIN";
     private static final String ROLE_TECHNICIAN = "TECHNICIAN";
+    private static final String ROLE_LECTURER = "LECTURER";
+    private static final String ROLE_USER = "USER";
     private static final String STATUS_OPEN = "OPEN";
     private static final String STATUS_IN_PROGRESS = "IN_PROGRESS";
     private static final String STATUS_RESOLVED = "RESOLVED";
@@ -209,6 +212,42 @@ public class TicketService {
                 ticket.setFirstResponseAt(LocalDateTime.now());
             }
         }
+
+        return hydrate(ticketRepository.save(ticket));
+    }
+
+    public Ticket rateTicket(String id, RateTicketRequest request, String requesterUserId, String requesterDisplayId,
+            String requesterRole) {
+        Ticket ticket = findTicket(id);
+
+        // Only lecturer or user owners may submit ratings
+        if (!ROLE_LECTURER.equals(requesterRole) && !ROLE_USER.equals(requesterRole)) {
+            throw new RuntimeException("Only the ticket owner can submit a rating");
+        }
+
+        if (!Objects.equals(ticket.getUserId(), requesterUserId)
+                || !Objects.equals(ticket.getUserDisplayId(), requesterDisplayId)) {
+            throw new RuntimeException("Only the ticket owner can submit a rating");
+        }
+
+        if (request.getRating() == null || request.getRating() < 1 || request.getRating() > 5) {
+            throw new RuntimeException("Rating must be between 1 and 5");
+        }
+
+        if (!STATUS_CLOSED.equals(ticket.getStatus())) {
+            throw new RuntimeException("Rating can only be submitted for closed tickets");
+        }
+
+        if (ticket.getRating() != null) {
+            throw new RuntimeException("Rating has already been submitted for this ticket");
+        }
+
+        ticket.setRating(request.getRating());
+        if (StringUtils.hasText(request.getFeedback())) {
+            ticket.setFeedback(request.getFeedback().trim());
+        }
+        ticket.setRatedAt(LocalDateTime.now());
+        ticket.setUpdatedAt(LocalDateTime.now());
 
         return hydrate(ticketRepository.save(ticket));
     }

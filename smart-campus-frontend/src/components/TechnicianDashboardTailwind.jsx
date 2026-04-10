@@ -22,6 +22,8 @@ const getGreeting = () => {
   return 'Good Evening';
 };
 
+const STATUS_FILTER_OPTIONS = ['ALL', 'OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'];
+
 const TechnicianDashboardTailwind = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -31,6 +33,7 @@ const TechnicianDashboardTailwind = () => {
   const [error, setError] = useState('');
   const [statusDrafts, setStatusDrafts] = useState({});
   const [busyTicketId, setBusyTicketId] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState('ALL');
 
   const displayName = user?.name || user?.email?.split('@')[0] || 'Technician';
 
@@ -64,6 +67,11 @@ const TechnicianDashboardTailwind = () => {
     open: tickets.filter((ticket) => ['OPEN', 'IN_PROGRESS'].includes(ticket.status)).length,
     resolved: tickets.filter((ticket) => ['RESOLVED', 'CLOSED'].includes(ticket.status)).length,
   }), [tickets]);
+
+  const filteredTickets = useMemo(
+    () => tickets.filter((ticket) => selectedStatus === 'ALL' || ticket.status === selectedStatus),
+    [tickets, selectedStatus],
+  );
 
   const recentResolved = useMemo(
     () => tickets.filter((ticket) => ['RESOLVED', 'CLOSED'].includes(ticket.status)).slice(0, 4),
@@ -139,14 +147,28 @@ const TechnicianDashboardTailwind = () => {
 
       <div className="grid gap-6 xl:grid-cols-[1.7fr_1fr]">
         <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="mb-5 flex items-center justify-between">
+          <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-600">Technician Queue</p>
               <h2 className="mt-2 text-2xl font-semibold text-slate-900">Assigned tickets</h2>
             </div>
-            <Link to="/tickets" className="rounded-full bg-teal-50 px-4 py-2 text-sm font-semibold text-teal-700 transition hover:bg-teal-100">
-              Open full dashboard
-            </Link>
+            <div className="flex flex-wrap items-center gap-3">
+              <label className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-700">
+                <span>Status:</span>
+                <select
+                  value={selectedStatus}
+                  onChange={(event) => setSelectedStatus(event.target.value)}
+                  className="rounded-full border border-slate-200 bg-white px-3 py-1 text-sm outline-none"
+                >
+                  {STATUS_FILTER_OPTIONS.map((status) => (
+                    <option key={status} value={status}>{status.replaceAll('_', ' ')}</option>
+                  ))}
+                </select>
+              </label>
+              <Link to="/tickets" className="rounded-full bg-teal-50 px-4 py-2 text-sm font-semibold text-teal-700 transition hover:bg-teal-100">
+                Open full dashboard
+              </Link>
+            </div>
           </div>
 
           {loading ? (
@@ -155,7 +177,7 @@ const TechnicianDashboardTailwind = () => {
             </div>
           ) : tickets.length ? (
             <div className="space-y-4">
-              {tickets.map((ticket) => {
+              {filteredTickets.length ? filteredTickets.map((ticket) => {
                 const draft = statusDrafts[ticket.id] || { status: '', resolutionNotes: '' };
                 const nextStatuses = getTechnicianStatuses(ticket.status);
                 return (
@@ -165,6 +187,18 @@ const TechnicianDashboardTailwind = () => {
                         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-600">{ticket.category}</p>
                         <h3 className="mt-2 text-lg font-semibold text-slate-900">{ticket.title}</h3>
                         <p className="mt-2 text-sm leading-6 text-slate-600">{ticket.description}</p>
+                        {ticket.rating ? (
+                          <div className="mt-4 rounded-3xl bg-slate-50 p-4 text-sm text-slate-700">
+                            <div className="font-semibold text-slate-900">Customer feedback</div>
+                            <div className="mt-2 flex items-center gap-2 text-amber-600">
+                              {Array.from({ length: 5 }, (_, index) => (
+                                <span key={index} className={ticket.rating > index ? 'text-yellow-400' : 'text-slate-300'}>★</span>
+                              ))}
+                              <span className="font-semibold text-slate-700">{ticket.rating}/5</span>
+                            </div>
+                            {ticket.feedback ? <p className="mt-3 text-slate-600">"{ticket.feedback}"</p> : null}
+                          </div>
+                        ) : null}
                         <div className="mt-3 flex flex-wrap gap-2">
                           <PriorityBadge priority={ticket.priority} />
                           <TicketStatusBadge status={ticket.status} />
@@ -221,7 +255,11 @@ const TechnicianDashboardTailwind = () => {
                     </div>
                   </article>
                 );
-              })}
+              }) : (
+                <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-6 py-16 text-center text-sm text-slate-500">
+                  No tickets match the selected status filter.
+                </div>
+              )}
             </div>
           ) : (
             <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-6 py-16 text-center text-sm text-slate-500">
