@@ -20,13 +20,17 @@ export const searchResources = async (query) => {
   return response.data;
 };
 
-export const createResource = async (data) => {
-  const response = await axiosInstance.post('/resources', data);
+export const createResource = async (formData) => {
+  const response = await axiosInstance.post('/resources', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
   return response.data;
 };
 
-export const updateResource = async (id, data) => {
-  const response = await axiosInstance.put(`/resources/${id}`, data);
+export const updateResource = async (id, formData) => {
+  const response = await axiosInstance.put(`/resources/${id}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
   return response.data;
 };
 

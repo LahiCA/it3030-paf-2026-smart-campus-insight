@@ -1,7 +1,7 @@
 spring:
-data:
-     mongodb:
-       uri: mongodb+srv://admin:Xe6YIrDpEELZjamW@cluster0.k423yz7.mongodb.net/smartcampus
+  data:
+    mongodb:
+      uri: "mongodb+srv://admin:Xe6YIrDpEELZjamW@cluster0.k423yz7.mongodb.net/smartcampus"
 
 jwt:
   # For development, use a simple secret (in production, use env var)
@@ -20,5 +20,5 @@ admin:
 logging:
   level:
     root: INFO
-    com.smartcampus: DEBUG
-    org.springframework.security: DEBUG
+    "[com.smartcampus]": DEBUG
+    "[org.springframework.security]": DEBUG

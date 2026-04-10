@@ -45,7 +45,7 @@ function BWAdminBookingTable({
 
   return (
     <div className="bg-white rounded-2xl shadow-md p-6 overflow-x-auto">
-      <h2 className="text-2xl font-bold text-[var(--deep-teal)] mb-2">
+      <h2 className="text-2xl font-bold text-(--deep-teal) mb-2">
         Admin Booking Management
       </h2>
       <p className="text-slate-500 mb-6">
@@ -54,7 +54,7 @@ function BWAdminBookingTable({
 
       <table className="min-w-full">
         <thead>
-          <tr className="bg-[var(--pale-teal)] text-[var(--deep-teal)]">
+          <tr className="bg-(--pale-teal) text-(--deep-teal)">
             <th className="text-left px-4 py-3 rounded-l-xl">User ID</th>
             <th className="text-left px-4 py-3">Resource</th>
             <th className="text-left px-4 py-3">Type</th>
