@@ -179,13 +179,15 @@ function BWBookingForm() {
   return (
     <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
       {/* Form Section */}
-      <div className="bg-white rounded-2xl shadow-lg p-8 lg:col-span-2">
-        <h2 className="text-3xl font-bold text-teal-800 mb-2">
-          Create Booking
-        </h2>
-        <p className="text-slate-500 mb-8">
-          Submit a new resource booking request.
-        </p>
+      <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-8 lg:col-span-2">
+        <div className="border-b border-slate-100 pb-5 mb-8">
+          <h2 className="text-3xl font-extrabold text-slate-800 tracking-tight">
+            Create Booking
+          </h2>
+          <p className="text-slate-500 mt-2 font-medium">
+            Submit a new resource booking request easily.
+          </p>
+        </div>
 
         {successMessage && (
           <div className="mb-6 flex items-start gap-3 rounded-xl bg-teal-50 border border-teal-200 p-4 shadow-sm">
@@ -437,21 +439,11 @@ function BWBookingForm() {
         </div>
 
         {/* Submit & Form Action Buttons */}
-        <div className="md:col-span-2 flex flex-col md:flex-row items-center gap-4 mt-4 pt-4 border-t border-slate-100">
-          <button
-            type="submit"
-            className="w-full md:w-auto bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-lg font-semibold transition-transform transform hover:scale-105 flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-            </svg>
-            Submit Booking Request
-          </button>
-
+        <div className="md:col-span-2 flex flex-col sm:flex-row items-center justify-end gap-3 mt-4 pt-8 border-t border-slate-200/60">
           <button
             type="button"
             onClick={() => setFormData({
-              userId: "",
+              userId: user?.displayId || "",
               resourceName: "",
               resourceType: "",
               bookingDate: "",
@@ -460,50 +452,67 @@ function BWBookingForm() {
               purpose: "",
               expectedAttendees: "",
             })}
-             className="w-full md:w-auto bg-slate-100 hover:bg-slate-200 text-slate-600 px-6 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
+             className="w-full sm:w-auto bg-slate-50 border border-slate-200 hover:bg-slate-100 hover:border-slate-300 text-slate-700 px-6 py-2.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 shadow-sm text-sm"
           >
-             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+             <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
              </svg>
-             Clear Form
+             Clear Selection
+          </button>
+          
+          <button
+            type="submit"
+            className="w-full sm:w-auto bg-gradient-to-r from-teal-600 to-teal-500 hover:from-teal-700 hover:to-teal-600 text-white px-8 py-2.5 rounded-xl font-bold transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(13,148,136,0.25)] hover:shadow-[0_6px_16px_rgba(13,148,136,0.35)] text-sm border border-teal-500/20"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+            Submit Request
           </button>
         </div>
       </form>
       </div>
 
       {/* Availability Calendar Sidebar */}
-      <div className="bg-slate-50 border border-slate-200 rounded-2xl shadow-sm p-6 lg:col-span-1 flex flex-col h-full">
-        <h3 className="text-xl font-bold text-slate-700 mb-4 flex items-center gap-2">
-          <svg className="w-6 h-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-          </svg>
+      <div className="bg-gradient-to-b from-slate-50 to-white border border-slate-200 rounded-3xl shadow-lg p-6 lg:col-span-1 flex flex-col h-full relative overflow-hidden">
+        {/* Decorative background element */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500 opacity-[0.04] rounded-bl-full pointer-events-none"></div>
+
+        <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3 relative z-10">
+          <div className="bg-teal-100/50 p-2 rounded-xl text-teal-600 shadow-sm border border-teal-100">
+            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+          </div>
           Availabilities
         </h3>
         
         {!formData.resourceType || !formData.bookingDate ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-center text-slate-500 py-10 bg-white rounded-xl border border-dashed border-slate-300 shadow-inner">
-            <div className="bg-slate-50 p-4 rounded-full mb-4 shadow-sm border border-slate-100">
-              <svg className="w-10 h-10 text-slate-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+          <div className="flex-1 flex flex-col items-center justify-center text-center text-slate-500 py-12 px-6 bg-white rounded-2xl border-2 border-dashed border-slate-200 shadow-sm relative z-10 transition-all hover:border-teal-200/60 duration-300">
+            <div className="bg-gradient-to-tr from-slate-50 to-slate-100 p-4 rounded-2xl mb-5 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] border border-slate-200">
+              <svg className="w-10 h-10 text-slate-400 stroke-slate-400/80" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
             </div>
-            <p className="font-medium text-slate-600 mb-1">No Schedule Selected</p>
-            <p className="text-sm px-4">Select a Resource Type and Booking Date to view availabilities.</p>
+            <p className="font-semibold text-slate-700 text-lg mb-2">No Schedule Selected</p>
+            <p className="text-sm leading-relaxed text-slate-500 max-w-[200px]">Select a Resource Type and Booking Date to view availabilities.</p>
           </div>
         ) : isLoadingSlots ? (
           <div className="flex-1 flex justify-center items-center py-10">
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-teal-600"></div>
           </div>
         ) : bookedSlots.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-center py-10 bg-white rounded-xl border border-green-200 shadow-sm">
-            <div className="bg-green-100 text-green-600 p-4 rounded-full mb-4 shadow-inner border border-green-200">
-              <svg className="w-10 h-10" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <div className="flex-1 flex flex-col items-center justify-center text-center py-12 px-6 bg-gradient-to-tr from-emerald-50/50 to-white rounded-3xl border border-emerald-100 shadow-sm relative overflow-hidden transition-all">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-100/30 via-transparent to-transparent pointer-events-none"></div>
+            
+            <div className="bg-emerald-100/60 p-4 rounded-2xl mb-5 shadow-[inset_0_2px_4px_rgba(255,255,255,0.8)] border border-emerald-200 backdrop-blur-sm relative z-10">
+              <svg className="w-10 h-10 text-emerald-600" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
             </div>
-            <p className="text-green-700 font-bold text-lg">Fully Available!</p>
-            <p className="text-sm text-green-600 mt-2 px-4 shadow-sm bg-green-50 py-1 rounded inline-block">
-              No bookings for <span className="font-semibold">{formData.resourceName || formData.resourceType}</span> on {format(parseISO(formData.bookingDate), "MMM d")}.
+            <h4 className="text-emerald-800 font-extrabold text-xl tracking-tight mb-2 relative z-10">All Clear!</h4>
+            <p className="text-[13px] leading-relaxed text-emerald-700/80 font-medium max-w-[240px] px-2 relative z-10">
+              No bookings exist for <span className="font-bold text-emerald-900 bg-emerald-100/50 px-1 py-0.5 rounded">{formData.resourceName || formData.resourceType}</span> on {format(parseISO(formData.bookingDate), "MMM do")}.
             </p>
           </div>
         ) : (

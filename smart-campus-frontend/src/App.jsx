@@ -38,6 +38,9 @@ import TicketDashboardPage from './pages/TicketDashboardPage';
 import TicketDetailsPage from './pages/TicketDetailsPage';
 import TicketTimelinePage from './pages/TicketTimelinePage';
 
+import AnalyticsDashboard from './pages/AnalyticsDashboard';
+import ExportReports from './pages/ExportReports';
+
 // Role-based dashboard
 const RoleDashboard = () => {
   const { user } = useAuth();
@@ -63,15 +66,16 @@ const BookingTabs = () => {
   }
 
   return (
-    <div className="mb-6 flex space-x-4 border-b border-slate-200">
+    <div className="inline-flex flex-wrap gap-2 rounded-xl bg-slate-200/50 p-1.5 backdrop-blur-sm border border-slate-200/50 shadow-[inset_0_1px_2px_rgba(0,0,0,0.05)]">
       {tabs.map((tab) => (
         <NavLink
           key={tab.path}
           to={tab.path}
           className={({ isActive }) =>
-            `pb-3 text-sm font-medium border-b-2 transition-colors ${isActive
-              ? 'border-teal-500 text-teal-600'
-              : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+            `px-5 py-2.5 text-[15px] font-semibold rounded-lg transition-all duration-200 flex items-center justify-center ${
+              isActive
+                ? 'bg-white text-teal-700 shadow-sm border-transparent ring-1 ring-slate-200/80 scale-[1.02]'
+                : 'text-slate-500 hover:bg-slate-200/80 hover:text-slate-800'
             }`
           }
         >
@@ -88,8 +92,14 @@ const BookingLayout = ({ children }) => (
     <div className="flex flex-1 flex-col overflow-hidden">
       <main className="scrollbar-ui flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-8">
         <div className="mx-auto max-w-7xl">
-          <h1 className="text-2xl font-bold text-slate-800 mb-6">Facility Bookings</h1>
-          <BookingTabs />
+          <div className="mb-8 border-b border-slate-200/60 pb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight">Facility Bookings</h1>
+              <p className="text-slate-500 mt-2 font-medium">Manage and view your campus resource reservations.</p>
+            </div>
+            
+            <BookingTabs />
+          </div>
           {children}
         </div>
       </main>
@@ -120,6 +130,16 @@ function ChatbotWrapper() {
     </>
   );
 }
+
+const AdminOnly = ({ children }) => {
+  const { user } = useAuth();
+
+  if (user?.role !== 'ADMIN') {
+    return <Navigate to={ROUTES.DASHBOARD} replace />;
+  }
+
+  return children;
+};
 
 function App() {
   if (!GOOGLE_CLIENT_ID) {
@@ -271,6 +291,34 @@ function App() {
                   />
                 }
               />
+
+              <Route path="/analytics"
+                    element={
+                      <PrivateRoute
+                        element={
+                          <Layout>
+                            <AdminOnly>
+                              <AnalyticsDashboard />
+                            </AdminOnly>
+                          </Layout>
+                        }
+                      />
+                    }
+                  />
+                  <Route
+                    path="/reports"
+                    element={
+                      <PrivateRoute
+                        element={
+                          <Layout>
+                            <AdminOnly>
+                              <ExportReports />
+                            </AdminOnly>
+                          </Layout>
+                        }
+                      />
+                    }
+                  />
 
               {/* FALLBACK */}
               <Route path="*" element={<Navigate to={ROUTES.DASHBOARD} replace />} />

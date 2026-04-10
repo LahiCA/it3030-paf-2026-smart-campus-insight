@@ -31,15 +31,21 @@ function BWMyBookings() {
   }, [currentUserId]);
 
   const handleCancelBooking = async (bookingId) => {
-    const confirmed = window.confirm("Are you sure you want to cancel this booking?");
-    if (!confirmed) return;
+    const reason = window.prompt("Are you sure you want to cancel this booking?\nPlease provide a reason for cancellation:");
+    
+    // If user clicked cancel on the prompt or provided empty reason
+    if (reason === null) return;
+    if (reason.trim() === "") {
+      setErrorMessage("Cancellation reason is required.");
+      return;
+    }
 
     setErrorMessage("");
     setSuccessMessage("");
     setActionLoadingId(bookingId);
 
     try {
-      await cancelBWBooking(bookingId, "Cancelled by user");
+      await cancelBWBooking(bookingId, reason.trim());
       setSuccessMessage("Booking cancelled successfully.");
       await fetchBookings(currentUserId);
     } catch (error) {
