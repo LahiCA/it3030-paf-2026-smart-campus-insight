@@ -52,3 +52,5 @@ logging:
   level:
     root: INFO
     "[com.smartcampus]": DEBUG
+
+
