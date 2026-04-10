@@ -88,7 +88,7 @@ export default function TicketDetailsPage() {
         setError("");
         try {
             await deleteTicket(id);
-            navigate("/");
+            navigate("/tickets");
         } catch (apiError) {
             setError(apiError.message || "Failed to delete ticket");
         } finally {
@@ -136,6 +136,8 @@ export default function TicketDetailsPage() {
                                 <InfoCard label="Assigned to" value={ticket.assignedTo || "Unassigned"} />
                                 <InfoCard label="Created" value={formatDate(ticket.createdAt)} />
                                 <InfoCard label="Updated" value={formatDate(ticket.updatedAt)} />
+                                <InfoCard label="First response" value={formatSla(ticket.createdAt, ticket.firstResponseAt)} />
+                                <InfoCard label="Resolution time" value={formatSla(ticket.createdAt, ticket.resolvedAt)} />
                             </div>
 
                             {ticket.resolutionNotes ? (
@@ -304,6 +306,23 @@ function InfoCard({ label, value }) {
 
 function formatDate(value) {
     return value ? new Date(value).toLocaleString() : "N/A";
+}
+
+function formatSla(createdAt, milestoneAt) {
+    if (!createdAt || !milestoneAt) return "Pending";
+    const start = new Date(createdAt);
+    const end = new Date(milestoneAt);
+    const totalMinutes = Math.floor((end.getTime() - start.getTime()) / 60000);
+    if (Number.isNaN(totalMinutes) || totalMinutes < 0) return "Pending";
+    if (totalMinutes < 1) return "Less than a minute";
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    if (hours > 0) {
+        return minutes > 0
+            ? `${hours} hr${hours !== 1 ? "s" : ""} ${minutes} min${minutes !== 1 ? "s" : ""}`
+            : `${hours} hr${hours !== 1 ? "s" : ""}`;
+    }
+    return `${totalMinutes} min${totalMinutes !== 1 ? "s" : ""}`;
 }
 
 function getSuggestedNextStatus(status) {
