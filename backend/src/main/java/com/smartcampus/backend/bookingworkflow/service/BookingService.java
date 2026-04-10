@@ -20,6 +20,11 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Module B: Booking Management (Member 2)
+ * Core business logic and workflow management for handling resource reservations.
+ * Enforces anti-overlapping logic, manages status transitions, and interfaces with the Notification Service.
+ */
 @Slf4j
 @Service
 public class BookingService {
@@ -35,6 +40,10 @@ public class BookingService {
         this.userRepository = userRepository;
     }
 
+    /**
+     * Initializes a new booking request.
+     * Prevents conflicts for the same resource by evaluating overlapping time ranges against APPROVED or CHECKED_IN bookings.
+     */
     public Booking createBooking(BookingRequestDto dto) {
         LocalDate date = LocalDate.parse(dto.getBookingDate());
         LocalTime start = LocalTime.parse(dto.getStartTime());
@@ -44,8 +53,11 @@ public class BookingService {
             throw new InvalidBookingException("End time must be after start time");
         }
 
+        // Fetch all bookings for the requested resource and date
         List<Booking> existingBookings = repository.findByResourceNameAndBookingDate(dto.getResourceName(), date);
 
+        // Core Conflict Logic: Check if any existing APPROVED or CHECKED_IN booking overlaps with the requested time.
+        // PENDING requests are intentionally ignored to avoid unnecessarily blocking a user up-front.
         boolean hasConflict = existingBookings.stream()
                 .filter(b -> b.getStatus() == BookingStatus.APPROVED || b.getStatus() == BookingStatus.CHECKED_IN)
                 .anyMatch(b -> start.isBefore(b.getEndTime()) && end.isAfter(b.getStartTime()));
@@ -54,6 +66,7 @@ public class BookingService {
             throw new BookingConflictException("Selected time slot is already booked for this resource");
         }
 
+        // Default state: PENDING
         Booking booking = Booking.builder()
                 .userId(dto.getUserId())
                 .resourceName(dto.getResourceName())
@@ -84,6 +97,10 @@ public class BookingService {
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
     }
 
+    /**
+     * Admin action to approve a booking request. Only PENDING requests can be approved.
+     * Fires a notification off to the user who requested the booking.
+     */
     public Booking approveBooking(String id) {
         Booking booking = getBookingById(id);
 
@@ -114,6 +131,10 @@ public class BookingService {
         return saved;
     }
 
+    /**
+     * Admin action to reject a booking request. Only PENDING requests can be rejected.
+     * Requires a rejection reason from the admin and fires an email notification to the user.
+     */
     public Booking rejectBooking(String id, String reason) {
         Booking booking = getBookingById(id);
 
@@ -147,6 +168,9 @@ public class BookingService {
         return saved;
     }
 
+    /**
+     * User action to cancel their own approved booking.
+     */
     public Booking cancelBooking(String id, BookingCancelDto dto) {
         Booking booking = getBookingById(id);
 
@@ -161,6 +185,9 @@ public class BookingService {
         return repository.save(booking);
     }
 
+    /**
+     * Updates an approved booking to indicate the user has successfully checked in to their reservation in real life.
+     */
     public Booking checkInBooking(String id) {
         Booking booking = getBookingById(id);
 
@@ -174,6 +201,9 @@ public class BookingService {
         return repository.save(booking);
     }
 
+    /**
+     * Admin action to completely erase a booking log off the database, sending a final notification to the user if requested.
+     */
     public void deleteBooking(String id, String reason) {
         Booking booking = getBookingById(id);
 

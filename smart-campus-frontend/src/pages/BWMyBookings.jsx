@@ -3,6 +3,11 @@ import { cancelBWBooking, getBWBookingsByUser } from "../api/bwBookingApi";
 import BWBookingTable from "../components/BWBookingTable";
 import { useAuth } from "../context/AuthContext";
 
+/**
+ * Module B: Booking Management (Member 2)
+ * User dashboard displaying their personal resource bookings.
+ * Shows cancellation and checking status to basic roles.
+ */
 function BWMyBookings() {
   const { user } = useAuth();
   const currentUserId = user?.displayId;
