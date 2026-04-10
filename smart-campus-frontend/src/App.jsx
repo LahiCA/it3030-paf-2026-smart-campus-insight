@@ -38,6 +38,7 @@ import TicketDashboardPage from './pages/TicketDashboardPage';
 import TicketDetailsPage from './pages/TicketDetailsPage';
 
 import AnalyticsDashboard from './pages/AnalyticsDashboard';
+import ExportReports from './pages/ExportReports';
 
 // Role-based dashboard
 const RoleDashboard = () => {
@@ -288,6 +289,20 @@ function App() {
                           <Layout>
                             <AdminOnly>
                               <AnalyticsDashboard />
+                            </AdminOnly>
+                          </Layout>
+                        }
+                      />
+                    }
+                  />
+                  <Route
+                    path="/reports"
+                    element={
+                      <PrivateRoute
+                        element={
+                          <Layout>
+                            <AdminOnly>
+                              <ExportReports />
                             </AdminOnly>
                           </Layout>
                         }
