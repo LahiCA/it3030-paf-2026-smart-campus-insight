@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { createBWBooking, getAllBWBookings } from "../api/bwBookingApi";
 import { format, parseISO } from "date-fns";
 import { useAuth } from "../context/AuthContext";
-import { FaExclamationCircle, FaCheckCircle } from "react-icons/fa";
+import { FaExclamationCircle, FaCheckCircle, FaLock } from "react-icons/fa";
+import { getAllResources } from "../services/resources";
 
 const RESOURCE_TYPES = [
   'LECTURE_HALL',
@@ -56,6 +57,36 @@ function BWBookingForm() {
 
   const [allSlotsForResource, setAllSlotsForResource] = useState([]);
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
+
+  const [allResources, setAllResources] = useState([]);
+  const [selectedResourceStatus, setSelectedResourceStatus] = useState(null);
+
+  useEffect(() => {
+    const fetchResources = async () => {
+      try {
+        const data = await getAllResources();
+        setAllResources(data);
+      } catch (err) {
+        console.error("Failed to load resources for validation:", err);
+      }
+    };
+    fetchResources();
+  }, []);
+
+  useEffect(() => {
+    if (formData.resourceName) {
+      const resource = allResources.find(r => r.name === formData.resourceName);
+      if (resource) {
+        setSelectedResourceStatus(resource);
+      } else {
+        setSelectedResourceStatus(null);
+      }
+    } else {
+      setSelectedResourceStatus(null);
+    }
+  }, [formData.resourceName, allResources]);
+
+  const isResourceUnavailable = selectedResourceStatus && (selectedResourceStatus.status === 'OCCUPIED' || selectedResourceStatus.status === 'MAINTENANCE');
 
   useEffect(() => {
     const fetchAvailabilities = async () => {
@@ -460,11 +491,14 @@ function BWBookingForm() {
           
           <button
             type="submit"
-            className="w-full sm:w-auto bg-gradient-to-r from-teal-600 to-teal-500 hover:from-teal-700 hover:to-teal-600 text-white px-8 py-2.5 rounded-xl font-bold transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(13,148,136,0.25)] hover:shadow-[0_6px_16px_rgba(13,148,136,0.35)] text-sm border border-teal-500/20"
+            disabled={isResourceUnavailable}
+            className={`w-full sm:w-auto bg-gradient-to-r px-8 py-2.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(13,148,136,0.25)] text-sm border ${isResourceUnavailable ? 'from-slate-400 to-slate-400 text-slate-200 cursor-not-allowed' : 'from-teal-600 to-teal-500 hover:from-teal-700 hover:to-teal-600 text-white transform hover:scale-[1.02] active:scale-[0.98] hover:shadow-[0_6px_16px_rgba(13,148,136,0.35)] border-teal-500/20'}`}
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-            </svg>
+            {isResourceUnavailable ? <FaLock className="w-4 h-4" /> : (
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
+            )}
             Submit Request
           </button>
         </div>
@@ -484,6 +518,20 @@ function BWBookingForm() {
           </div>
           Availabilities
         </h3>
+
+        {isResourceUnavailable && (
+          <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-6 shadow-sm relative z-10">
+            <div className="flex items-start gap-3 text-orange-700">
+              <FaLock className="w-5 h-5 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold mb-1">Resource currently {selectedResourceStatus.status.toLowerCase()}</p>
+                <p className="text-sm text-orange-600/90 leading-relaxed">
+                  {selectedResourceStatus.description || "This resource is currently unavailable for booking."}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
         
         {!formData.resourceType || !formData.bookingDate ? (
           <div className="flex-1 flex flex-col items-center justify-center text-center text-slate-500 py-12 px-6 bg-white rounded-2xl border-2 border-dashed border-slate-200 shadow-sm relative z-10 transition-all hover:border-teal-200/60 duration-300">
