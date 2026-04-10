@@ -52,7 +52,7 @@ const Sidebar = () => {
 
   if (isAdmin()) {
     menuItems.push({ path: '/admin', icon: FaUsers, label: 'User Management' });
-    menuItems.push({ path: '/notifications-management', icon: FaBullhorn, label: 'Notification Mgmt' });
+    menuItems.push({ path: '/notifications-management', icon: FaBullhorn, label: 'Notification Manager' });
     menuItems.push({ path: '/analytics', icon: FaChartBar, label: 'Analytics' });
     menuItems.push({ path: '/reports', icon: FaFileExport, label: 'Export Reports' });
   }

@@ -62,4 +62,9 @@ public class BookingController {
     public Booking checkIn(@PathVariable String id) {
         return service.checkInBooking(id);
     }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable String id, @RequestParam(required = false) String reason) {
+        service.deleteBooking(id, reason);
+    }
 }

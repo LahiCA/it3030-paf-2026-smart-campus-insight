@@ -33,3 +33,8 @@ export const cancelBWBooking = async (id, reason) => {
 export const checkInBWBooking = async (id) => {
   return await axios.patch(`${API_BASE_URL}/${id}/checkin`);
 };
+
+export const deleteBWBooking = async (id, reason) => {
+  const url = reason ? `${API_BASE_URL}/${id}?reason=${encodeURIComponent(reason)}` : `${API_BASE_URL}/${id}`;
+  return await axios.delete(url);
+};
