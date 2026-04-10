@@ -5,12 +5,25 @@ import { useNotifications } from '../context/NotificationContext';
 const NotificationBellTailwind = () => {
   const { notifications, unreadCount, markAsRead, deleteNotification } = useNotifications();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [hasNew, setHasNew] = useState(false);
+  const prevUnreadCount = useRef(unreadCount);
   const dropdownRef = useRef(null);
+
+  // Detect when unread count increases (new notification arrived)
+  useEffect(() => {
+    if (unreadCount > prevUnreadCount.current) {
+      setHasNew(true);
+    }
+    prevUnreadCount.current = unreadCount;
+  }, [unreadCount]);
 
   const recentNotifications = notifications.slice(0, 5);
 
   const handleBellClick = () => {
     setIsDropdownOpen(!isDropdownOpen);
+    if (!isDropdownOpen) {
+      setHasNew(false); // clear new-arrival indicator when user opens panel
+    }
   };
 
   const handleNotificationClick = async (notification) => {
@@ -45,8 +58,21 @@ const NotificationBellTailwind = () => {
         title={unreadCount > 0 ? `${unreadCount} unread notifications` : 'No unread notifications'}
       >
         <FaBell size={24} />
+
+        {/* Pulsing red dot — visible whenever there are unread notifications */}
         {unreadCount > 0 && (
-          <span className="absolute -right-2 -top-2 min-w-[22px] animate-pulse rounded-full bg-red-500 px-1.5 py-0.5 text-center text-[11px] font-bold text-white shadow-md">
+          <span className="absolute -right-1 -top-1 flex h-3 w-3">
+            {/* Ping ring animation on new arrival */}
+            {hasNew && (
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
+            )}
+            <span className="relative inline-flex h-3 w-3 rounded-full bg-red-500" />
+          </span>
+        )}
+
+        {/* Unread count badge */}
+        {unreadCount > 0 && (
+          <span className="absolute -right-2 -top-2 min-w-[18px] rounded-full bg-red-500 px-1 py-px text-center text-[10px] font-bold leading-tight text-white shadow">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
