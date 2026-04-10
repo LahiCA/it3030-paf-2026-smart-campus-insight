@@ -33,7 +33,7 @@ export const NOTIFICATION_TYPES = {
 };
 
 // Notification Polling Interval (milliseconds)
-export const NOTIFICATION_POLL_INTERVAL = 30000; // 30 seconds
+export const NOTIFICATION_POLL_INTERVAL = 5000; // 5 seconds
 
 // Error Messages
 export const ERROR_MESSAGES = {

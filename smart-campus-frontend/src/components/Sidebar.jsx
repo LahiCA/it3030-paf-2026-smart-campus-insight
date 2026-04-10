@@ -14,10 +14,12 @@ import {
   FaFileExport
 } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const { user, logout, isAdmin } = useAuth();
+  const { unreadCount } = useNotifications();
 
   const displayName = user?.firstName && user?.lastName
     ? `${user.firstName} ${user.lastName}`
@@ -80,8 +82,24 @@ const Sidebar = () => {
                     : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`
                 }
               >
-                <span className="flex w-5 shrink-0 items-center justify-center text-lg"><item.icon /></span>
-                <span className="hidden md:inline">{item.label}</span>
+                {/* Bell icon with red dot for Notifications item */}
+                <span className="relative flex w-5 shrink-0 items-center justify-center text-lg">
+                  <item.icon />
+                  {item.label === 'Notifications' && unreadCount > 0 && (
+                    <span className="absolute -right-1 -top-1 flex h-2.5 w-2.5">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
+                      <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
+                    </span>
+                  )}
+                </span>
+                <span className="hidden items-center gap-2 md:flex">
+                  {item.label}
+                  {item.label === 'Notifications' && unreadCount > 0 && (
+                    <span className="rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold leading-tight text-white">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
+                </span>
               </NavLink>
             </li>
           ))}
