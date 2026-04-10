@@ -45,7 +45,7 @@ const AdminPanelTailwind = () => {
 
   const openAddModal = () => {
     setModalMode('add');
-    setFormData({ name: '', email: '', role: 'LECTURER', phoneNumber: '', address: '' });
+    setFormData({ name: '', email: '', role: 'LECTURER', phoneNumber: '', countryCode: '+94', address: '' });
     setFormError('');
     setEditingUser(null);
     setShowModal(true);
@@ -53,7 +53,8 @@ const AdminPanelTailwind = () => {
 
   const openEditModal = (u) => {
     setModalMode('edit');
-    setFormData({ name: u.name, email: u.email, role: u.role, phoneNumber: u.phoneNumber || '', address: u.address || '' });
+    const { code, number } = splitPhoneNumber(u.phoneNumber || '');
+    setFormData({ name: u.name, email: u.email, role: u.role, phoneNumber: number, countryCode: code, address: u.address || '' });
     setFormError('');
     setEditingUser(u);
     setShowModal(true);
@@ -61,9 +62,19 @@ const AdminPanelTailwind = () => {
 
   const closeModal = () => {
     setShowModal(false);
-    setFormData({ name: '', email: '', role: 'LECTURER', phoneNumber: '', address: '' });
+    setFormData({ name: '', email: '', role: 'LECTURER', phoneNumber: '', countryCode: '+94', address: '' });
     setFormError('');
     setEditingUser(null);
+  };
+
+  const splitPhoneNumber = (phone) => {
+    const codes = ['+971', '+880', '+234', '+94', '+91', '+44', '+61', '+81', '+86', '+49', '+33', '+65', '+60', '+82', '+39', '+34', '+55', '+27', '+92', '+1'];
+    for (const c of codes.sort((a, b) => b.length - a.length)) {
+      if (phone.startsWith(c)) {
+        return { code: c, number: phone.slice(c.length) };
+      }
+    }
+    return { code: '+94', number: phone };
   };
 
   const handleSubmit = async (e) => {
@@ -76,11 +87,16 @@ const AdminPanelTailwind = () => {
     }
 
     try {
+      const submitData = {
+        ...formData,
+        phoneNumber: formData.phoneNumber ? `${formData.countryCode}${formData.phoneNumber}` : '',
+      };
+      delete submitData.countryCode;
       if (modalMode === 'add') {
-        await axiosInstance.post('/users', formData);
+        await axiosInstance.post('/users', submitData);
         setSuccessMsg('User created successfully!');
       } else {
-        await axiosInstance.put(`/users/${editingUser.id}`, formData);
+        await axiosInstance.put(`/users/${editingUser.id}`, submitData);
         setSuccessMsg('User updated successfully!');
       }
       closeModal();
@@ -180,46 +196,59 @@ const AdminPanelTailwind = () => {
         <div className="rounded-2xl bg-white px-6 py-16 text-center text-slate-400 shadow-sm">No users found</div>
       ) : (
         <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
-          <div className="overflow-x-auto scrollbar-ui">
-            <table className="min-w-full border-collapse">
+          <div>
+            <table className="w-full table-fixed border-collapse">
+              <colgroup>
+                <col className="w-[8%]" />
+                <col className="w-[10%]" />
+                <col className="w-[20%]" />
+                <col className="w-[11%]" />
+                <col className="w-[18%]" />
+                <col className="w-[10%]" />
+                <col className="w-[10%]" />
+                <col className="w-[13%]" />
+              </colgroup>
               <thead className="bg-slate-50">
                 <tr>
-                  {['Display ID', 'Name', 'Email', 'Phone', 'Address', 'Role', 'Created', 'Actions'].map((heading) => (
-                    <th key={heading} className="border-b border-slate-200 px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
-                      {heading}
-                    </th>
-                  ))}
+                  <th className="border-b border-slate-200 px-3 py-3 text-left text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Display ID</th>
+                  <th className="border-b border-slate-200 px-3 py-3 text-left text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Name</th>
+                  <th className="border-b border-slate-200 px-3 py-3 text-left text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Email</th>
+                  <th className="border-b border-slate-200 px-3 py-3 text-left text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Phone</th>
+                  <th className="border-b border-slate-200 px-3 py-3 text-left text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Address</th>
+                  <th className="border-b border-slate-200 px-3 py-3 text-left text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Role</th>
+                  <th className="border-b border-slate-200 px-3 py-3 text-left text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Created</th>
+                  <th className="border-b border-slate-200 px-3 py-3 text-left text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredUsers.map((u) => (
                   <tr key={u.id} className={u.id === user?.userId ? 'bg-teal-50/80' : 'hover:bg-slate-50'}>
-                    <td className="border-b border-slate-100 px-4 py-3 text-sm text-slate-700">
+                    <td className="border-b border-slate-100 px-3 py-3 text-sm text-slate-700">
                       <span className="rounded-md bg-teal-50 px-2.5 py-1 font-mono text-[13px] font-semibold text-teal-700">
                         {u.displayId || '-'}
                       </span>
                     </td>
-                    <td className="border-b border-slate-100 px-4 py-3 text-sm text-slate-700">{u.name}</td>
-                    <td className="border-b border-slate-100 px-4 py-3 text-sm text-slate-700">{u.email}</td>
-                    <td className="border-b border-slate-100 px-4 py-3 text-sm text-slate-700">{u.phoneNumber || '-'}</td>
-                    <td className="border-b border-slate-100 px-4 py-3 text-sm text-slate-700">{u.address || '-'}</td>
-                    <td className="border-b border-slate-100 px-4 py-3 text-sm text-slate-700">
-                      <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.06em] ${roleBadgeClassMap[u.role] || 'border-slate-200 bg-slate-100 text-slate-700'}`}>
+                    <td className="border-b border-slate-100 px-3 py-3 text-sm text-slate-700 truncate" title={u.name}>{u.name}</td>
+                    <td className="border-b border-slate-100 px-3 py-3 text-sm text-slate-700 truncate" title={u.email}>{u.email}</td>
+                    <td className="border-b border-slate-100 px-3 py-3 text-sm text-slate-700 truncate">{u.phoneNumber || '-'}</td>
+                    <td className="border-b border-slate-100 px-3 py-3 text-sm text-slate-700 truncate" title={u.address}>{u.address || '-'}</td>
+                    <td className="border-b border-slate-100 px-3 py-3 text-sm text-slate-700">
+                      <span className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.06em] ${roleBadgeClassMap[u.role] || 'border-slate-200 bg-slate-100 text-slate-700'}`}>
                         {u.role}
                       </span>
                     </td>
-                    <td className="border-b border-slate-100 px-4 py-3 text-sm text-slate-700">{u.createdAt ? new Date(u.createdAt).toLocaleDateString() : 'N/A'}</td>
-                    <td className="border-b border-slate-100 px-4 py-3 text-sm text-slate-700">
-                      <div className="flex gap-2">
+                    <td className="border-b border-slate-100 px-3 py-3 text-sm text-slate-700 whitespace-nowrap">{u.createdAt ? new Date(u.createdAt).toLocaleDateString() : 'N/A'}</td>
+                    <td className="border-b border-slate-100 px-3 py-3 text-sm text-slate-700">
+                      <div className="flex gap-1.5">
                         <button
-                          className="rounded-lg border border-sky-200 bg-sky-50 px-3.5 py-1.5 text-[13px] font-medium text-sky-700 transition hover:bg-sky-100"
+                          className="rounded-lg border border-sky-200 bg-sky-50 px-3 py-1.5 text-[13px] font-medium text-sky-700 transition hover:bg-sky-100"
                           onClick={() => openEditModal(u)}
                         >
                           Edit
                         </button>
                         {u.email !== user?.email && (
                           <button
-                            className="rounded-lg border border-red-200 bg-red-50 px-3.5 py-1.5 text-[13px] font-medium text-red-600 transition hover:bg-red-100"
+                            className="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-[13px] font-medium text-red-600 transition hover:bg-red-100"
                             onClick={() => handleDeleteUser(u.id)}
                           >
                             Delete
@@ -275,13 +304,41 @@ const AdminPanelTailwind = () => {
               </div>
               <div className="mb-5">
                 <label className="mb-1.5 block text-sm font-semibold text-slate-600">Phone Number</label>
-                <input
-                  className={inputClassName}
-                  type="tel"
-                  value={formData.phoneNumber}
-                  onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                  placeholder="Enter phone number"
-                />
+                <div className="flex gap-2">
+                  <select
+                    className="w-[140px] min-w-[140px] shrink-0 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
+                    value={formData.countryCode || '+94'}
+                    onChange={(e) => setFormData({ ...formData, countryCode: e.target.value })}
+                  >
+                    <option value="+94">🇱🇰 +94</option>
+                    <option value="+1">🇺🇸 +1</option>
+                    <option value="+44">🇬🇧 +44</option>
+                    <option value="+91">🇮🇳 +91</option>
+                    <option value="+61">🇦🇺 +61</option>
+                    <option value="+81">🇯🇵 +81</option>
+                    <option value="+86">🇨🇳 +86</option>
+                    <option value="+49">🇩🇪 +49</option>
+                    <option value="+33">🇫🇷 +33</option>
+                    <option value="+971">🇦🇪 +971</option>
+                    <option value="+65">🇸🇬 +65</option>
+                    <option value="+60">🇲🇾 +60</option>
+                    <option value="+82">🇰🇷 +82</option>
+                    <option value="+39">🇮🇹 +39</option>
+                    <option value="+34">🇪🇸 +34</option>
+                    <option value="+55">🇧🇷 +55</option>
+                    <option value="+27">🇿🇦 +27</option>
+                    <option value="+234">🇳🇬 +234</option>
+                    <option value="+880">🇧🇩 +880</option>
+                    <option value="+92">🇵🇰 +92</option>
+                  </select>
+                  <input
+                    className="flex-1 min-w-0 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
+                    type="tel"
+                    value={formData.phoneNumber}
+                    onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+                    placeholder="Enter phone number"
+                  />
+                </div>
               </div>
               <div className="mb-5">
                 <label className="mb-1.5 block text-sm font-semibold text-slate-600">Address</label>
