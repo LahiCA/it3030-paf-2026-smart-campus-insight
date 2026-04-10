@@ -37,7 +37,7 @@ public class BookingService {
                 repository.findByResourceNameAndBookingDate(dto.getResourceName(), date);
 
         boolean hasConflict = existingBookings.stream()
-                .filter(b -> b.getStatus() != BookingStatus.REJECTED && b.getStatus() != BookingStatus.CANCELLED)
+                .filter(b -> b.getStatus() == BookingStatus.APPROVED || b.getStatus() == BookingStatus.CHECKED_IN)
                 .anyMatch(b -> start.isBefore(b.getEndTime()) && end.isAfter(b.getStartTime()));
 
         if (hasConflict) {
