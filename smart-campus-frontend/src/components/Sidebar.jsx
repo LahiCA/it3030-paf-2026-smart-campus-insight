@@ -41,7 +41,7 @@ const Sidebar = () => {
   const menuItems = [
     { path: getDashboardPath(), icon: FaThLarge, label: 'Dashboard' },
     { path: '/resources', icon: FaBuilding, label: 'Resources' },
-    { path: '/bookings', icon: FaCalendarAlt, label: 'Bookings' },
+    { path: isAdmin() ? '/bw-admin-bookings' : '/bookings', icon: FaCalendarAlt, label: 'Bookings' },
     { path: '/tickets', icon: FaTicketAlt, label: 'Tickets' },
     { path: '/notifications', icon: FaBell, label: 'Notifications' },
   ];

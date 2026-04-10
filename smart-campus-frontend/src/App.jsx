@@ -29,6 +29,7 @@ import BWSidebar from './layout/BWSidebar';
 import BWCreateBooking from './pages/BWCreateBooking';
 import BWMyBookings from './pages/BWMyBookings';
 import BWAdminBookingList from './pages/BWAdminBookingList';
+import BWAdminBookingTable from './components/BWAdminBookingTable';
 
 import CreateTicketPage from './pages/CreateTicketPage';
 import TicketDashboardPage from './pages/TicketDashboardPage';
