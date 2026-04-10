@@ -508,7 +508,7 @@ function BWBookingForm() {
           </div>
         ) : (
           <div className="flex-1 bg-white rounded-xl border border-slate-200 overflow-hidden flex flex-col shadow-sm">
-            <div className="p-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white flex justify-between items-center">
+            <div className="p-4 border-b border-slate-100 bg-linear-to-r from-slate-50 to-white flex justify-between items-center">
               <div>
                 <p className="text-sm font-bold text-teal-800">
                   {formData.resourceName || formData.resourceType}
@@ -544,7 +544,7 @@ function BWBookingForm() {
                       </span>
                     </div>
                     {slot.resourceName && formData.resourceType === slot.resourceType && !formData.resourceName && (
-                       <p className="text-xs text-slate-500 mt-2 flex items-center gap-1 bg-slate-50 inline-block px-2 py-1 rounded">
+                       <p className="text-xs text-slate-500 mt-2 flex items-center gap-1 bg-slate-50 px-2 py-1 rounded">
                          <svg className="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
                          {slot.resourceName}
                        </p>

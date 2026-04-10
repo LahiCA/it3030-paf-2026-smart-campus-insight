@@ -10,6 +10,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -39,10 +41,19 @@ public class Notification {
     private String relatedEntityType;
 
     /**
-     * Target audience for broadcast notifications (ALL, ADMIN, LECTURER, TECHNICIAN).
-     * When set, the notification is shown to all users with that role instead of a specific userId.
+     * Target audience for broadcast notifications (ALL, ADMIN, LECTURER,
+     * TECHNICIAN).
+     * When set, the notification is shown to all users with that role instead of a
+     * specific userId.
      */
     private String targetAudience;
+
+    /**
+     * Set of user IDs who have read this broadcast notification.
+     * Only used for broadcast notifications (where targetAudience is set).
+     */
+    @lombok.Builder.Default
+    private Set<String> readByUserIds = new HashSet<>();
 
     @lombok.Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -59,4 +70,3 @@ public class Notification {
         this.readAt = null;
     }
 }
-

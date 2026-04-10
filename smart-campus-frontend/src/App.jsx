@@ -5,6 +5,7 @@ import { GOOGLE_CLIENT_ID, ROUTES } from './utils/constants';
 
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
+import { ChatbotProvider, FloatingChatButton, ChatbotPanel } from './chatbot';
 
 import PrivateRoute from './components/PrivateRouteTailwind';
 import Layout from './components/Layout';
@@ -30,6 +31,7 @@ import BWSidebar from './layout/BWSidebar';
 import BWCreateBooking from './pages/BWCreateBooking';
 import BWMyBookings from './pages/BWMyBookings';
 import BWAdminBookingList from './pages/BWAdminBookingList';
+import BWAdminBookingTable from './components/BWAdminBookingTable';
 
 import CreateTicketPage from './pages/CreateTicketPage';
 import TicketDashboardPage from './pages/TicketDashboardPage';
@@ -107,6 +109,17 @@ const TicketLayout = ({ children }) => (
   </div>
 );
 
+function ChatbotWrapper() {
+  const location = useLocation();
+  if (location.pathname === ROUTES.LOGIN || location.pathname === '/') return null;
+  return (
+    <>
+      <FloatingChatButton />
+      <ChatbotPanel />
+    </>
+  );
+}
+
 function App() {
   if (!GOOGLE_CLIENT_ID) {
     return <div>Missing Google Client ID</div>;
@@ -116,10 +129,14 @@ function App() {
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <AuthProvider>
         <NotificationProvider>
+          <ChatbotProvider>
           <Router>
 
             {/* Global Navbar */}
             <Navbar />
+
+            {/* AI Chatbot – floating on all pages except login */}
+            <ChatbotWrapper />
 
             <Routes>
               {/* Root redirect */}
@@ -250,6 +267,7 @@ function App() {
 
             </Routes>
           </Router>
+          </ChatbotProvider>
         </NotificationProvider>
       </AuthProvider>
     </GoogleOAuthProvider>

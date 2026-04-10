@@ -5,6 +5,8 @@ import {
     adminCreateNotification,
     adminUpdateNotification,
     adminDeleteNotification,
+    getAllUsers,
+    adminCreatePersonalNotification,
 } from '../services/notifications';
 
 const TYPE_OPTIONS = [
@@ -22,6 +24,7 @@ const AUDIENCE_OPTIONS = [
     { value: 'ADMIN', label: 'Admin' },
     { value: 'LECTURER', label: 'Lecturer' },
     { value: 'TECHNICIAN', label: 'Technician' },
+    { value: 'SPECIFIC_USER', label: 'Specific User' },
 ];
 
 const TYPE_COLORS = {
@@ -41,7 +44,7 @@ const AUDIENCE_COLORS = {
     TECHNICIAN: 'bg-indigo-100 text-indigo-700',
 };
 
-const EMPTY_FORM = { message: '', type: 'GENERAL', targetAudience: 'ALL' };
+const EMPTY_FORM = { message: '', type: 'GENERAL', targetAudience: 'ALL', selectedUserId: '' };
 
 const NotificationManagementPage = () => {
     const { user } = useContext(AuthContext);
@@ -50,6 +53,7 @@ const NotificationManagementPage = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [successMsg, setSuccessMsg] = useState('');
+    const [users, setUsers] = useState([]);
 
     // Filters
     const [filterAudience, setFilterAudience] = useState('ALL');
@@ -70,6 +74,9 @@ const NotificationManagementPage = () => {
 
     useEffect(() => {
         fetchNotifications();
+        getAllUsers().then((result) => {
+            if (result.success) setUsers(result.users);
+        });
     }, []);
 
     const fetchNotifications = async () => {
@@ -127,7 +134,20 @@ const NotificationManagementPage = () => {
         try {
             let result;
             if (modalMode === 'add') {
-                result = await adminCreateNotification(formData);
+                if (formData.targetAudience === 'SPECIFIC_USER') {
+                    if (!formData.selectedUserId) {
+                        setFormError('Please select a user');
+                        setSubmitting(false);
+                        return;
+                    }
+                    result = await adminCreatePersonalNotification({
+                        userId: formData.selectedUserId,
+                        message: formData.message,
+                        type: formData.type,
+                    });
+                } else {
+                    result = await adminCreateNotification(formData);
+                }
             } else {
                 result = await adminUpdateNotification(editingId, formData);
             }
@@ -403,6 +423,28 @@ const NotificationManagementPage = () => {
                                     ))}
                                 </select>
                             </div>
+
+                            {/* Specific User Picker */}
+                            {formData.targetAudience === 'SPECIFIC_USER' && (
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Select User <span className="text-red-500">*</span>
+                                    </label>
+                                    <select
+                                        name="selectedUserId"
+                                        value={formData.selectedUserId}
+                                        onChange={handleFormChange}
+                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                    >
+                                        <option value="">-- Select a user --</option>
+                                        {users.map((u) => (
+                                            <option key={u.id} value={u.id}>
+                                                {u.email} ({u.role})
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
 
                             {/* Actions */}
                             <div className="flex justify-end gap-3 pt-2">

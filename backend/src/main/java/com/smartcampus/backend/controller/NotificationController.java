@@ -7,7 +7,6 @@ import com.smartcampus.backend.dto.response.NotificationPreferenceDTO;
 import com.smartcampus.backend.enums.NotificationType;
 import com.smartcampus.backend.service.NotificationService;
 import com.smartcampus.backend.repository.UserRepository;
-import com.smartcampus.backend.exception.UserNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -156,7 +155,8 @@ public class NotificationController {
     }
 
     /**
-     * POST /api/notifications - Create a personal notification for a specific user (ADMIN only)
+     * POST /api/notifications - Create a personal notification for a specific user
+     * (ADMIN only)
      */
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -197,7 +197,8 @@ public class NotificationController {
     }
 
     /**
-     * PUT /api/notifications/admin/{id} - Update broadcast notification (ADMIN only)
+     * PUT /api/notifications/admin/{id} - Update broadcast notification (ADMIN
+     * only)
      */
     @PutMapping("/admin/{id}")
     @PreAuthorize("hasRole('ADMIN')")

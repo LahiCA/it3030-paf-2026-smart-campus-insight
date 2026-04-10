@@ -30,7 +30,7 @@ const TYPE_STYLES = {
   GENERAL: 'bg-gray-100 text-gray-600',
 };
 
-const NotificationItem = ({ notification, onItemClick = null }) => {
+const NotificationItem = ({ notification, onItemClick = null, isExpanded = false }) => {
   const { markAsRead, markAsUnread, deleteNotification } = useNotifications();
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [isTogglingRead, setIsTogglingRead] = React.useState(false);
@@ -70,15 +70,15 @@ const NotificationItem = ({ notification, onItemClick = null }) => {
     <div
       onClick={handleClick}
       className={[
-        'flex items-start gap-3 px-5 py-4 border-b border-gray-100 last:border-0 transition-colors',
+        'flex items-start gap-3 px-5 py-4 border-b border-gray-100 last:border-0 transition-colors cursor-pointer',
         notification.read
           ? 'bg-white hover:bg-gray-50'
           : 'bg-blue-50 border-l-4 border-l-blue-400 pl-4 hover:bg-blue-100/60',
-        onItemClick ? 'cursor-pointer' : '',
+        isExpanded ? 'ring-2 ring-teal-400 bg-teal-50/30' : '',
       ].join(' ')}
     >
       {/* Status icon */}
-      <div className="mt-0.5 w-7 h-7 flex-shrink-0 flex items-center justify-center rounded-full bg-gray-100">
+      <div className="mt-0.5 w-7 h-7 shrink-0 flex items-center justify-center rounded-full bg-gray-100">
         {notification.read
           ? <FaCheckCircle className="text-green-500" size={14} />
           : <FaCircle className="text-blue-500" size={11} />}
@@ -86,7 +86,7 @@ const NotificationItem = ({ notification, onItemClick = null }) => {
 
       {/* Content */}
       <div className="flex-1 min-w-0">
-        <p className={`text-sm leading-snug break-words ${notification.read ? 'text-gray-600 font-normal' : 'text-gray-800 font-medium'}`}>
+        <p className={`text-sm leading-snug wrap-break-word ${notification.read ? 'text-gray-600 font-normal' : 'text-gray-800 font-medium'}`}>
           {notification.message}
         </p>
         <div className="flex flex-wrap items-center gap-2 mt-1.5">
@@ -98,10 +98,26 @@ const NotificationItem = ({ notification, onItemClick = null }) => {
             <span className="text-xs text-gray-300 italic">(read)</span>
           )}
         </div>
+
+        {/* Expanded detail panel */}
+        {isExpanded && (
+          <div className="mt-3 p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
+            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Full Message</h4>
+            <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{notification.message}</p>
+            <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-xs text-gray-400">
+              <span><strong className="text-gray-500">Type:</strong> {formatTypeName(notification.type)}</span>
+              <span><strong className="text-gray-500">Received:</strong> {new Date(notification.createdAt).toLocaleString()}</span>
+              {notification.readAt && (
+                <span><strong className="text-gray-500">Read at:</strong> {new Date(notification.readAt).toLocaleString()}</span>
+              )}
+              <span><strong className="text-gray-500">Status:</strong> {notification.read ? 'Read' : 'Unread'}</span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-1 flex-shrink-0 ml-2">
+      <div className="flex items-center gap-1 shrink-0 ml-2">
         <button
           onClick={handleToggleRead}
           disabled={isTogglingRead}
