@@ -25,6 +25,7 @@ const AdminPanelTailwind = () => {
   const [editingUser, setEditingUser] = useState(null);
   const [formData, setFormData] = useState({ name: '', email: '', role: 'LECTURER', phoneNumber: '', address: '' });
   const [formError, setFormError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
     fetchUsers();
@@ -47,6 +48,7 @@ const AdminPanelTailwind = () => {
     setModalMode('add');
     setFormData({ name: '', email: '', role: 'LECTURER', phoneNumber: '', countryCode: '+94', address: '' });
     setFormError('');
+    setFieldErrors({});
     setEditingUser(null);
     setShowModal(true);
   };
@@ -56,6 +58,7 @@ const AdminPanelTailwind = () => {
     const { code, number } = splitPhoneNumber(u.phoneNumber || '');
     setFormData({ name: u.name, email: u.email, role: u.role, phoneNumber: number, countryCode: code, address: u.address || '' });
     setFormError('');
+    setFieldErrors({});
     setEditingUser(u);
     setShowModal(true);
   };
@@ -64,6 +67,7 @@ const AdminPanelTailwind = () => {
     setShowModal(false);
     setFormData({ name: '', email: '', role: 'LECTURER', phoneNumber: '', countryCode: '+94', address: '' });
     setFormError('');
+    setFieldErrors({});
     setEditingUser(null);
   };
 
@@ -81,10 +85,28 @@ const AdminPanelTailwind = () => {
     e.preventDefault();
     setFormError('');
 
-    if (!formData.name.trim() || !formData.email.trim()) {
-      setFormError('Name and email are required');
+    // Per-field validation
+    const errors = {};
+    if (!formData.name.trim()) {
+      errors.name = 'Full name is required.';
+    } else if (formData.name.trim().length < 2) {
+      errors.name = 'Name must be at least 2 characters.';
+    } else if (formData.name.trim().length > 100) {
+      errors.name = 'Name cannot exceed 100 characters.';
+    }
+    if (!formData.email.trim()) {
+      errors.email = 'Email address is required.';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+      errors.email = 'Please enter a valid email address.';
+    }
+    if (formData.phoneNumber && !/^\d{6,15}$/.test(formData.phoneNumber.trim())) {
+      errors.phoneNumber = 'Phone number must be 6–15 digits (no spaces or dashes).';
+    }
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
       return;
     }
+    setFieldErrors({});
 
     try {
       const submitData = {
@@ -271,24 +293,26 @@ const AdminPanelTailwind = () => {
             {formError && <div className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">{formError}</div>}
             <form onSubmit={handleSubmit}>
               <div className="mb-5">
-                <label className="mb-1.5 block text-sm font-semibold text-slate-600">Full Name</label>
+                <label className="mb-1.5 block text-sm font-semibold text-slate-600">Full Name <span className="text-red-500">*</span></label>
                 <input
-                  className={inputClassName}
+                  className={`${inputClassName} ${fieldErrors.name ? 'border-red-400 focus:border-red-400 focus:ring-red-400/10' : ''}`}
                   type="text"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) => { setFormData({ ...formData, name: e.target.value }); setFieldErrors((p) => ({ ...p, name: '' })); }}
                   placeholder="Enter full name"
                 />
+                {fieldErrors.name && <p className="mt-1 text-xs text-red-500">{fieldErrors.name}</p>}
               </div>
               <div className="mb-5">
-                <label className="mb-1.5 block text-sm font-semibold text-slate-600">Email Address</label>
+                <label className="mb-1.5 block text-sm font-semibold text-slate-600">Email Address <span className="text-red-500">*</span></label>
                 <input
-                  className={inputClassName}
+                  className={`${inputClassName} ${fieldErrors.email ? 'border-red-400 focus:border-red-400 focus:ring-red-400/10' : ''}`}
                   type="email"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={(e) => { setFormData({ ...formData, email: e.target.value }); setFieldErrors((p) => ({ ...p, email: '' })); }}
                   placeholder="Enter email address"
                 />
+                {fieldErrors.email && <p className="mt-1 text-xs text-red-500">{fieldErrors.email}</p>}
               </div>
               <div className="mb-5">
                 <label className="mb-1.5 block text-sm font-semibold text-slate-600">Role</label>
@@ -332,13 +356,18 @@ const AdminPanelTailwind = () => {
                     <option value="+92">🇵🇰 +92</option>
                   </select>
                   <input
-                    className="flex-1 min-w-0 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
+                    className={`flex-1 min-w-0 rounded-xl border bg-white px-4 py-2.5 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:ring-4 ${
+                      fieldErrors.phoneNumber
+                        ? 'border-red-400 focus:border-red-400 focus:ring-red-400/10'
+                        : 'border-slate-200 focus:border-teal-500 focus:ring-teal-500/10'
+                    }`}
                     type="tel"
                     value={formData.phoneNumber}
-                    onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+                    onChange={(e) => { setFormData({ ...formData, phoneNumber: e.target.value }); setFieldErrors((p) => ({ ...p, phoneNumber: '' })); }}
                     placeholder="Enter phone number"
                   />
                 </div>
+                {fieldErrors.phoneNumber && <p className="mt-1 text-xs text-red-500">{fieldErrors.phoneNumber}</p>}
               </div>
               <div className="mb-5">
                 <label className="mb-1.5 block text-sm font-semibold text-slate-600">Address</label>

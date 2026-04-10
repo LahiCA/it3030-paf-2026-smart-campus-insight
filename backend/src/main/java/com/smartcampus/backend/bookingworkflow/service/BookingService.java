@@ -8,20 +8,31 @@ import com.smartcampus.backend.bookingworkflow.exception.ResourceNotFoundExcepti
 import com.smartcampus.backend.bookingworkflow.model.Booking;
 import com.smartcampus.backend.bookingworkflow.model.BookingStatus;
 import com.smartcampus.backend.bookingworkflow.repository.BookingRepository;
+import com.smartcampus.backend.enums.NotificationType;
+import com.smartcampus.backend.repository.UserRepository;
+import com.smartcampus.backend.service.NotificationService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 
+@Slf4j
 @Service
 public class BookingService {
 
     private final BookingRepository repository;
+    private final NotificationService notificationService;
+    private final UserRepository userRepository;
 
-    public BookingService(BookingRepository repository) {
+    public BookingService(BookingRepository repository, NotificationService notificationService,
+            UserRepository userRepository) {
         this.repository = repository;
+        this.notificationService = notificationService;
+        this.userRepository = userRepository;
     }
 
     public Booking createBooking(BookingRequestDto dto) {
@@ -33,8 +44,7 @@ public class BookingService {
             throw new InvalidBookingException("End time must be after start time");
         }
 
-        List<Booking> existingBookings =
-                repository.findByResourceNameAndBookingDate(dto.getResourceName(), date);
+        List<Booking> existingBookings = repository.findByResourceNameAndBookingDate(dto.getResourceName(), date);
 
         boolean hasConflict = existingBookings.stream()
                 .filter(b -> b.getStatus() != BookingStatus.REJECTED && b.getStatus() != BookingStatus.CANCELLED)
@@ -84,7 +94,24 @@ public class BookingService {
         booking.setStatus(BookingStatus.APPROVED);
         booking.setUpdatedAt(LocalDateTime.now());
 
-        return repository.save(booking);
+        Booking saved = repository.save(booking);
+
+        try {
+            resolveRecipientId(saved.getUserId()).ifPresentOrElse(
+                    recipientId -> notificationService.sendNotification(
+                            recipientId,
+                            "Your booking for \"" + saved.getResourceName() + "\" on " + saved.getBookingDate()
+                                    + " (" + saved.getStartTime() + " - " + saved.getEndTime() + ") has been approved.",
+                            NotificationType.BOOKING_APPROVED,
+                            saved.getId(),
+                            "BOOKING"),
+                    () -> log.warn("No user found for booking userId '{}' — approval notification skipped",
+                            saved.getUserId()));
+        } catch (Exception e) {
+            log.error("Failed to send booking approved notification for booking {}: {}", saved.getId(), e.getMessage());
+        }
+
+        return saved;
     }
 
     public Booking rejectBooking(String id, String reason) {
@@ -98,7 +125,26 @@ public class BookingService {
         booking.setRejectionReason(reason);
         booking.setUpdatedAt(LocalDateTime.now());
 
-        return repository.save(booking);
+        Booking saved = repository.save(booking);
+
+        try {
+            String msg = "Your booking for \"" + saved.getResourceName() + "\" on " + saved.getBookingDate()
+                    + " has been rejected."
+                    + (reason != null && !reason.isBlank() ? " Reason: " + reason : "");
+            resolveRecipientId(saved.getUserId()).ifPresentOrElse(
+                    recipientId -> notificationService.sendNotification(
+                            recipientId,
+                            msg,
+                            NotificationType.BOOKING_REJECTED,
+                            saved.getId(),
+                            "BOOKING"),
+                    () -> log.warn("No user found for booking userId '{}' — rejection notification skipped",
+                            saved.getUserId()));
+        } catch (Exception e) {
+            log.error("Failed to send booking rejected notification for booking {}: {}", saved.getId(), e.getMessage());
+        }
+
+        return saved;
     }
 
     public Booking cancelBooking(String id, BookingCancelDto dto) {
@@ -126,5 +172,24 @@ public class BookingService {
         booking.setUpdatedAt(LocalDateTime.now());
 
         return repository.save(booking);
+    }
+
+    /**
+     * Resolve a notification recipient's MongoDB _id from whatever was stored as
+     * userId on the booking. The booking form stores the user's displayId
+     * (e.g. "ADM0001"), so first try an exact _id lookup, then fall back to a
+     * displayId lookup.
+     */
+    private Optional<String> resolveRecipientId(String bookingUserId) {
+        if (bookingUserId == null || bookingUserId.isBlank()) {
+            return Optional.empty();
+        }
+        // Try by MongoDB _id first
+        if (userRepository.existsById(bookingUserId)) {
+            return Optional.of(bookingUserId);
+        }
+        // Fall back to displayId lookup (booking form stores displayId as userId)
+        return userRepository.findByDisplayId(bookingUserId)
+                .map(u -> u.getId());
     }
 }
