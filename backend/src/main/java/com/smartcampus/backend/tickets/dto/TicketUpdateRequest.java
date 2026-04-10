@@ -22,4 +22,8 @@ public class TicketUpdateRequest {
     @NotBlank(message = "Priority is required")
     @Pattern(regexp = "LOW|MEDIUM|HIGH|CRITICAL", message = "Priority must be LOW, MEDIUM, HIGH, or CRITICAL")
     private String priority;
+
+    @NotBlank(message = "Contact number is required")
+    @Pattern(regexp = "^[0-9+()\\-\\s]{7,20}$", message = "Contact number format is invalid")
+    private String contactNumber;
 }

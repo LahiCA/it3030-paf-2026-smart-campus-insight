@@ -10,7 +10,7 @@ const FILTERS = {
 };
 
 export default function TicketDashboardPage() {
-    const { role, userId } = getCurrentUser();
+    const { role, userId, displayId } = getCurrentUser();
     const [tickets, setTickets] = useState([]);
     const [filters, setFilters] = useState({ status: "ALL", priority: "ALL", category: "ALL" });
     const [loading, setLoading] = useState(true);
@@ -49,6 +49,7 @@ export default function TicketDashboardPage() {
         [filters, tickets],
     );
 
+    const canCreateTicket = role !== "ADMIN" && role !== "TECHNICIAN";
     const stats = {
         total: tickets.length,
         open: tickets.filter((ticket) => ticket.status === "OPEN").length,
@@ -69,16 +70,20 @@ export default function TicketDashboardPage() {
                             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500">
                                 {role === "ADMIN"
                                     ? "Admin overview of every reported incident on campus."
-                                    : `Welcome ${userId}. Track your maintenance issues, evidence, and comment history.`}
+                                    : role === "TECHNICIAN"
+                                        ? `Welcome ${displayId || userId}. View and update only the tickets assigned to you.`
+                                        : `Welcome ${displayId || userId}. Track your maintenance issues, evidence, and comment history.`}
                             </p>
                         </div>
-                        <button
-                            type="button"
-                            onClick={() => setShowCreateModal(true)}
-                            className="rounded-full bg-teal-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-teal-700"
-                        >
-                            Create Ticket
-                        </button>
+                        {canCreateTicket ? (
+                            <button
+                                type="button"
+                                onClick={() => setShowCreateModal(true)}
+                                className="rounded-full bg-teal-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-teal-700"
+                            >
+                                Create Ticket
+                            </button>
+                        ) : null}
                     </div>
 
                     <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -118,7 +123,7 @@ export default function TicketDashboardPage() {
                 )}
             </div>
 
-            {showCreateModal ? (
+            {showCreateModal && canCreateTicket ? (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/45 p-4 backdrop-blur-sm">
                     <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto">
                         <CreateTicketPage

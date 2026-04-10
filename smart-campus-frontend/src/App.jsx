@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, NavLink, useLocation } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { GOOGLE_CLIENT_ID, ROUTES } from './utils/constants';
 
@@ -9,6 +9,7 @@ import { ChatbotProvider, FloatingChatButton, ChatbotPanel } from './chatbot';
 
 import PrivateRoute from './components/PrivateRouteTailwind';
 import Layout from './components/Layout';
+import Sidebar from './components/Sidebar';
 
 // Existing system pages
 import LoginPage from './components/LoginPageTailwind';
@@ -18,7 +19,7 @@ import NotificationPreferences from './components/NotificationPreferences';
 import NotificationManagementPage from './components/NotificationManagementPage';
 
 import LecturerDashboard from './components/LecturerDashboard';
-import TechnicianDashboard from './components/TechnicianDashboard';
+import TechnicianDashboard from './components/TechnicianDashboardTailwind';
 import AdminDashboard from './components/AdminDashboard';
 import AdminPanel from './components/AdminPanelTailwind';
 import ResourcesPage from './components/ResourcesPageTailwind';
@@ -49,10 +50,62 @@ const RoleDashboard = () => {
 };
 
 // Layout wrapper for booking system
+const BookingTabs = () => {
+  const { user, isAdmin } = useAuth();
+
+  const tabs = [
+    { name: 'Create Booking', path: '/bw-create-booking' },
+    { name: 'My Bookings', path: '/bw-my-bookings' },
+  ];
+  if (isAdmin()) {
+    tabs.push({ name: 'Admin Bookings', path: '/bw-admin-bookings' });
+  }
+
+  return (
+    <div className="mb-6 flex space-x-4 border-b border-slate-200">
+      {tabs.map((tab) => (
+        <NavLink
+          key={tab.path}
+          to={tab.path}
+          className={({ isActive }) =>
+            `pb-3 text-sm font-medium border-b-2 transition-colors ${isActive
+              ? 'border-teal-500 text-teal-600'
+              : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+            }`
+          }
+        >
+          {tab.name}
+        </NavLink>
+      ))}
+    </div>
+  );
+};
+
 const BookingLayout = ({ children }) => (
-  <div className="flex min-h-screen bg-(--surface)">
-    <BWSidebar />
-    <main className="flex-1 p-8">{children}</main>
+  <div className="flex h-screen overflow-hidden bg-slate-50 font-['Poppins',sans-serif]">
+    <Sidebar />
+    <div className="flex flex-1 flex-col overflow-hidden">
+      <main className="scrollbar-ui flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-8">
+        <div className="mx-auto max-w-7xl">
+          <h1 className="text-2xl font-bold text-slate-800 mb-6">Facility Bookings</h1>
+          <BookingTabs />
+          {children}
+        </div>
+      </main>
+    </div>
+  </div>
+);
+
+const TicketLayout = ({ children }) => (
+  <div className="flex h-screen overflow-hidden bg-slate-50 font-['Poppins',sans-serif]">
+    <Sidebar />
+    <div className="flex flex-1 flex-col overflow-hidden">
+      <main className="scrollbar-ui flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-8">
+        <div className="mx-auto max-w-7xl">
+          {children}
+        </div>
+      </main>
+    </div>
   </div>
 );
 
@@ -86,6 +139,8 @@ function App() {
             <ChatbotWrapper />
 
             <Routes>
+              {/* Root redirect */}
+              <Route path="/" element={<Navigate to={ROUTES.LOGIN} replace />} />
 
               {/* PUBLIC ROUTES */}
               <Route path={ROUTES.LOGIN} element={<LoginPage />} />
@@ -184,7 +239,7 @@ function App() {
                 path="/tickets"
                 element={
                   <PrivateRoute
-                    element={<BookingLayout><TicketDashboardPage /></BookingLayout>}
+                    element={<Layout><TicketDashboardPage /></Layout>}
                   />
                 }
               />
@@ -193,16 +248,16 @@ function App() {
                 path="/tickets/:id"
                 element={
                   <PrivateRoute
-                    element={<BookingLayout><TicketDetailsPage /></BookingLayout>}
+                    element={<Layout><TicketDetailsPage /></Layout>}
                   />
                 }
               />
 
               <Route
-                path="/create"
+                path="/ticket-create"
                 element={
                   <PrivateRoute
-                    element={<BookingLayout><CreateTicketPage /></BookingLayout>}
+                    element={<Layout><CreateTicketPage /></Layout>}
                   />
                 }
               />
