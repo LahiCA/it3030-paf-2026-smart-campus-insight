@@ -37,6 +37,8 @@ import CreateTicketPage from './pages/CreateTicketPage';
 import TicketDashboardPage from './pages/TicketDashboardPage';
 import TicketDetailsPage from './pages/TicketDetailsPage';
 
+import AnalyticsDashboard from './pages/AnalyticsDashboard';
+
 // Role-based dashboard
 const RoleDashboard = () => {
   const { user } = useAuth();
@@ -119,6 +121,16 @@ function ChatbotWrapper() {
     </>
   );
 }
+
+const AdminOnly = ({ children }) => {
+  const { user } = useAuth();
+
+  if (user?.role !== 'ADMIN') {
+    return <Navigate to={ROUTES.DASHBOARD} replace />;
+  }
+
+  return children;
+};
 
 function App() {
   if (!GOOGLE_CLIENT_ID) {
@@ -261,6 +273,20 @@ function App() {
                   />
                 }
               />
+
+              <Route path="/analytics"
+                    element={
+                      <PrivateRoute
+                        element={
+                          <Layout>
+                            <AdminOnly>
+                              <AnalyticsDashboard />
+                            </AdminOnly>
+                          </Layout>
+                        }
+                      />
+                    }
+                  />
 
               {/* FALLBACK */}
               <Route path="*" element={<Navigate to={ROUTES.DASHBOARD} replace />} />

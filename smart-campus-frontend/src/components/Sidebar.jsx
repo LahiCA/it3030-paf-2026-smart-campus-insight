@@ -9,7 +9,8 @@ import {
   FaUsers,
   FaSignOutAlt,
   FaGraduationCap,
-  FaBuilding
+  FaBuilding,
+  FaChartBar 
 } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 
@@ -49,6 +50,7 @@ const Sidebar = () => {
   if (isAdmin()) {
     menuItems.push({ path: '/admin', icon: FaUsers, label: 'User Management' });
     menuItems.push({ path: '/notifications-management', icon: FaBullhorn, label: 'Notification Mgmt' });
+    menuItems.push({ path: '/analytics', icon: FaChartBar, label: 'Analytics' });
   }
 
   return (
