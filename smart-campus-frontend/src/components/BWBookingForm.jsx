@@ -41,6 +41,11 @@ const RESOURCE_NAMES_BY_TYPE = {
   OTHER: ['Cafeteria', 'Student Center', 'Medical Center', 'Parking Lot A', 'Other'],
 };
 
+/**
+ * Module B: Booking Management (Member 2)
+ * Main complex form for creating new resource bookings.
+ * Handles validation, collision warnings, and submission to the API.
+ */
 function BWBookingForm() {
   const { user } = useAuth();
   

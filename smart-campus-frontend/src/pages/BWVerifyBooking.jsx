@@ -2,6 +2,11 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getBWBookingById, checkInBWBooking } from "../api/bwBookingApi";
 
+/**
+ * Module B: Booking Management (Member 2)
+ * Authentication and Check-in page triggered via QR Code scanning.
+ * Verifies validity and updates status.
+ */
 function BWVerifyBooking() {
   const { id } = useParams();
   const navigate = useNavigate();

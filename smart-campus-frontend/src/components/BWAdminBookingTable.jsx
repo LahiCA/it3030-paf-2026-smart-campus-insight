@@ -1,10 +1,16 @@
 import { useState, useEffect } from "react";
 import BWBookingStatusBadge from "./BWBookingStatusBadge";
 
+/**
+ * Module B: Booking Management (Member 2)
+ * Responsible for rendering the Admin Booking Management Table UI.
+ * Displays all bookings and provides actionable buttons to Trigger workflows (Approve, Reject, Delete).
+ */
 function BWAdminBookingTable({
   bookings,
   onApproveBooking,
   onRejectBooking,
+  onDeleteBooking,
   actionLoadingId,
   highlightedBookingId
 }) {
@@ -139,7 +145,7 @@ function BWAdminBookingTable({
                   </div>
                 </td>
                 <td className="px-6 py-5 text-right w-56">
-                  {booking.status === "PENDING" ? (
+                  {booking.status === "PENDING" && (
                     <div className="flex flex-col gap-2 items-end">
                       {!rejectingId && (
                         <div className="flex gap-2 justify-end w-full">
@@ -192,8 +198,33 @@ function BWAdminBookingTable({
                         </div>
                       )}
                     </div>
-                  ) : (
-                    <span className="text-slate-300 text-sm italic font-medium bg-slate-50 border border-slate-100 px-3 py-1 rounded-full">—</span>
+                  )}
+                  
+                  {booking.status !== "PENDING" && (
+                    <div className="flex justify-end items-center gap-2">
+                      <span className="text-slate-300 text-sm italic font-medium bg-slate-50 border border-slate-100 px-3 py-1 rounded-full">—</span>
+                      <button
+                        onClick={() => onDeleteBooking(booking)}
+                        disabled={actionLoadingId === booking.id}
+                        className="p-1.5 text-rose-400 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-100 rounded-lg transition-all"
+                        title="Delete Booking"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                      </button>
+                    </div>
+                  )}
+
+                  {booking.status === "PENDING" && !rejectingId && (
+                    <div className="flex justify-end mt-2">
+                       <button
+                        onClick={() => onDeleteBooking(booking)}
+                        disabled={actionLoadingId === booking.id}
+                        className="text-xs text-rose-500 hover:text-rose-700 flex items-center gap-1 font-medium transition"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        Delete Request
+                      </button>
+                    </div>
                   )}
                 </td>
               </tr>

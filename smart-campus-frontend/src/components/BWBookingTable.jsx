@@ -1,6 +1,11 @@
 import BWBookingStatusBadge from "./BWBookingStatusBadge";
 import { QRCodeCanvas } from "qrcode.react";
 
+/**
+ * Module B: Booking Management (Member 2)
+ * Renders the table view for user's personal bookings.
+ * Includes status badging, cancellation actions, and QR code generation for approved bookings.
+ */
 function BWBookingTable({ bookings, onCancelBooking, actionLoadingId }) {
   const getRemarks = (booking) => {
     if (booking.status === "REJECTED") {
