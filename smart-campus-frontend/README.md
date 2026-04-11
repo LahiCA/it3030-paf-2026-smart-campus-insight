@@ -46,17 +46,13 @@ The system emphasizes **scalability, auditability, and real-world usability**.
   - Contact details
   - Up to **3 image attachments**
 - Ticket workflow:
-
-
-OPEN → IN_PROGRESS → RESOLVED → CLOSED
-↘ REJECTED
+`OPEN → IN_PROGRESS → RESOLVED → CLOSED
+↘ REJECTED`
 
 
 - Technician assignment
 - Resolution notes & updates
 - Threaded comment system
-- rating and feedback system of users
--  **Ticket Activity Timeline (Audit Trail)**
 
 ---
 
@@ -94,6 +90,8 @@ OPEN → IN_PROGRESS → RESOLVED → CLOSED
 -  Advanced comment system
 -  Enhanced filtering & UI experience
 -  Performance-optimized frontend
+-  Rating and Feedback system of users
+-  Ticket Activity Timeline (Audit Trail)
 
 ---
 
@@ -164,10 +162,10 @@ smart-campus-insight/
 
 | Member | ID | Responsibilities & Implemented Features |
 | :--- | :--- | :--- |
-| **Member 1** | ITXXXXXXXX | **Module A: Facilities & Assets Catalogue** <br>- Resource management REST endpoints (CRUD).<br>- React catalogue UI with search, filtering, and metadata tracking.<br>- File uploads for resource images and status toggling (`ACTIVE` / `OUT_OF_SERVICE`). |
-| **Member 2** | ITXXXXXXXX | **Module B: Booking Management** <br>- End-to-end booking workflow (`PENDING` -> `APPROVED` / `REJECTED`).<br>- Automated conflict checking & overlapping time prevention across resources.<br>- Admin booking dashboard and user booking history views. |
-| **Member 3** | ITXXXXXXXX | **Module C: Maintenance & Incident Ticketing** <br>- Ticketing workflows (`OPEN` -> `IN_PROGRESS` -> `RESOLVED` -> `CLOSED`).<br>- Complex form handling with up to 3 image attachments for issue evidence.<br>- Technician updates, ticket timeline views, and threaded commenting system. |
-| **Member 4** | ITXXXXXXXX | **Module D & E: Notifications, Auth & Innovation** <br>- OAuth 2.0 Auth (Google Sign-In) & Role-Based Access Control (`USER`, `ADMIN`, `TECHNICIAN`).<br>- Real-time notification panel & notification logic.<br>- Gemini AI Chatbot Integration for smart campus queries (Innovation).<br>- Usage analytics dashboard & PDF/Excel reporting exports (Innovation). |
+| **Member 1** | IT23297036 | **Module A: Facilities & Assets Catalogue** <br>- Resource management REST endpoints (CRUD).<br>- React catalogue UI with search, filtering, and metadata tracking.<br>- File uploads for resource images and status toggling (`ACTIVE` / `OUT_OF_SERVICE`). |
+| **Member 2** | IT23320000 | **Module B: Booking Management** <br>- End-to-end booking workflow (`PENDING` -> `APPROVED` / `REJECTED`).<br>- Automated conflict checking & overlapping time prevention across resources.<br>- Admin booking dashboard and user booking history views. |
+| **Member 3** | IT23415218 | **Module C: Maintenance & Incident Ticketing** <br>- Ticketing workflows (`OPEN` -> `IN_PROGRESS` -> `RESOLVED` -> `CLOSED`).<br>- Complex form handling with up to 3 image attachments for issue evidence.<br>- Technician updates, ticket timeline views, and threaded commenting system. |
+| **Member 4** | IT2335028 | **Module D & E: Notifications, Auth & Innovation** <br>- OAuth 2.0 Auth (Google Sign-In) & Role-Based Access Control (`USER`, `ADMIN`, `TECHNICIAN`).<br>- Real-time notification panel & notification logic.<br>- Gemini AI Chatbot Integration for smart campus queries (Innovation).<br>- Usage analytics dashboard & PDF/Excel reporting exports (Innovation). |
 
 
 ##  Getting Started
@@ -199,14 +197,14 @@ Modular architecture for maintainability
 
 ###  Key Highlights
 
-✅ Full RESTful API with proper HTTP methods
-✅ Clean layered backend architecture
-✅ Fully functional React UI
-✅ Secure authentication & authorization
-✅ Real-time system feedback via notifications
-✅ Advanced audit tracking with timeline
-✅ Exportable reports (PDF/TXT)
-✅ AI-powered chatbot integration
+- ✅ Full RESTful API with proper HTTP methods
+- ✅ Clean layered backend architecture
+- ✅ Fully functional React UI
+- ✅ Secure authentication & authorization
+- ✅ Real-time system feedback via notifications
+- ✅ Advanced audit tracking with timeline
+- ✅ Exportable reports (PDF/TXT)
+- ✅ AI-powered chatbot integration
 
 ### 📎 Additional Notes
 
@@ -214,5 +212,5 @@ Designed to simulate a real-world production system
 Focus on usability, performance, and scalability
 Clean UI/UX with Tailwind CSS design system
 
-# Smart Campus Insight — Bringing efficiency to campus management systems
+## Smart Campus Insight — Bringing efficiency to campus management systems
 
