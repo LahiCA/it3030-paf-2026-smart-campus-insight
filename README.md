@@ -1,25 +1,126 @@
-# Smart Campus Operations Hub 🎓
+# 🎓 Smart Campus Insight
 
-**IT3030 – PAF Assignment 2026 (Semester 1) - Faculty of Computing – SLIIT**
+A full-stack, production-inspired web application designed to modernize university operations through centralized management of resources, bookings, and maintenance workflows.
 
-A complete, production-inspired web system designed to manage facility and asset bookings, maintenance/incident handling, and advanced backend campus operations. 
+---
 
-## 👥 Team Members & Contribution
+##  Project Overview
 
-| Member | ID | Responsibilities & Implemented Features |
-| :--- | :--- | :--- |
-| **Member 1** | ITXXXXXXXX | **Module A: Facilities & Assets Catalogue** <br>- Resource management REST endpoints (CRUD).<br>- React catalogue UI with search, filtering, and metadata tracking.<br>- File uploads for resource images and status toggling (`ACTIVE` / `OUT_OF_SERVICE`). |
-| **Member 2** | ITXXXXXXXX | **Module B: Booking Management** <br>- End-to-end booking workflow (`PENDING` -> `APPROVED` / `REJECTED`).<br>- Automated conflict checking & overlapping time prevention across resources.<br>- Admin booking dashboard and user booking history views. |
-| **Member 3** | ITXXXXXXXX | **Module C: Maintenance & Incident Ticketing** <br>- Ticketing workflows (`OPEN` -> `IN_PROGRESS` -> `RESOLVED` -> `CLOSED`).<br>- Complex form handling with up to 3 image attachments for issue evidence.<br>- Technician updates, ticket timeline views, and threaded commenting system. |
-| **Member 4** | ITXXXXXXXX | **Module D & E: Notifications, Auth & Innovation** <br>- OAuth 2.0 Auth (Google Sign-In) & Role-Based Access Control (`USER`, `ADMIN`, `TECHNICIAN`).<br>- Real-time notification panel & notification logic.<br>- Gemini AI Chatbot Integration for smart campus queries (Innovation).<br>- Usage analytics dashboard & PDF/Excel reporting exports (Innovation). |
+The **Smart Campus Operations Hub** is a comprehensive system that enables:
 
-## 🛠️ Technology Stack
+-  Efficient facility & asset management  
+-  Seamless booking workflows with conflict prevention  
+-  Structured incident ticketing & maintenance tracking  
+-  Real-time notifications for system events  
+-  Secure authentication with role-based access control  
+-  Analytics, reporting, and AI-powered assistance  
 
-- **Frontend:** React (Vite), TailwindCSS, Context API, Axios, jsPDF
-- **Backend:** Java, Spring Boot 3.x, Spring Security (JWT + OAuth2)
-- **Database:** MongoDB Atlas (NoSQL)
-- **CI/CD:** GitHub Actions (Automated Build & Test)
-- **AI Integration:** Google Gemini API 
+The system emphasizes **scalability, auditability, and real-world usability**.
+
+---
+
+##  Core System Features
+
+###  Module A – Facilities & Assets Catalogue
+- Manage campus resources (lecture halls, labs, equipment)
+- Resource metadata:
+  - Type, capacity, location
+  - Availability windows
+  - Status (`ACTIVE`, `OUT_OF_SERVICE`)
+- Advanced search and filtering
+
+---
+
+###  Module B – Booking Management
+- Booking workflow:  
+  `PENDING → APPROVED / REJECTED → CANCELLED`
+- Prevents overlapping bookings
+- Admin approval/rejection with reasons
+- User booking history & admin dashboard
+
+---
+
+###  Module C – Maintenance & Incident Ticketing
+- Create incident tickets with:
+  - Category, description, priority
+  - Contact details
+  - Up to **3 image attachments**
+- Ticket workflow:
+`OPEN → IN_PROGRESS → RESOLVED → CLOSED
+↘ REJECTED`
+
+
+- Technician assignment
+- Resolution notes & updates
+- Threaded comment system
+
+---
+
+###  Module D – Notifications
+- Real-time notifications for:
+  - Booking approvals/rejections
+  - Ticket status updates
+  - New comments
+- Integrated notification panel
+
+---
+
+###  Module E – Authentication & Authorization
+- Google OAuth 2.0 login
+- Role-based access:
+  - `USER`
+  - `ADMIN`
+  - `TECHNICIAN`
+- JWT-secured backend APIs
+
+---
+
+##  Innovation Features
+
+-  Admin Analytics Dashboard (resource usage insights)
+-  SLA Tracking:
+  - First response time
+  - Resolution time
+-  Export Reports:
+  - PDF reports
+  - TXT reports
+-  Gemini AI Chatbot Integration
+-  Smart notification system
+-  Secure image upload handling
+-  Advanced comment system
+-  Enhanced filtering & UI experience
+-  Performance-optimized frontend
+-  Rating and Feedback system of users
+-  Ticket Activity Timeline (Audit Trail)
+
+---
+
+##  Technology Stack
+
+### Frontend
+- React (Vite)
+- Tailwind CSS
+- React Router DOM
+- Axios
+- Chart.js / Recharts
+- Google OAuth (`@react-oauth/google`)
+- jsPDF (report generation)
+
+### Backend
+- Java (Spring Boot 3.x)
+- Spring Security (JWT + OAuth2)
+- RESTful API architecture
+
+### Database
+- MongoDB Atlas (NoSQL)
+
+### DevOps
+- GitHub Actions (CI/CD)
+
+### AI Integration
+- Google Gemini API
+
+---
 
 ## 📂 Folder Structure
 
@@ -55,7 +156,19 @@ smart-campus-insight/
 └── Smart-Campus-API.postman_collection.json # Postman collection for API testing
 ```
 
-## 🚀 Getting Started
+👥 Team Contributions
+
+##  Team Members & Contribution
+
+| Member | ID | Responsibilities & Implemented Features |
+| :--- | :--- | :--- |
+| **Member 1** | IT23297036 | **Module A: Facilities & Assets Catalogue** <br>- Resource management REST endpoints (CRUD).<br>- React catalogue UI with search, filtering, and metadata tracking.<br>- File uploads for resource images and status toggling (`ACTIVE` / `OUT_OF_SERVICE`). |
+| **Member 2** | IT23320000 | **Module B: Booking Management** <br>- End-to-end booking workflow (`PENDING` -> `APPROVED` / `REJECTED`).<br>- Automated conflict checking & overlapping time prevention across resources.<br>- Admin booking dashboard and user booking history views. |
+| **Member 3** | IT23415218 | **Module C: Maintenance & Incident Ticketing** <br>- Ticketing workflows (`OPEN` -> `IN_PROGRESS` -> `RESOLVED` -> `CLOSED`).<br>- Complex form handling with up to 3 image attachments for issue evidence.<br>- Technician updates, ticket timeline views, and threaded commenting system. |
+| **Member 4** | IT2335028 | **Module D & E: Notifications, Auth & Innovation** <br>- OAuth 2.0 Auth (Google Sign-In) & Role-Based Access Control (`USER`, `ADMIN`, `TECHNICIAN`).<br>- Real-time notification panel & notification logic.<br>- Gemini AI Chatbot Integration for smart campus queries (Innovation).<br>- Usage analytics dashboard & PDF/Excel reporting exports (Innovation). |
+
+
+##  Getting Started
 
 ### Prerequisites
 - JDK 17+
@@ -74,3 +187,29 @@ smart-campus-insight/
 2. Install dependencies: `npm install`
 3. Run the development server: `npm run dev`
 4. Open the application at `http://localhost:5173`
+
+
+###  Testing & Quality
+
+Postman collection included for API testing
+Validation and error handling implemented
+Modular architecture for maintainability
+
+###  Key Highlights
+
+- ✅ Full RESTful API with proper HTTP methods
+- ✅ Clean layered backend architecture
+- ✅ Fully functional React UI
+- ✅ Secure authentication & authorization
+- ✅ Real-time system feedback via notifications
+- ✅ Advanced audit tracking with timeline
+- ✅ Exportable reports (PDF/TXT)
+- ✅ AI-powered chatbot integration
+
+### 📎 Additional Notes
+
+Designed to simulate a real-world production system
+Focus on usability, performance, and scalability
+Clean UI/UX with Tailwind CSS design system
+
+## Smart Campus Insight — Bringing efficiency to campus management systems
