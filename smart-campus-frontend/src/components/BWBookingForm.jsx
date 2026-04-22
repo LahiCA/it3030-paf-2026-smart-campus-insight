@@ -42,7 +42,7 @@ const RESOURCE_NAMES_BY_TYPE = {
 };
 
 /**
- * Module B: Booking Management (Member 2)
+ 
  * Main complex form for creating new resource bookings.
  * Handles validation, collision warnings, and submission to the API.
  */

@@ -20,7 +20,7 @@ public class GlobalExceptionHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    // ✅ Validation errors
+    // Validation errors
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {
         LOGGER.warn("Validation failed", ex);
@@ -36,7 +36,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(body);
     }
 
-    // ✅ Runtime exceptions
+    // Runtime exceptions
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, Object>> handleRuntime(RuntimeException ex) {
         LOGGER.error("Request failed", ex);
@@ -45,7 +45,7 @@ public class GlobalExceptionHandler {
                 .body(errorBody(ex.getMessage(), HttpStatus.BAD_REQUEST));
     }
 
-    // ✅ Not found
+    // Not found
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleNotFound(ResourceNotFoundException ex) {
         return ResponseEntity
@@ -53,7 +53,7 @@ public class GlobalExceptionHandler {
                 .body(errorBody(ex.getMessage(), HttpStatus.NOT_FOUND));
     }
 
-    // ✅ Illegal arguments
+    // Illegal arguments
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleIllegal(IllegalArgumentException ex) {
         return ResponseEntity
@@ -61,7 +61,7 @@ public class GlobalExceptionHandler {
                 .body(errorBody(ex.getMessage(), HttpStatus.BAD_REQUEST));
     }
 
-    // ✅ Generic errors
+    // Generic errors
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneral(Exception ex) {
         LOGGER.error("Unexpected server error", ex);
@@ -74,7 +74,7 @@ public class GlobalExceptionHandler {
                 ));
     }
 
-    // ✅ Reusable response builder
+    // Reusable response builder
     private Map<String, Object> errorBody(String message, HttpStatus status) {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());

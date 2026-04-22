@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * Module B: Booking Management (Member 2)
+
  * REST API Controller for handling all facility and asset booking workflows.
  * Implements RESTful best practices with GET, POST, PATCH, and DELETE methods.
  */
