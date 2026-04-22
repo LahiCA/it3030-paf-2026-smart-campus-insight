@@ -56,3 +56,7 @@ logging:
   level:
     root: INFO
     "[com.smartcampus]": DEBUG
+    "[com.smartcampus.backend.controller.NotificationController]": WARN
+    "[com.smartcampus.backend.service.NotificationService]": WARN
+    "[com.smartcampus.backend.service.JwtTokenProvider]": WARN
+    "[com.smartcampus.backend.config.JwtAuthenticationFilter]": WARN

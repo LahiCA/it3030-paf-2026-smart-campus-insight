@@ -14,7 +14,7 @@ import {
 } from 'date-fns';
 
 /**
- * Module B: Booking Management (Member 2)
+
  * Renders an interactive Calendar to visualize current bookings across the university.
  * Uses Date-Fns to parse bookings and display visual indicators and tooltips on dates.
  */
