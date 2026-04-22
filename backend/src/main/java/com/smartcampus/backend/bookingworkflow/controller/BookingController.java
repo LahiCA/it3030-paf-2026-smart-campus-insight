@@ -6,6 +6,7 @@ import com.smartcampus.backend.bookingworkflow.dto.BookingRequestDto;
 import com.smartcampus.backend.bookingworkflow.model.Booking;
 import com.smartcampus.backend.bookingworkflow.service.BookingService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,6 +33,7 @@ public class BookingController {
      * @return The created Booking object.
      */
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public Booking create(@Valid @RequestBody BookingRequestDto dto) {
         return service.createBooking(dto);
     }
@@ -101,6 +103,7 @@ public class BookingController {
      * Completely removes a booking from the database and sends a notification.
      */
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable String id, @RequestParam(required = false) String reason) {
         service.deleteBooking(id, reason);
     }
