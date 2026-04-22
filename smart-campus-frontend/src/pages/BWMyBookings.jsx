@@ -4,7 +4,7 @@ import BWBookingTable from "../components/BWBookingTable";
 import { useAuth } from "../context/AuthContext";
 
 /**
- * Module B: Booking Management (Member 2)
+
  * User dashboard displaying their personal resource bookings.
  * Shows cancellation and checking status to basic roles.
  */

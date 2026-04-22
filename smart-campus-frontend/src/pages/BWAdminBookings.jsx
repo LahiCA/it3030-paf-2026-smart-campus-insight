@@ -8,7 +8,7 @@ import BWBookingStatusBadge from "../components/BWBookingStatusBadge";
 import { format } from "date-fns";
 
 /**
- * Module B: Booking Management (Member 2)
+ *
  * Renders the Admin Booking Management dashboard.
  * Allows administrators to review, approve, reject, or filter resource bookings.
  */

@@ -9,7 +9,7 @@ import BWAdminBookingTable from "../components/BWAdminBookingTable";
 import BWBookingCalendar from "../components/BWBookingCalendar";
 
 /**
- * Module B: Booking Management Dashboard (Member 2)
+ 
  * Handles state logic, filtering, scaling the UI widgets like Calendars and Tables.
  * Integrates Axios service logic back to the Spring Boot REST API for administrative view.
  */

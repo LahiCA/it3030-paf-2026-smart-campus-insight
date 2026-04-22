@@ -45,6 +45,9 @@ public class BookingService {
      * Prevents conflicts for the same resource by evaluating overlapping time ranges against APPROVED or CHECKED_IN bookings.
      */
     public Booking createBooking(BookingRequestDto dto) {
+        log.info("Booking create requested: userId={}, resource={}, date={}, time={} - {}",
+            dto.getUserId(), dto.getResourceName(), dto.getBookingDate(), dto.getStartTime(), dto.getEndTime());
+
         LocalDate date = LocalDate.parse(dto.getBookingDate());
         LocalTime start = LocalTime.parse(dto.getStartTime());
         LocalTime end = LocalTime.parse(dto.getEndTime());
@@ -81,18 +84,24 @@ public class BookingService {
                 .updatedAt(LocalDateTime.now())
                 .build();
 
-        return repository.save(booking);
+            Booking saved = repository.save(booking);
+            log.info("Booking created successfully: bookingId={}, status={}, userId={}",
+                saved.getId(), saved.getStatus(), saved.getUserId());
+            return saved;
     }
 
     public List<Booking> getAllBookings() {
+        log.debug("Fetching all bookings");
         return repository.findAll();
     }
 
     public List<Booking> getMyBookings(String userId) {
+        log.debug("Fetching bookings for userId={}", userId);
         return repository.findByUserId(userId);
     }
 
     public Booking getBookingById(String id) {
+        log.debug("Fetching booking by id={}", id);
         return repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
     }
@@ -102,6 +111,7 @@ public class BookingService {
      * Fires a notification off to the user who requested the booking.
      */
     public Booking approveBooking(String id) {
+        log.info("Booking approval requested: bookingId={}", id);
         Booking booking = getBookingById(id);
 
         if (booking.getStatus() != BookingStatus.PENDING) {
@@ -112,6 +122,7 @@ public class BookingService {
         booking.setUpdatedAt(LocalDateTime.now());
 
         Booking saved = repository.save(booking);
+        log.info("Booking approved: bookingId={}, status={}", saved.getId(), saved.getStatus());
 
         try {
             resolveRecipientId(saved.getUserId()).ifPresentOrElse(
@@ -136,6 +147,7 @@ public class BookingService {
      * Requires a rejection reason from the admin and fires an email notification to the user.
      */
     public Booking rejectBooking(String id, String reason) {
+        log.info("Booking rejection requested: bookingId={}, reason={}", id, reason);
         Booking booking = getBookingById(id);
 
         if (booking.getStatus() != BookingStatus.PENDING) {
@@ -147,6 +159,7 @@ public class BookingService {
         booking.setUpdatedAt(LocalDateTime.now());
 
         Booking saved = repository.save(booking);
+        log.info("Booking rejected: bookingId={}, status={}", saved.getId(), saved.getStatus());
 
         try {
             String msg = "Your booking for \"" + saved.getResourceName() + "\" on " + saved.getBookingDate()
@@ -172,6 +185,7 @@ public class BookingService {
      * User action to cancel their own approved booking.
      */
     public Booking cancelBooking(String id, BookingCancelDto dto) {
+        log.info("Booking cancellation requested: bookingId={}, reason={}", id, dto == null ? null : dto.getReason());
         Booking booking = getBookingById(id);
 
         if (booking.getStatus() != BookingStatus.APPROVED) {
@@ -182,13 +196,16 @@ public class BookingService {
         booking.setCancelReason(dto.getReason());
         booking.setUpdatedAt(LocalDateTime.now());
 
-        return repository.save(booking);
+        Booking saved = repository.save(booking);
+        log.info("Booking cancelled: bookingId={}, status={}", saved.getId(), saved.getStatus());
+        return saved;
     }
 
     /**
      * Updates an approved booking to indicate the user has successfully checked in to their reservation in real life.
      */
     public Booking checkInBooking(String id) {
+        log.info("Booking check-in requested: bookingId={}", id);
         Booking booking = getBookingById(id);
 
         if (booking.getStatus() != BookingStatus.APPROVED) {
@@ -198,13 +215,16 @@ public class BookingService {
         booking.setStatus(BookingStatus.CHECKED_IN);
         booking.setUpdatedAt(LocalDateTime.now());
 
-        return repository.save(booking);
+        Booking saved = repository.save(booking);
+        log.info("Booking checked-in: bookingId={}, status={}", saved.getId(), saved.getStatus());
+        return saved;
     }
 
     /**
      * Admin action to completely erase a booking log off the database, sending a final notification to the user if requested.
      */
     public void deleteBooking(String id, String reason) {
+        log.info("Booking deletion requested: bookingId={}, reason={}", id, reason);
         Booking booking = getBookingById(id);
 
         // Try to send notification before deleting
@@ -226,6 +246,7 @@ public class BookingService {
         }
 
         repository.delete(booking);
+        log.info("Booking deleted: bookingId={}", booking.getId());
     }
 
     /**
