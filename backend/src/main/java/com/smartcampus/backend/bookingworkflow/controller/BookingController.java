@@ -87,7 +87,7 @@ public class BookingController {
      */
     @PatchMapping("/{id}/cancel")
     public Booking cancel(@PathVariable String id,
-                          @RequestBody BookingCancelDto dto) {
+                          @RequestBody(required = false) BookingCancelDto dto) {
         return service.cancelBooking(id, dto);
     }
 

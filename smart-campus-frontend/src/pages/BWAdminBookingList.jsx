@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   approveBWBooking,
+  cancelBWBooking,
   getAllBWBookings,
   rejectBWBooking,
   deleteBWBooking,
@@ -109,10 +110,10 @@ function BWAdminBookingList() {
     let reasonText = "";
     
     if (booking.status === "APPROVED") {
-      const input = window.prompt("Why do you want to delete this approved booking?");
+      const input = window.prompt("Why do you want to cancel this approved booking?");
       if (input === null) return; // User cancelled
       if (!input.trim()) {
-        alert("A reason is required to delete an approved booking.");
+        alert("A reason is required to cancel an approved booking.");
         return;
       }
       reasonText = input.trim();
@@ -126,8 +127,13 @@ function BWAdminBookingList() {
     setActionLoadingId(booking.id);
 
     try {
-      await deleteBWBooking(booking.id, reasonText);
-      setSuccessMessage("Booking deleted successfully.");
+      if (booking.status === "APPROVED") {
+        await cancelBWBooking(booking.id, reasonText);
+        setSuccessMessage("Booking cancelled successfully.");
+      } else {
+        await deleteBWBooking(booking.id, reasonText);
+        setSuccessMessage("Booking deleted successfully.");
+      }
       await fetchBookings();
     } catch (error) {
       setErrorMessage(

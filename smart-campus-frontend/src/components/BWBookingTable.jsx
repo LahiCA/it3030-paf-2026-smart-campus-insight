@@ -6,7 +6,7 @@ import { QRCodeCanvas } from "qrcode.react";
  * Renders the table view for user's personal bookings.
  * Includes status badging, cancellation actions, and QR code generation for approved bookings.
  */
-function BWBookingTable({ bookings, onCancelBooking, actionLoadingId }) {
+function BWBookingTable({ bookings, onCancelBooking, onDeleteBooking, actionLoadingId }) {
   const getRemarks = (booking) => {
     if (booking.status === "REJECTED") {
       return booking.rejectionReason || "Rejected";
@@ -141,7 +141,7 @@ function BWBookingTable({ bookings, onCancelBooking, actionLoadingId }) {
                   <td className="px-6 py-5 text-right">
                     {booking.status === "APPROVED" || booking.status === "PENDING" ? (
                       <button
-                        onClick={() => onCancelBooking(booking.id)}
+                        onClick={() => onCancelBooking(booking.id, booking.status)}
                         disabled={actionLoadingId === booking.id}
                         className="text-red-500 border border-red-200 hover:text-white hover:bg-red-500 hover:border-red-500 disabled:opacity-50 px-4 py-2 rounded-lg text-sm font-semibold transition shadow-sm"
                       >
@@ -151,6 +151,15 @@ function BWBookingTable({ bookings, onCancelBooking, actionLoadingId }) {
                              Cancelling
                           </span>
                         ) : "Cancel"}
+                      </button>
+                    ) : booking.status === "REJECTED" || booking.status === "CANCELLED" ? (
+                      <button
+                        onClick={() => onDeleteBooking(booking.id)}
+                        disabled={actionLoadingId === booking.id}
+                        className="inline-flex items-center justify-center p-2 text-rose-400 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-100 rounded-lg transition"
+                        title="Delete booking"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                       </button>
                     ) : (
                       <span className="text-slate-300 text-sm">—</span>
