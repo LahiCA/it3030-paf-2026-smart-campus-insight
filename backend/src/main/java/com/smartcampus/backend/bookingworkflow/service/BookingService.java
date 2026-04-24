@@ -187,13 +187,13 @@ public class BookingService {
     public Booking cancelBooking(String id, BookingCancelDto dto) {
         log.info("Booking cancellation requested: bookingId={}, reason={}", id, dto == null ? null : dto.getReason());
         Booking booking = getBookingById(id);
-
-        if (booking.getStatus() != BookingStatus.APPROVED) {
-            throw new InvalidBookingException("Only approved bookings can be cancelled");
+        // Allow users to cancel either APPROVED or PENDING bookings via the UI.
+        if (booking.getStatus() != BookingStatus.APPROVED && booking.getStatus() != BookingStatus.PENDING) {
+            throw new InvalidBookingException("Only pending or approved bookings can be cancelled");
         }
 
         booking.setStatus(BookingStatus.CANCELLED);
-        booking.setCancelReason(dto.getReason());
+        booking.setCancelReason(dto == null ? null : dto.getReason());
         booking.setUpdatedAt(LocalDateTime.now());
 
         Booking saved = repository.save(booking);
