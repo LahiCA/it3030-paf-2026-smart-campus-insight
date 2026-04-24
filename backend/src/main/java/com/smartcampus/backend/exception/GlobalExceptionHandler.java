@@ -100,8 +100,7 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(errorBody(
                         ex.getMessage() == null ? "Something went wrong" : ex.getMessage(),
-                        HttpStatus.INTERNAL_SERVER_ERROR
-                ));
+                        HttpStatus.INTERNAL_SERVER_ERROR));
     }
 
     // Reusable response builder

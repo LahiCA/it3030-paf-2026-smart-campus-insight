@@ -34,38 +34,48 @@ import com.smartcampus.backend.tickets.service.TicketService;
 
 import jakarta.validation.Valid;
 
+/**
+ * REST Controller for managing support tickets
+ */
 @RestController
 @Validated
 @RequestMapping("/api/tickets")
 @CrossOrigin(origins = "http://localhost:5173")
 public class TicketController {
 
+    // Service layer for ticket-related operations
     private final TicketService ticketService;
 
+    // Constructor injection
     public TicketController(TicketService ticketService) {
         this.ticketService = ticketService;
     }
 
+    // Create a new ticket
     @PostMapping
     public ResponseEntity<Ticket> createTicket(@Valid @RequestBody TicketCreateRequest request) {
         return ResponseEntity.status(201).body(ticketService.createTicket(request));
     }
 
+    // Get all tickets (role-based access)
     @GetMapping
     public List<Ticket> getAllTickets(@RequestHeader(name = "role", defaultValue = "USER") String role) {
         return ticketService.getAllTickets(role);
     }
 
+    // Get a single ticket by ID
     @GetMapping("/{id}")
     public Ticket getTicketById(@PathVariable String id) {
         return ticketService.getTicketById(id);
     }
 
+    // Get tickets created by a specific user
     @GetMapping("/user/{userId}")
     public List<Ticket> getTicketsByUserId(@PathVariable String userId) {
         return ticketService.getTicketsByUserId(userId);
     }
 
+    // Get tickets assigned to a technician
     @GetMapping("/assigned/{assignedTo}")
     public List<Ticket> getAssignedTickets(
             @PathVariable String assignedTo,
@@ -74,6 +84,7 @@ public class TicketController {
         return ticketService.getTicketsAssignedTo(assignedTo, role, displayId);
     }
 
+    // Update ticket details
     @PutMapping("/{id}")
     public Ticket updateTicket(
             @PathVariable String id,
@@ -83,6 +94,7 @@ public class TicketController {
         return ticketService.updateTicket(id, request, userId, role);
     }
 
+    // Delete a ticket
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTicket(
             @PathVariable String id,
@@ -91,6 +103,7 @@ public class TicketController {
         return ResponseEntity.noContent().build();
     }
 
+    // Update ticket status (e.g., OPEN → IN_PROGRESS → CLOSED)
     @PutMapping("/{id}/status")
     public Ticket updateStatus(
             @PathVariable String id,
@@ -100,6 +113,7 @@ public class TicketController {
         return ticketService.updateStatus(id, request, role, displayId);
     }
 
+    // Assign a technician to a ticket
     @PutMapping("/{id}/assign")
     public Ticket assignTechnician(
             @PathVariable String id,
@@ -108,6 +122,7 @@ public class TicketController {
         return ticketService.assignTechnician(id, request, role);
     }
 
+    // Rate a completed ticket
     @PutMapping("/{id}/rate")
     public Ticket rateTicket(
             @PathVariable String id,
@@ -118,6 +133,7 @@ public class TicketController {
         return ticketService.rateTicket(id, request, userId, displayId, role);
     }
 
+    // Upload images related to a ticket
     @PostMapping("/{id}/upload")
     public List<TicketImage> uploadImages(
             @PathVariable String id,
@@ -125,11 +141,22 @@ public class TicketController {
         return ticketService.uploadImages(id, files);
     }
 
+    // Get all images for a ticket
     @GetMapping("/{id}/images")
     public List<TicketImage> getImages(@PathVariable String id) {
         return ticketService.getImages(id);
     }
 
+    // Delete an image attachment
+    @DeleteMapping("/images/{imageId}")
+    public ResponseEntity<Void> deleteImage(
+            @PathVariable String imageId,
+            @RequestHeader(name = "role", defaultValue = "USER") String role) {
+        ticketService.deleteImage(imageId, role);
+        return ResponseEntity.noContent().build();
+    }
+
+    // View/download a specific attachment
     @GetMapping("/attachments/{imageId}")
     public ResponseEntity<Resource> viewAttachment(@PathVariable String imageId) {
         Resource resource = ticketService.loadImageAsResource(imageId);
@@ -140,6 +167,7 @@ public class TicketController {
                 .body(resource);
     }
 
+    // Add a comment to a ticket
     @PostMapping("/{id}/comments")
     public ResponseEntity<Comment> addComment(
             @PathVariable String id,
@@ -147,11 +175,13 @@ public class TicketController {
         return ResponseEntity.status(201).body(ticketService.addComment(id, request));
     }
 
+    // Get all comments for a ticket
     @GetMapping("/{id}/comments")
     public List<Comment> getComments(@PathVariable String id) {
         return ticketService.getComments(id);
     }
 
+    // Update a comment
     @PutMapping("/comments/{commentId}")
     public Comment updateComment(
             @PathVariable String commentId,
@@ -159,6 +189,7 @@ public class TicketController {
         return ticketService.updateComment(commentId, request);
     }
 
+    // Delete a comment
     @DeleteMapping("/comments/{commentId}")
     public ResponseEntity<Void> deleteComment(
             @PathVariable String commentId,
