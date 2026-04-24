@@ -41,6 +41,60 @@ const RESOURCE_NAMES_BY_TYPE = {
   OTHER: ['Cafeteria', 'Student Center', 'Medical Center', 'Parking Lot A', 'Other'],
 };
 
+const TYPE_MAX_ATTENDEES = {
+  LECTURE_HALL: 250,
+  LAB: 60,
+  MEETING_ROOM: 40,
+  EQUIPMENT: 20,
+  SPORTS: 100,
+  STUDY_ROOM: 20,
+  LIBRARY: 180,
+  AUDITORIUM: 500,
+  OTHER: 120,
+};
+
+const RESOURCE_MAX_ATTENDEES = {
+  'Lecture Hall A': 120,
+  'Lecture Hall B': 150,
+  'Lecture Hall C': 200,
+  'Lecture Hall D': 220,
+  'Lecture Hall E': 250,
+  'Computer Lab A': 45,
+  'Computer Lab B': 45,
+  'Physics Lab': 35,
+  'Chemistry Lab': 35,
+  'Electronics Lab': 30,
+  'Meeting Room 1': 12,
+  'Meeting Room 2': 18,
+  'Meeting Room 3': 24,
+  'Conference Room A': 30,
+  'Conference Room B': 40,
+  Projector: 5,
+  'High-end Camera': 4,
+  Microphone: 25,
+  Whiteboard: 10,
+  Laptops: 40,
+  'Basketball Court': 30,
+  'Tennis Court': 8,
+  'Football Field': 60,
+  'Indoor Gym': 100,
+  'Swimming Pool': 40,
+  'Study Room 1': 8,
+  'Study Room 2': 8,
+  'Study Room 3': 10,
+  'Group Study A': 16,
+  'Main Library': 180,
+  'Study Area 1': 40,
+  'Study Area 2': 40,
+  'Discussion Room A': 20,
+  'Main Auditorium': 500,
+  'Mini Auditorium': 180,
+  Cafeteria: 120,
+  'Student Center': 100,
+  'Medical Center': 60,
+  'Parking Lot A': 80,
+};
+
 /**
  
  * Main complex form for creating new resource bookings.
@@ -172,6 +226,31 @@ function BWBookingForm() {
 
   const isPastTimeInvalid = Boolean(timeValidationMessage);
 
+  const selectedTypeMax = formData.resourceType
+    ? TYPE_MAX_ATTENDEES[formData.resourceType] ?? null
+    : null;
+
+  const selectedResourceMax = formData.resourceName
+    ? RESOURCE_MAX_ATTENDEES[formData.resourceName] ?? null
+    : null;
+
+  const expectedAttendeesMax = selectedResourceMax ?? selectedTypeMax;
+  const expectedAttendeesNumber = Number(formData.expectedAttendees);
+  const expectedAttendeesExceedsMax = Boolean(
+    expectedAttendeesMax &&
+      formData.expectedAttendees &&
+      !Number.isNaN(expectedAttendeesNumber) &&
+      expectedAttendeesNumber > expectedAttendeesMax
+  );
+
+  const maxLabelTarget = formData.resourceName
+    ? formData.resourceName
+    : TYPE_LABELS[formData.resourceType] || "the selected resource";
+
+  const resourcesForSelectedType = formData.resourceType
+    ? RESOURCE_NAMES_BY_TYPE[formData.resourceType] || []
+    : [];
+
   const isValidUserId = (userId) => {
     // Keep it valid as long as it exists (we trust displayId from auth context)
     return userId && userId.trim() !== "";
@@ -203,6 +282,11 @@ function BWBookingForm() {
       return;
     }
 
+    if (expectedAttendeesExceedsMax) {
+      setErrorMessage(`Expected attendees cannot exceed ${expectedAttendeesMax} for ${maxLabelTarget}.`);
+      return;
+    }
+
     if (isPastTimeInvalid) {
       setErrorMessage(timeValidationMessage);
       return;
@@ -223,17 +307,23 @@ function BWBookingForm() {
       const approvedConflicts = conflicts.filter(c => c.status === "APPROVED");
       const pendingConflicts = conflicts.filter(c => c.status === "PENDING" || c.status === "pending");
 
-      let possibleNames = [];
-      if (formData.resourceType === "LECTURE_HALL") {
-        possibleNames = ["Lecture Hall A", "Lecture Hall B", "Lecture Hall C"];
-      } else if (formData.resourceType === "LAB") {
-        possibleNames = ["Lab 1", "Lab 2", "Lab 3"];
-      }
+      const possibleNames = Array.from(
+        new Set([
+          ...(RESOURCE_NAMES_BY_TYPE[formData.resourceType] || []),
+          ...allResources
+            .filter((r) => r.type === formData.resourceType)
+            .map((r) => r.name),
+        ])
+      ).filter(
+        (name) =>
+          Boolean(name) &&
+          name !== "Other" &&
+          name !== formData.resourceName
+      );
 
       let alternativesText = "";
       if (possibleNames.length > 0) {
         const available = possibleNames.filter((name) => {
-          if (name === formData.resourceName) return false;
           return !allSlotsForResource.some(
             (b) =>
               b.resourceName === name &&
@@ -443,7 +533,7 @@ function BWBookingForm() {
           {/* Expected Attendees / Quantity */}
           <div>
             <label htmlFor="expectedAttendees" className="block text-sm font-medium text-slate-600 mb-1">
-              {["EQUIPMENT", "SPORTS"].includes(formData.resourceType) 
+              {["EQUIPMENT"].includes(formData.resourceType) 
                 ? "Quantity Required" 
                 : formData.resourceType === "OTHER"
                 ? "Expected Attendees / Quantity"
@@ -454,7 +544,7 @@ function BWBookingForm() {
               id="expectedAttendees"
               name="expectedAttendees"
               placeholder={
-                ["EQUIPMENT", "SPORTS"].includes(formData.resourceType) 
+                ["EQUIPMENT"].includes(formData.resourceType) 
                   ? "e.g., 2" 
                   : formData.resourceType === "OTHER"
                   ? "e.g., 25 attendees or 2 items"
@@ -463,9 +553,20 @@ function BWBookingForm() {
               value={formData.expectedAttendees}
               onChange={handleChange}
               min="1"
-              className="w-full border border-slate-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
+              max={expectedAttendeesMax || undefined}
+              className={`w-full border rounded-lg p-3 focus:outline-none focus:ring-2 transition ${expectedAttendeesExceedsMax ? "border-red-400 focus:ring-red-300" : "border-slate-300 focus:ring-teal-500"}`}
               required
             />
+            {expectedAttendeesMax && (
+              <p className="text-xs text-teal-600 mt-1 font-medium">
+                Maximum allowed for {maxLabelTarget}: {expectedAttendeesMax}
+              </p>
+            )}
+            {expectedAttendeesExceedsMax && (
+              <p className="text-xs text-red-600 mt-1 font-medium">
+                Entered value exceeds the maximum allowed ({expectedAttendeesMax}).
+              </p>
+            )}
           </div>
 
           {/* Start Time */}
@@ -556,8 +657,8 @@ function BWBookingForm() {
           
           <button
             type="submit"
-            disabled={isResourceUnavailable || isPastTimeInvalid}
-            className={`w-full sm:w-auto bg-gradient-to-r px-8 py-2.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(13,148,136,0.25)] text-sm border ${(isResourceUnavailable || isPastTimeInvalid) ? 'from-slate-400 to-slate-400 text-slate-200 cursor-not-allowed' : 'from-teal-600 to-teal-500 hover:from-teal-700 hover:to-teal-600 text-white transform hover:scale-[1.02] active:scale-[0.98] hover:shadow-[0_6px_16px_rgba(13,148,136,0.35)] border-teal-500/20'}`}
+            disabled={isResourceUnavailable || isPastTimeInvalid || expectedAttendeesExceedsMax}
+            className={`w-full sm:w-auto bg-gradient-to-r px-8 py-2.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(13,148,136,0.25)] text-sm border ${(isResourceUnavailable || isPastTimeInvalid || expectedAttendeesExceedsMax) ? 'from-slate-400 to-slate-400 text-slate-200 cursor-not-allowed' : 'from-teal-600 to-teal-500 hover:from-teal-700 hover:to-teal-600 text-white transform hover:scale-[1.02] active:scale-[0.98] hover:shadow-[0_6px_16px_rgba(13,148,136,0.35)] border-teal-500/20'}`}
           >
             {isResourceUnavailable ? <FaLock className="w-4 h-4" /> : (
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -584,21 +685,41 @@ function BWBookingForm() {
           Availabilities
         </h3>
 
-        {isResourceUnavailable && (
-          <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-6 shadow-sm relative z-10">
-            <div className="flex items-start gap-3 text-orange-700">
-              <FaLock className="w-5 h-5 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="font-bold mb-1">Resource currently {selectedResourceStatus.status.toLowerCase()}</p>
-                <p className="text-sm text-orange-600/90 leading-relaxed">
-                  {selectedResourceStatus.description || "This resource is currently unavailable for booking."}
-                </p>
-              </div>
+        {formData.resourceType && resourcesForSelectedType.length > 0 && (
+          <div className="mb-5 bg-white border border-slate-200 rounded-xl p-3 relative z-10 shadow-sm">
+            <p className="text-xs uppercase tracking-wide font-semibold text-slate-500 mb-2">
+              {TYPE_LABELS[formData.resourceType]} Resources and Max Attendance
+            </p>
+            <div className="max-h-36 overflow-y-auto pr-1 space-y-1">
+              {resourcesForSelectedType.map((resourceName) => {
+                const resourceMax = RESOURCE_MAX_ATTENDEES[resourceName] ?? selectedTypeMax;
+                return (
+                  <div
+                    key={resourceName}
+                    className={`flex items-center justify-between rounded-lg px-2 py-1.5 text-xs border ${formData.resourceName === resourceName ? "border-teal-200 bg-teal-50 text-teal-800" : "border-slate-100 bg-slate-50 text-slate-700"}`}
+                  >
+                    <span className="font-medium">{resourceName}</span>
+                    <span className="font-semibold">Max {resourceMax ?? "-"}</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
-        
-        {!formData.resourceType || !formData.bookingDate ? (
+
+        {isResourceUnavailable ? (
+          <div className="flex-1 flex flex-col items-center justify-center text-center py-12 px-6 bg-gradient-to-tr from-orange-50/70 to-white rounded-3xl border border-orange-200 shadow-sm relative overflow-hidden transition-all">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-orange-100/40 via-transparent to-transparent pointer-events-none"></div>
+
+            <div className="bg-orange-100/80 p-4 rounded-2xl mb-5 shadow-[inset_0_2px_4px_rgba(255,255,255,0.8)] border border-orange-200 backdrop-blur-sm relative z-10">
+              <FaLock className="w-10 h-10 text-orange-600" />
+            </div>
+            <h4 className="text-orange-800 font-extrabold text-xl tracking-tight mb-2 relative z-10">Currently Occupied</h4>
+            <p className="text-[13px] leading-relaxed text-orange-700/90 font-medium max-w-[260px] px-2 relative z-10">
+              {selectedResourceStatus?.description || "This resource is currently unavailable for booking."}
+            </p>
+          </div>
+        ) : !formData.resourceType || !formData.bookingDate ? (
           <div className="flex-1 flex flex-col items-center justify-center text-center text-slate-500 py-12 px-6 bg-white rounded-2xl border-2 border-dashed border-slate-200 shadow-sm relative z-10 transition-all hover:border-teal-200/60 duration-300">
             <div className="bg-gradient-to-tr from-slate-50 to-slate-100 p-4 rounded-2xl mb-5 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] border border-slate-200">
               <svg className="w-10 h-10 text-slate-400 stroke-slate-400/80" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
@@ -607,6 +728,18 @@ function BWBookingForm() {
             </div>
             <p className="font-semibold text-slate-700 text-lg mb-2">No Schedule Selected</p>
             <p className="text-sm leading-relaxed text-slate-500 max-w-[200px]">Select a Resource Type and Booking Date to view availabilities.</p>
+          </div>
+        ) : isPastTimeInvalid ? (
+          <div className="flex-1 flex flex-col items-center justify-center text-center py-12 px-6 bg-gradient-to-tr from-rose-50/70 to-white rounded-3xl border border-rose-200 shadow-sm relative overflow-hidden transition-all">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-rose-100/40 via-transparent to-transparent pointer-events-none"></div>
+
+            <div className="bg-rose-100/80 p-4 rounded-2xl mb-5 shadow-[inset_0_2px_4px_rgba(255,255,255,0.8)] border border-rose-200 backdrop-blur-sm relative z-10">
+              <FaExclamationCircle className="w-10 h-10 text-rose-600" />
+            </div>
+            <h4 className="text-rose-800 font-extrabold text-xl tracking-tight mb-2 relative z-10">Cannot Book</h4>
+            <p className="text-[13px] leading-relaxed text-rose-700/90 font-medium max-w-[260px] px-2 relative z-10">
+              {timeValidationMessage}
+            </p>
           </div>
         ) : isLoadingSlots ? (
           <div className="flex-1 flex justify-center items-center py-10">
