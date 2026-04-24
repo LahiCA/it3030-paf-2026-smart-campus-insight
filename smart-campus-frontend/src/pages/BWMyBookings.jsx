@@ -16,6 +16,8 @@ function BWMyBookings() {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [actionLoadingId, setActionLoadingId] = useState("");
+  const [filterDate, setFilterDate] = useState("");
+  const [filterStatus, setFilterStatus] = useState("ALL");
 
   const fetchBookings = async (userIdToFetch) => {
     if (!userIdToFetch) return;
@@ -94,6 +96,12 @@ function BWMyBookings() {
     }
   };
 
+  const filteredBookings = bookings.filter((booking) => {
+    const statusMatches = filterStatus === "ALL" || booking.status === filterStatus;
+    const dateMatches = !filterDate || booking.bookingDate === filterDate;
+    return statusMatches && dateMatches;
+  });
+
   return (
     <div>
       {successMessage && (
@@ -108,9 +116,56 @@ function BWMyBookings() {
         </div>
       )}
 
+      <div className="mb-4 bg-white rounded-2xl shadow-md p-4 border border-slate-100">
+        <div className="flex flex-col md:flex-row md:items-end gap-3">
+          <div className="flex-1">
+            <label htmlFor="my-bookings-filter-date" className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">
+              Filter by Date
+            </label>
+            <input
+              id="my-bookings-filter-date"
+              type="date"
+              value={filterDate}
+              onChange={(e) => setFilterDate(e.target.value)}
+              className="w-full border border-slate-300 rounded-lg p-2.5 focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
+            />
+          </div>
+
+          <div className="flex-1">
+            <label htmlFor="my-bookings-filter-status" className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">
+              Filter by Status
+            </label>
+            <select
+              id="my-bookings-filter-status"
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="w-full border border-slate-300 rounded-lg p-2.5 focus:outline-none focus:ring-2 focus:ring-teal-400 transition bg-white"
+            >
+              <option value="ALL">All Statuses</option>
+              <option value="PENDING">Pending</option>
+              <option value="APPROVED">Approved</option>
+              <option value="REJECTED">Rejected</option>
+              <option value="CANCELLED">Cancelled</option>
+              <option value="CHECKED_IN">Checked In</option>
+            </select>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              setFilterDate("");
+              setFilterStatus("ALL");
+            }}
+            className="md:w-auto w-full border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 px-4 py-2.5 rounded-lg font-semibold transition"
+          >
+            Clear Filters
+          </button>
+        </div>
+      </div>
+
       {currentUserId ? (
         <BWBookingTable
-          bookings={bookings}
+          bookings={filteredBookings}
           onCancelBooking={handleCancelBooking}
           onDeleteBooking={handleDeleteBooking}
           actionLoadingId={actionLoadingId}
