@@ -41,23 +41,33 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class TicketService {
 
+    // Role constants
     private static final String ROLE_ADMIN = "ADMIN";
     private static final String ROLE_TECHNICIAN = "TECHNICIAN";
     private static final String ROLE_LECTURER = "LECTURER";
     private static final String ROLE_USER = "USER";
+
+    // Ticket status constants
     private static final String STATUS_OPEN = "OPEN";
     private static final String STATUS_IN_PROGRESS = "IN_PROGRESS";
     private static final String STATUS_RESOLVED = "RESOLVED";
     private static final String STATUS_CLOSED = "CLOSED";
     private static final String STATUS_REJECTED = "REJECTED";
+
+    // File upload limits
     private static final int MAX_ATTACHMENTS = 3;
     private static final long MAX_IMAGE_SIZE_BYTES = 5L * 1024 * 1024;
+
+    // Roles allowed to update ticket status
     private static final Set<String> STATUS_MANAGERS = Set.of(ROLE_ADMIN, ROLE_TECHNICIAN);
 
+    // Repository and service dependencies
     private final TicketRepository ticketRepository;
     private final CommentRepository commentRepository;
     private final TicketImageRepository ticketImageRepository;
     private final NotificationService notificationService;
+
+    // Folder to store uploaded images
     private final Path uploadDirectory = Paths.get(System.getProperty("user.dir"), "uploads");
 
     public TicketService(
@@ -71,6 +81,7 @@ public class TicketService {
         this.notificationService = notificationService;
     }
 
+    // Create a new ticket
     public Ticket createTicket(TicketCreateRequest request) {
         LocalDateTime now = LocalDateTime.now();
         Ticket ticket = Ticket.builder()
@@ -89,6 +100,7 @@ public class TicketService {
         return hydrate(ticketRepository.save(ticket));
     }
 
+    // Get all tickets (ADMIN only)
     public List<Ticket> getAllTickets(String requesterRole) {
         requireRole(requesterRole, ROLE_ADMIN);
         return ticketRepository.findAll().stream()
@@ -97,22 +109,26 @@ public class TicketService {
                 .toList();
     }
 
+    // Get single ticket by ID
     public Ticket getTicketById(String id) {
         return hydrate(findTicket(id));
     }
 
+    // Get tickets created by a specific user
     public List<Ticket> getTicketsByUserId(String userId) {
         return ticketRepository.findByUserIdOrderByCreatedAtDesc(userId).stream()
                 .map(this::hydrate)
                 .toList();
     }
 
+    // Get tickets assigned to a technician
     public List<Ticket> getTicketsAssignedTo(String assignedTo, String requesterRole, String requesterDisplayId) {
         requireAnyRole(requesterRole, Set.of(ROLE_ADMIN, ROLE_TECHNICIAN));
         String normalizedRequesterRole = normalize(requesterRole);
         String normalizedAssignedTo = assignedTo == null ? "" : assignedTo.trim();
         String normalizedRequesterDisplayId = requesterDisplayId == null ? "" : requesterDisplayId.trim();
 
+        // Technician can only view their own tickets
         if (ROLE_TECHNICIAN.equals(normalizedRequesterRole)
                 && !normalizedAssignedTo.equalsIgnoreCase(normalizedRequesterDisplayId)) {
             throw new RuntimeException("Technicians can only view tickets assigned to themselves");
@@ -123,6 +139,7 @@ public class TicketService {
                 .toList();
     }
 
+    // Update ticket details
     public Ticket updateTicket(String id, TicketUpdateRequest request, String requesterUserId, String requesterRole) {
         Ticket ticket = findTicket(id);
         if (!ROLE_ADMIN.equals(normalize(requesterRole)) && !Objects.equals(ticket.getUserId(), requesterUserId)) {
@@ -142,6 +159,7 @@ public class TicketService {
         return hydrate(ticketRepository.save(ticket));
     }
 
+    // Delete ticket (ADMIN only)
     public void deleteTicket(String id, String requesterRole) {
         requireRole(requesterRole, ROLE_ADMIN);
         Ticket ticket = findTicket(id);
@@ -154,6 +172,7 @@ public class TicketService {
         ticketRepository.delete(ticket);
     }
 
+    // Update ticket status (ADMIN / TECHNICIAN)
     public Ticket updateStatus(String id, StatusUpdateRequest request, String requesterRole,
             String requesterDisplayId) {
         requireAnyRole(requesterRole, STATUS_MANAGERS);
@@ -161,6 +180,7 @@ public class TicketService {
         String nextStatus = normalize(request.getStatus());
         String normalizedRequesterRole = normalize(requesterRole);
 
+        // Technician restrictions
         if (ROLE_TECHNICIAN.equals(normalizedRequesterRole)) {
             if (!StringUtils.hasText(ticket.getAssignedTo()) || !ticket.getAssignedTo().trim()
                     .equalsIgnoreCase(requesterDisplayId == null ? "" : requesterDisplayId.trim())) {
@@ -171,6 +191,7 @@ public class TicketService {
             }
         }
 
+        // Validate status flow
         validateTransition(ticket.getStatus(), nextStatus);
 
         if (STATUS_RESOLVED.equals(nextStatus) && !StringUtils.hasText(request.getResolutionNotes())) {
@@ -181,6 +202,8 @@ public class TicketService {
         }
 
         LocalDateTime now = LocalDateTime.now();
+
+        // Set timestamps
         if (STATUS_IN_PROGRESS.equals(nextStatus) && ticket.getFirstResponseAt() == null) {
             ticket.setFirstResponseAt(now);
         }
@@ -188,6 +211,7 @@ public class TicketService {
             ticket.setResolvedAt(now);
         }
 
+        // Update status and details
         ticket.setStatus(nextStatus);
         if (StringUtils.hasText(request.getResolutionNotes())) {
             ticket.setResolutionNotes(request.getResolutionNotes().trim());
@@ -203,6 +227,7 @@ public class TicketService {
 
         Ticket saved = hydrate(ticketRepository.save(ticket));
 
+        // Send notification to user
         try {
             String statusLabel = nextStatus.replace("_", " ");
             String notifMsg;
@@ -430,17 +455,20 @@ public class TicketService {
         return MediaType.parseMediaType(contentType);
     }
 
+    // Find ticket or throw error
     private Ticket findTicket(String id) {
         return ticketRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Ticket not found"));
     }
 
+    // Attach comments and images to ticket
     private Ticket hydrate(Ticket ticket) {
         ticket.setAttachments(ticketImageRepository.findByTicketIdOrderByUploadedAtAsc(ticket.getId()));
         ticket.setComments(commentRepository.findByTicketIdOrderByCreatedAtAsc(ticket.getId()));
         return ticket;
     }
 
+    // Validate allowed status transitions
     private void validateTransition(String currentStatus, String nextStatus) {
         String normalizedCurrent = normalize(currentStatus);
         if (STATUS_REJECTED.equals(normalizedCurrent) || STATUS_CLOSED.equals(normalizedCurrent)) {
@@ -459,6 +487,7 @@ public class TicketService {
         }
     }
 
+    // Validate uploaded image
     private void validateImage(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             throw new RuntimeException("Uploaded image cannot be empty");
@@ -490,12 +519,14 @@ public class TicketService {
         return value == null ? "" : value.trim().toUpperCase();
     }
 
+    // Update ticket timestamp
     private void touchTicket(String ticketId) {
         Ticket ticket = findTicket(ticketId);
         ticket.setUpdatedAt(LocalDateTime.now());
         ticketRepository.save(ticket);
     }
 
+    // Delete file from storage
     private void deleteStoredFile(String filePath) {
         try {
             if (StringUtils.hasText(filePath)) {
