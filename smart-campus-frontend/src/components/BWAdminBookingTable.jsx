@@ -8,6 +8,7 @@ import BWBookingStatusBadge from "./BWBookingStatusBadge";
  */
 function BWAdminBookingTable({
   bookings,
+  allBookings,
   onApproveBooking,
   onRejectBooking,
   onDeleteBooking,
@@ -16,6 +17,36 @@ function BWAdminBookingTable({
 }) {
   const [rejectingId, setRejectingId] = useState("");
   const [rejectReason, setRejectReason] = useState("");
+
+  const toMinutes = (timeValue) => {
+    if (!timeValue) return NaN;
+    const [hourPart, minutePart] = String(timeValue).split(":");
+    const hours = Number(hourPart);
+    const minutes = Number(minutePart);
+    if (Number.isNaN(hours) || Number.isNaN(minutes)) return NaN;
+    return hours * 60 + minutes;
+  };
+
+  const isTimeOverlapping = (startA, endA, startB, endB) => startA < endB && endA > startB;
+
+  const getApprovalConflicts = (targetBooking) => {
+    const sourceBookings = Array.isArray(allBookings) ? allBookings : bookings;
+    const targetStart = toMinutes(targetBooking.startTime);
+    const targetEnd = toMinutes(targetBooking.endTime);
+
+    return sourceBookings.filter((booking) => {
+      if (booking.id === targetBooking.id) return false;
+      if (booking.bookingDate !== targetBooking.bookingDate) return false;
+      if (booking.resourceName !== targetBooking.resourceName) return false;
+      if (!(booking.status === "APPROVED" || booking.status === "CHECKED_IN")) return false;
+
+      const existingStart = toMinutes(booking.startTime);
+      const existingEnd = toMinutes(booking.endTime);
+      if ([targetStart, targetEnd, existingStart, existingEnd].some(Number.isNaN)) return false;
+
+      return isTimeOverlapping(targetStart, targetEnd, existingStart, existingEnd);
+    });
+  };
 
   useEffect(() => {
     if (highlightedBookingId) {
@@ -147,6 +178,31 @@ function BWAdminBookingTable({
                 <td className="px-6 py-5 text-right w-56">
                   {booking.status === "PENDING" && (
                     <div className="flex flex-col gap-2 items-end">
+                      {(() => {
+                        const conflicts = getApprovalConflicts(booking);
+                        if (conflicts.length === 0) return null;
+
+                        return (
+                          <div
+                            className="w-full max-w-[300px] rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-left"
+                            title={conflicts
+                              .map((c) => `${c.startTime}-${c.endTime} (${c.userId}, ${c.status})`)
+                              .join("; ")}
+                          >
+                            <p className="text-[11px] font-semibold uppercase tracking-wide text-red-700">
+                              Conflict: already approved
+                            </p>
+                            <p className="mt-0.5 text-xs text-red-700 leading-relaxed">
+                              {conflicts
+                                .map((c) => `${c.startTime}-${c.endTime}`)
+                                .slice(0, 2)
+                                .join(", ")}
+                              {conflicts.length > 2 ? ` +${conflicts.length - 2} more` : ""}
+                            </p>
+                          </div>
+                        );
+                      })()}
+
                       {!rejectingId && (
                         <div className="flex gap-2 justify-end w-full">
                           <button

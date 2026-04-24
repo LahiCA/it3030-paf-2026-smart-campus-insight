@@ -28,6 +28,27 @@ function BWAdminBookingList() {
   // Focus variables from the calendar widget
   const [highlightedBookingId, setHighlightedBookingId] = useState(null);
 
+  const toMinutes = (timeValue) => {
+    if (!timeValue) return NaN;
+    const [hourPart, minutePart] = String(timeValue).split(":");
+    const hours = Number(hourPart);
+    const minutes = Number(minutePart);
+    if (Number.isNaN(hours) || Number.isNaN(minutes)) return NaN;
+    return hours * 60 + minutes;
+  };
+
+  const isTimeOverlapping = (startA, endA, startB, endB) => startA < endB && endA > startB;
+
+  const isPastBookingDate = (bookingDateValue) => {
+    if (!bookingDateValue) return false;
+    const bookingDate = new Date(`${bookingDateValue}T00:00:00`);
+    if (Number.isNaN(bookingDate.getTime())) return false;
+
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    return bookingDate < today;
+  };
+
   // Read all booking resources wrapper
   const fetchBookings = async () => {
     try {
@@ -68,16 +89,52 @@ function BWAdminBookingList() {
     setErrorMessage("");
     setActionLoadingId(bookingId);
 
+    const pendingBooking = bookings.find((booking) => booking.id === bookingId);
+    if (pendingBooking) {
+      const pendingStart = toMinutes(pendingBooking.startTime);
+      const pendingEnd = toMinutes(pendingBooking.endTime);
+
+      const conflictingApproved = bookings.filter((booking) => {
+        if (booking.id === bookingId) return false;
+        if (booking.bookingDate !== pendingBooking.bookingDate) return false;
+        if (booking.resourceName !== pendingBooking.resourceName) return false;
+        if (!(booking.status === "APPROVED" || booking.status === "CHECKED_IN")) return false;
+
+        const existingStart = toMinutes(booking.startTime);
+        const existingEnd = toMinutes(booking.endTime);
+        if ([pendingStart, pendingEnd, existingStart, existingEnd].some(Number.isNaN)) return false;
+
+        return isTimeOverlapping(pendingStart, pendingEnd, existingStart, existingEnd);
+      });
+
+      if (conflictingApproved.length > 0) {
+        const details = conflictingApproved
+          .map((booking) => `${booking.startTime}-${booking.endTime} (${booking.userId}, ${booking.status})`)
+          .join("; ");
+
+        const conflictMessage = `Cannot approve this request. Already approved at this time: ${details}`;
+        setErrorMessage(conflictMessage);
+        window.alert(conflictMessage);
+        setActionLoadingId("");
+        return;
+      }
+    }
+
     try {
       await approveBWBooking(bookingId);
       setSuccessMessage("Booking approved successfully.");
       await fetchBookings();
     } catch (error) {
-      setErrorMessage(
+      const apiMessage =
         error.response?.data?.message ||
-          error.response?.data?.error ||
-          "Failed to approve booking"
-      );
+        error.response?.data?.error ||
+        "Failed to approve booking";
+
+      setErrorMessage(apiMessage);
+
+      if (apiMessage.toLowerCase().includes("cannot approve") || apiMessage.toLowerCase().includes("already has approved")) {
+        window.alert(apiMessage);
+      }
     } finally {
       setActionLoadingId("");
     }
@@ -108,6 +165,30 @@ function BWAdminBookingList() {
   // Forces reason text validation via basic DOM window prompts
   const handleDeleteBooking = async (booking) => {
     let reasonText = "";
+
+    if (isPastBookingDate(booking.bookingDate)) {
+      const confirmPastDelete = window.confirm("Are you sure you want to delete this past booking?");
+      if (!confirmPastDelete) return;
+
+      setSuccessMessage("");
+      setErrorMessage("");
+      setActionLoadingId(booking.id);
+
+      try {
+        await deleteBWBooking(booking.id);
+        setSuccessMessage("Booking deleted successfully.");
+        await fetchBookings();
+      } catch (error) {
+        setErrorMessage(
+          error.response?.data?.message ||
+            error.response?.data?.error ||
+            "Failed to delete booking"
+        );
+      } finally {
+        setActionLoadingId("");
+      }
+      return;
+    }
     
     if (booking.status === "APPROVED") {
       const input = window.prompt("Why do you want to cancel this approved booking?");
@@ -206,6 +287,7 @@ function BWAdminBookingList() {
 
       <BWAdminBookingTable
         bookings={filteredBookings}
+        allBookings={bookings}
         onApproveBooking={handleApproveBooking}
         onRejectBooking={handleRejectBooking}
         onDeleteBooking={handleDeleteBooking}
