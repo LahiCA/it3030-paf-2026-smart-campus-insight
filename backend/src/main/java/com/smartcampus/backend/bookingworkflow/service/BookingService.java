@@ -22,7 +22,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * Module B: Booking Management (Member 2)
+
  * Core business logic and workflow management for handling resource reservations.
  * Enforces anti-overlapping logic, manages status transitions, and interfaces with the Notification Service.
  */

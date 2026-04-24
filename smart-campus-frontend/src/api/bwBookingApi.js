@@ -1,7 +1,7 @@
 import axios from "axios";
 
 /**
- * Module B: Booking Management API Client 
+ *  
  * Handles all Axios HTTP requests out to the Spring Boot REST API
  */
 const API_BASE_URL = "http://localhost:8080/api/bookings";
