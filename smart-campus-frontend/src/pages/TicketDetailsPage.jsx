@@ -256,12 +256,16 @@ export default function TicketDetailsPage() {
 
                             {ticket.attachments?.length ? (
                                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                                    {ticket.attachments.map((attachment) => (
-                                        <a key={attachment.id} href={getAttachmentUrl(attachment.id)} target="_blank" rel="noreferrer" className="overflow-hidden rounded-3xl border border-slate-200 bg-slate-50">
-                                            <img src={getAttachmentUrl(attachment.id)} alt={attachment.fileName} className="h-44 w-full object-cover" />
-                                            <div className="px-4 py-3 text-sm font-semibold text-slate-700">{attachment.fileName}</div>
-                                        </a>
-                                    ))}
+                                    {ticket.attachments.map((attachment) => {
+                                        // Extract original file name by removing UUID prefix
+                                        const originalFileName = attachment.fileName.split('_').slice(1).join('_') || attachment.fileName;
+                                        return (
+                                            <a key={attachment.id} href={getAttachmentUrl(attachment.id)} target="_blank" rel="noreferrer" className="overflow-hidden rounded-3xl border border-slate-200 bg-slate-50">
+                                                <img src={getAttachmentUrl(attachment.id)} alt={originalFileName} className="h-44 w-full object-cover" />
+                                                <div className="px-4 py-3 text-sm font-semibold text-slate-700">{originalFileName}</div>
+                                            </a>
+                                        );
+                                    })}
                                 </div>
                             ) : (
                                 <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center text-sm text-slate-500">

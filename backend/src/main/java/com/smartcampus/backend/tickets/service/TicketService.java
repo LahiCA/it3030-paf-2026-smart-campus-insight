@@ -19,8 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.smartcampus.backend.enums.NotificationType;
-import com.smartcampus.backend.service.NotificationService;
+import com.smartcampus.backend.entities.User;
+import com.smartcampus.backend.repository.UserRepository;
 import com.smartcampus.backend.tickets.dto.AssignTechnicianRequest;
 import com.smartcampus.backend.tickets.dto.CommentCreateRequest;
 import com.smartcampus.backend.tickets.dto.CommentUpdateRequest;
@@ -34,6 +34,8 @@ import com.smartcampus.backend.tickets.model.TicketImage;
 import com.smartcampus.backend.tickets.repository.CommentRepository;
 import com.smartcampus.backend.tickets.repository.TicketImageRepository;
 import com.smartcampus.backend.tickets.repository.TicketRepository;
+import com.smartcampus.backend.service.NotificationService;
+import com.smartcampus.backend.enums.NotificationType;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -65,6 +67,7 @@ public class TicketService {
     private final TicketRepository ticketRepository;
     private final CommentRepository commentRepository;
     private final TicketImageRepository ticketImageRepository;
+    private final UserRepository userRepository;
     private final NotificationService notificationService;
 
     // Folder to store uploaded images
@@ -74,10 +77,12 @@ public class TicketService {
             TicketRepository ticketRepository,
             CommentRepository commentRepository,
             TicketImageRepository ticketImageRepository,
+            UserRepository userRepository,
             NotificationService notificationService) {
         this.ticketRepository = ticketRepository;
         this.commentRepository = commentRepository;
         this.ticketImageRepository = ticketImageRepository;
+        this.userRepository = userRepository;
         this.notificationService = notificationService;
     }
 
@@ -265,7 +270,22 @@ public class TicketService {
             throw new RuntimeException("Closed or rejected tickets cannot be assigned");
         }
 
-        ticket.setAssignedTo(request.getAssignedTo().trim());
+        // Validate technician
+        String technicianId = request.getAssignedTo().trim();
+        User technician = userRepository.findByDisplayId(technicianId)
+                .orElseThrow(() -> new RuntimeException("Technician not found"));
+        if (technician == null) {
+            throw new RuntimeException("Technician not found");
+        }
+        if (!ROLE_TECHNICIAN.equals(technician.getRole())) {
+            throw new RuntimeException("User is not a technician");
+        }
+        // Optional: check if active (assuming isEnabled indicates active)
+        if (!technician.isEnabled()) {
+            throw new RuntimeException("Technician is not available");
+        }
+
+        ticket.setAssignedTo(technicianId);
         ticket.setUpdatedAt(LocalDateTime.now());
 
         if (STATUS_OPEN.equals(ticket.getStatus())) {
@@ -453,6 +473,26 @@ public class TicketService {
         TicketImage image = getImageMetadata(imageId);
         String contentType = image.getContentType() == null ? MediaType.IMAGE_JPEG_VALUE : image.getContentType();
         return MediaType.parseMediaType(contentType);
+    }
+
+    // Delete an image attachment
+    public void deleteImage(String imageId, String requesterRole) {
+        TicketImage image = getImageMetadata(imageId);
+        Ticket ticket = findTicket(image.getTicketId());
+
+        // Check ticket status: allow delete only if OPEN or IN_PROGRESS
+        String status = ticket.getStatus();
+        if (!(STATUS_OPEN.equals(status) || STATUS_IN_PROGRESS.equals(status))) {
+            // Optional: allow ADMIN override
+            if (!ROLE_ADMIN.equals(normalize(requesterRole))) {
+                throw new RuntimeException("Images can only be deleted when ticket is OPEN or IN_PROGRESS");
+            }
+        }
+
+        // Delete file and record
+        deleteStoredFile(image.getFilePath());
+        ticketImageRepository.delete(image);
+        touchTicket(image.getTicketId());
     }
 
     // Find ticket or throw error

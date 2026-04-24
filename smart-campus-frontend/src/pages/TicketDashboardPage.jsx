@@ -113,7 +113,7 @@ export default function TicketDashboardPage() {
                 ) : (
                     <section className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                         {filteredTickets.length ? filteredTickets.map((ticket) => (
-                            <TicketCard key={ticket.id} ticket={ticket} />
+                            <TicketCard key={ticket.id} ticket={ticket} role={role} />
                         )) : (
                             <div className="rounded-[2rem] border border-dashed border-slate-300 bg-white px-6 py-16 text-center text-slate-500 md:col-span-2 xl:col-span-3">
                                 No tickets match the selected filters.
