@@ -7,6 +7,11 @@ import {
 import BWBookingStatusBadge from "../components/BWBookingStatusBadge";
 import { format } from "date-fns";
 
+/**
+ *
+ * Renders the Admin Booking Management dashboard.
+ * Allows administrators to review, approve, reject, or filter resource bookings.
+ */
 function BWAdminBookings() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);

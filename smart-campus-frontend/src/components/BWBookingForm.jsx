@@ -41,6 +41,11 @@ const RESOURCE_NAMES_BY_TYPE = {
   OTHER: ['Cafeteria', 'Student Center', 'Medical Center', 'Parking Lot A', 'Other'],
 };
 
+/**
+ 
+ * Main complex form for creating new resource bookings.
+ * Handles validation, collision warnings, and submission to the API.
+ */
 function BWBookingForm() {
   const { user } = useAuth();
   
@@ -127,6 +132,46 @@ function BWBookingForm() {
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const bookingDate = formData.bookingDate ? new Date(`${formData.bookingDate}T00:00:00`) : null;
+
+  const pastDateInvalid = Boolean(bookingDate && bookingDate < today);
+
+  const startTimeInvalid = Boolean(
+    !pastDateInvalid &&
+    bookingDate &&
+    bookingDate.getTime() === today.getTime() &&
+    formData.startTime &&
+    (() => {
+      const [startHour, startMinute] = formData.startTime.split(":").map(Number);
+      const startAt = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startHour, startMinute);
+      return startAt <= now;
+    })()
+  );
+
+  const endTimeInvalid = Boolean(
+    !pastDateInvalid &&
+    bookingDate &&
+    bookingDate.getTime() === today.getTime() &&
+    formData.endTime &&
+    (() => {
+      const [endHour, endMinute] = formData.endTime.split(":").map(Number);
+      const endAt = new Date(now.getFullYear(), now.getMonth(), now.getDate(), endHour, endMinute);
+      return endAt <= now;
+    })()
+  );
+
+  const timeValidationMessage = pastDateInvalid
+    ? "Booking date is in the past. Please select a future date."
+    : startTimeInvalid
+    ? "Start time is in the past. Please select a future time."
+    : endTimeInvalid
+    ? "End time is in the past. Please select a future time."
+    : "";
+
+  const isPastTimeInvalid = Boolean(timeValidationMessage);
+
   const isValidUserId = (userId) => {
     // Keep it valid as long as it exists (we trust displayId from auth context)
     return userId && userId.trim() !== "";
@@ -155,6 +200,11 @@ function BWBookingForm() {
 
     if (!isValidUserId(formData.userId)) {
       setErrorMessage("Unable to verify User ID. Please try logging in again.");
+      return;
+    }
+
+    if (isPastTimeInvalid) {
+      setErrorMessage(timeValidationMessage);
       return;
     }
 
@@ -375,7 +425,7 @@ function BWBookingForm() {
                 name="bookingDate"
                 value={formData.bookingDate}
                 onChange={handleChange}
-                className="w-full border border-slate-300 rounded-lg p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
+                className={`w-full border rounded-lg p-3 pr-10 focus:outline-none focus:ring-2 transition ${pastDateInvalid ? "border-red-400 focus:ring-red-300" : "border-slate-300 focus:ring-teal-500"}`}
                 required
               />
             <div className="absolute inset-y-0 right-0 top-7 pr-3 flex items-center pointer-events-none">
@@ -383,6 +433,11 @@ function BWBookingForm() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
+            {pastDateInvalid && (
+              <p className="mt-1 text-xs text-red-600 font-medium">
+                {timeValidationMessage}
+              </p>
+            )}
           </div>
 
           {/* Expected Attendees / Quantity */}
@@ -422,7 +477,7 @@ function BWBookingForm() {
               name="startTime"
               value={formData.startTime}
               onChange={handleChange}
-              className="w-full border border-slate-300 rounded-lg p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
+              className={`w-full border rounded-lg p-3 pr-10 focus:outline-none focus:ring-2 transition ${startTimeInvalid ? "border-red-400 focus:ring-red-300" : "border-slate-300 focus:ring-teal-500"}`}
               required
             />
             <div className="absolute inset-y-0 right-0 top-7 pr-3 flex items-center pointer-events-none">
@@ -430,6 +485,11 @@ function BWBookingForm() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
+            {startTimeInvalid && (
+              <p className="mt-1 text-xs text-red-600 font-medium">
+                {timeValidationMessage}
+              </p>
+            )}
           </div>
 
           {/* End Time */}
@@ -441,7 +501,7 @@ function BWBookingForm() {
               name="endTime"
               value={formData.endTime}
               onChange={handleChange}
-              className="w-full border border-slate-300 rounded-lg p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
+              className={`w-full border rounded-lg p-3 pr-10 focus:outline-none focus:ring-2 transition ${endTimeInvalid ? "border-red-400 focus:ring-red-300" : "border-slate-300 focus:ring-teal-500"}`}
               required
             />
             <div className="absolute inset-y-0 right-0 top-7 pr-3 flex items-center pointer-events-none">
@@ -449,6 +509,11 @@ function BWBookingForm() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
+            {endTimeInvalid && (
+              <p className="mt-1 text-xs text-red-600 font-medium">
+                {timeValidationMessage}
+              </p>
+            )}
           </div>
         </div>
 
@@ -491,8 +556,8 @@ function BWBookingForm() {
           
           <button
             type="submit"
-            disabled={isResourceUnavailable}
-            className={`w-full sm:w-auto bg-gradient-to-r px-8 py-2.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(13,148,136,0.25)] text-sm border ${isResourceUnavailable ? 'from-slate-400 to-slate-400 text-slate-200 cursor-not-allowed' : 'from-teal-600 to-teal-500 hover:from-teal-700 hover:to-teal-600 text-white transform hover:scale-[1.02] active:scale-[0.98] hover:shadow-[0_6px_16px_rgba(13,148,136,0.35)] border-teal-500/20'}`}
+            disabled={isResourceUnavailable || isPastTimeInvalid}
+            className={`w-full sm:w-auto bg-gradient-to-r px-8 py-2.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(13,148,136,0.25)] text-sm border ${(isResourceUnavailable || isPastTimeInvalid) ? 'from-slate-400 to-slate-400 text-slate-200 cursor-not-allowed' : 'from-teal-600 to-teal-500 hover:from-teal-700 hover:to-teal-600 text-white transform hover:scale-[1.02] active:scale-[0.98] hover:shadow-[0_6px_16px_rgba(13,148,136,0.35)] border-teal-500/20'}`}
           >
             {isResourceUnavailable ? <FaLock className="w-4 h-4" /> : (
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

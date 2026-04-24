@@ -1,8 +1,13 @@
 import { useEffect, useState } from "react";
-import { cancelBWBooking, getBWBookingsByUser } from "../api/bwBookingApi";
+import { cancelBWBooking, deleteBWBooking, getBWBookingsByUser } from "../api/bwBookingApi";
 import BWBookingTable from "../components/BWBookingTable";
 import { useAuth } from "../context/AuthContext";
 
+/**
+
+ * User dashboard displaying their personal resource bookings.
+ * Shows cancellation and checking status to basic roles.
+ */
 function BWMyBookings() {
   const { user } = useAuth();
   const currentUserId = user?.displayId;
@@ -30,14 +35,21 @@ function BWMyBookings() {
     }
   }, [currentUserId]);
 
-  const handleCancelBooking = async (bookingId) => {
-    const reason = window.prompt("Are you sure you want to cancel this booking?\nPlease provide a reason for cancellation:");
-    
-    // If user clicked cancel on the prompt or provided empty reason
-    if (reason === null) return;
-    if (reason.trim() === "") {
-      setErrorMessage("Cancellation reason is required.");
-      return;
+  const handleCancelBooking = async (bookingId, bookingStatus) => {
+    // If booking is pending, only ask for confirmation (no reason required)
+    let reason = null;
+    if (bookingStatus === "PENDING") {
+      const ok = window.confirm("Are you sure you want to cancel this pending booking?");
+      if (!ok) return;
+    } else {
+      // APPROVED bookings still require a reason
+      reason = window.prompt("Are you sure you want to cancel this booking?\nPlease provide a reason for cancellation:");
+      if (reason === null) return;
+      if (reason.trim() === "") {
+        setErrorMessage("Cancellation reason is required.");
+        return;
+      }
+      reason = reason.trim();
     }
 
     setErrorMessage("");
@@ -45,7 +57,7 @@ function BWMyBookings() {
     setActionLoadingId(bookingId);
 
     try {
-      await cancelBWBooking(bookingId, reason.trim());
+      await cancelBWBooking(bookingId, reason);
       setSuccessMessage("Booking cancelled successfully.");
       await fetchBookings(currentUserId);
     } catch (error) {
@@ -53,6 +65,29 @@ function BWMyBookings() {
         error.response?.data?.message ||
           error.response?.data?.error ||
           "Failed to cancel booking"
+      );
+    } finally {
+      setActionLoadingId("");
+    }
+  };
+
+  const handleDeleteBooking = async (bookingId) => {
+    const ok = window.confirm("Delete this booking from your history?");
+    if (!ok) return;
+
+    setErrorMessage("");
+    setSuccessMessage("");
+    setActionLoadingId(bookingId);
+
+    try {
+      await deleteBWBooking(bookingId);
+      setSuccessMessage("Booking deleted successfully.");
+      await fetchBookings(currentUserId);
+    } catch (error) {
+      setErrorMessage(
+        error.response?.data?.message ||
+          error.response?.data?.error ||
+          "Failed to delete booking"
       );
     } finally {
       setActionLoadingId("");
@@ -77,6 +112,7 @@ function BWMyBookings() {
         <BWBookingTable
           bookings={bookings}
           onCancelBooking={handleCancelBooking}
+          onDeleteBooking={handleDeleteBooking}
           actionLoadingId={actionLoadingId}
         />
       ) : (
