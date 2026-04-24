@@ -46,10 +46,13 @@ export default function CreateTicketPage({ onTicketCreated, onClose, embedded = 
             nextErrors.category = "Please select a category";
         }
 
+        // ✅ FIXED: STRICT 10 DIGIT VALIDATION
+        const phoneDigits = values.contactNumber.replace(/\D/g, "");
+
         if (!values.contactNumber.trim()) {
             nextErrors.contactNumber = "Contact number is required";
-        } else if (!/^[0-9+()\-\s]{7,20}$/.test(values.contactNumber.trim())) {
-            nextErrors.contactNumber = "Invalid contact number format";
+        } else if (phoneDigits.length !== 10) {
+            nextErrors.contactNumber = "Contact number must be exactly 10 digits";
         }
 
         if (fileList.length > 3) {
@@ -125,7 +128,6 @@ export default function CreateTicketPage({ onTicketCreated, onClose, embedded = 
                 finalTicket = { ...ticket, attachments };
             }
 
-            // reset
             setForm(INITIAL_FORM);
             setFiles([]);
             setErrors({});
@@ -141,7 +143,6 @@ export default function CreateTicketPage({ onTicketCreated, onClose, embedded = 
         }
     };
 
-    // ---------------- RENDER HELPERS ----------------
     const showError = (field) => touched[field] && errors[field];
 
     return (
@@ -276,7 +277,10 @@ export default function CreateTicketPage({ onTicketCreated, onClose, embedded = 
 
                         <input
                             value={form.contactNumber}
-                            onChange={(e) => handleChange("contactNumber", e.target.value)}
+                            onChange={(e) => {
+                                const onlyDigits = e.target.value.replace(/\D/g, "").slice(0, 10);
+                                handleChange("contactNumber", onlyDigits);
+                            }}
                             onBlur={() => handleBlur("contactNumber")}
                             className="w-full rounded-2xl border px-4 py-3 text-sm outline-none transition focus:border-teal-400"
                         />
@@ -314,16 +318,6 @@ export default function CreateTicketPage({ onTicketCreated, onClose, embedded = 
                     >
                         {submitting ? "Submitting..." : "Create Ticket"}
                     </button>
-
-                    {onClose && (
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="rounded-full bg-slate-100 px-6 py-3 text-sm font-semibold text-slate-700"
-                        >
-                            Cancel
-                        </button>
-                    )}
                 </div>
             </form>
         </div>
