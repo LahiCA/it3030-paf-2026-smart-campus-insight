@@ -5,7 +5,7 @@ import { GOOGLE_CLIENT_ID, ROUTES } from './utils/constants';
 
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
-import { ChatbotProvider, FloatingChatButton, ChatbotPanel } from './chatbot';
+import { ChatbotProvider, FloatingChatButton, ChatbotPanel, ThemeToggleButton } from './chatbot';
 
 import PrivateRoute from './components/PrivateRouteTailwind';
 import Layout from './components/Layout';
@@ -125,6 +125,7 @@ function ChatbotWrapper() {
   if (location.pathname === ROUTES.LOGIN || location.pathname === '/') return null;
   return (
     <>
+      <ThemeToggleButton />
       <FloatingChatButton />
       <ChatbotPanel />
     </>
