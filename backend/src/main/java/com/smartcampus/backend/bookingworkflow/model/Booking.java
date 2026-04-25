@@ -1,4 +1,5 @@
 package com.smartcampus.backend.bookingworkflow.model;
+/*actual domain object stored/managed in database and business logic. */
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;

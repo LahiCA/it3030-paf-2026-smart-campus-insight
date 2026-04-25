@@ -19,9 +19,10 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
- * Module B: Booking Management (Member 2)
+
  * Core business logic and workflow management for handling resource reservations.
  * Enforces anti-overlapping logic, manages status transitions, and interfaces with the Notification Service.
  */
@@ -116,6 +117,30 @@ public class BookingService {
 
         if (booking.getStatus() != BookingStatus.PENDING) {
             throw new InvalidBookingException("Only pending bookings can be approved");
+        }
+
+        List<Booking> sameResourceSameDate = repository.findByResourceNameAndBookingDate(
+            booking.getResourceName(),
+            booking.getBookingDate());
+
+        List<Booking> approvedOverlaps = sameResourceSameDate.stream()
+            .filter(b -> !b.getId().equals(booking.getId()))
+            .filter(b -> b.getStatus() == BookingStatus.APPROVED || b.getStatus() == BookingStatus.CHECKED_IN)
+            .filter(b -> booking.getStartTime().isBefore(b.getEndTime()) && booking.getEndTime().isAfter(b.getStartTime()))
+            .toList();
+
+        if (!approvedOverlaps.isEmpty()) {
+            String conflictDetails = approvedOverlaps.stream()
+                .map(b -> String.format("%s to %s (user: %s, status: %s)",
+                    b.getStartTime(),
+                    b.getEndTime(),
+                    b.getUserId(),
+                    b.getStatus()))
+                .collect(Collectors.joining("; "));
+
+            throw new BookingConflictException(
+                "Cannot approve this request. This resource already has approved booking(s) for the selected time: "
+                    + conflictDetails);
         }
 
         booking.setStatus(BookingStatus.APPROVED);

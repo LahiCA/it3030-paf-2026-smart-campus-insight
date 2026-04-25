@@ -147,6 +147,15 @@ public class TicketController {
         return ticketService.getImages(id);
     }
 
+    // Delete an image attachment
+    @DeleteMapping("/images/{imageId}")
+    public ResponseEntity<Void> deleteImage(
+            @PathVariable String imageId,
+            @RequestHeader(name = "role", defaultValue = "USER") String role) {
+        ticketService.deleteImage(imageId, role);
+        return ResponseEntity.noContent().build();
+    }
+
     // View/download a specific attachment
     @GetMapping("/attachments/{imageId}")
     public ResponseEntity<Resource> viewAttachment(@PathVariable String imageId) {

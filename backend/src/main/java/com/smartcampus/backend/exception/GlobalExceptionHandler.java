@@ -1,3 +1,4 @@
+/*Catches thrown exceptions across controllers and converts them into clean HTTP responses */
 package com.smartcampus.backend.exception;
 
 import java.time.LocalDateTime;
