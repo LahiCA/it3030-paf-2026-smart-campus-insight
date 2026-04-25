@@ -4,6 +4,8 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
+/*Defines incoming request fields for creating a booking */
+
 @Data
 public class BookingRequestDto {
 
