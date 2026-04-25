@@ -22,3 +22,6 @@ logging:
     root: INFO
     "[com.smartcampus]": DEBUG
     "[org.springframework.security]": DEBUG
+
+upload:
+  dir: uploads
