@@ -77,6 +77,9 @@ function BWBookingTable({ bookings, onCancelBooking, onDeleteBooking, actionLoad
                       <div>
                         <p className="font-bold text-slate-800 text-base">{booking.resourceName}</p>
                         <p className="text-xs font-medium text-slate-500 uppercase tracking-widest">{booking.resourceType.replace("_", " ")}</p>
+                        <p className="text-xs text-slate-500 mt-1 max-w-[240px] truncate" title={booking.purpose || "No purpose provided"}>
+                          Purpose: {booking.purpose || "No purpose provided"}
+                        </p>
                       </div>
                     </div>
                   </td>
