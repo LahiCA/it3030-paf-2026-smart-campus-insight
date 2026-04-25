@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   FaThLarge,
@@ -11,15 +11,24 @@ import {
   FaGraduationCap,
   FaBuilding,
   FaChartBar,
-  FaFileExport
+  FaFileExport,
+  FaUserEdit,
+  FaTimes
 } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
+import { saveUser } from '../services/storage';
 
 const Sidebar = () => {
   const navigate = useNavigate();
-  const { user, logout, isAdmin } = useAuth();
+  const { user, setUser, logout, isAdmin } = useAuth();
   const { unreadCount } = useNotifications();
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [profileForm, setProfileForm] = useState({
+    firstName: '',
+    lastName: '',
+  });
+  const [profileError, setProfileError] = useState('');
 
   const displayName = user?.firstName && user?.lastName
     ? `${user.firstName} ${user.lastName}`
@@ -27,11 +36,64 @@ const Sidebar = () => {
 
   const roleDisplay = user?.role || 'USER';
 
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+
+    const fallbackParts = (user?.name || '').trim().split(/\s+/);
+    const fallbackFirstName = fallbackParts[0] || user?.email?.split('@')[0] || '';
+    const fallbackLastName = fallbackParts.length > 1 ? fallbackParts.slice(1).join(' ') : '';
+
+    setProfileForm({
+      firstName: user?.firstName || fallbackFirstName,
+      lastName: user?.lastName || fallbackLastName,
+    });
+  }, [user]);
+
   const handleLogout = async () => {
     if (window.confirm('Are you sure you want to logout?')) {
       await logout();
       navigate('/login', { replace: true });
     }
+  };
+
+  const handleOpenProfile = () => {
+    setProfileError('');
+    setIsProfileOpen(true);
+  };
+
+  const handleCloseProfile = () => {
+    setProfileError('');
+    setIsProfileOpen(false);
+  };
+
+  const handleProfileFieldChange = (event) => {
+    const { name, value } = event.target;
+    setProfileForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleProfileSave = (event) => {
+    event.preventDefault();
+
+    const firstName = profileForm.firstName.trim();
+    const lastName = profileForm.lastName.trim();
+
+    if (!firstName) {
+      setProfileError('First name is required.');
+      return;
+    }
+
+    const updatedUser = {
+      ...user,
+      firstName,
+      lastName,
+      name: `${firstName} ${lastName}`.trim(),
+    };
+
+    setUser(updatedUser);
+    saveUser(updatedUser);
+    handleCloseProfile();
   };
 
   const getDashboardPath = () => {
@@ -108,18 +170,126 @@ const Sidebar = () => {
 
       <div className="border-t border-slate-100 p-4">
         <div className="flex items-center justify-center gap-3 md:justify-start">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-teal-500 to-teal-800 text-sm font-semibold text-white">
-            {displayName.charAt(0).toUpperCase()}
-          </div>
-          <div className="hidden min-w-0 flex-1 md:block">
-            <div className="truncate whitespace-nowrap text-sm font-semibold text-slate-800">{displayName}</div>
-            <div className="text-xs font-medium text-teal-500">{roleDisplay}</div>
-          </div>
+          <button
+            type="button"
+            onClick={handleOpenProfile}
+            className="group flex min-w-0 flex-1 items-center gap-3 rounded-xl px-1.5 py-1.5 text-left transition hover:bg-slate-50"
+            title="Open profile management"
+          >
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-teal-500 to-teal-800 text-sm font-semibold text-white">
+              {displayName.charAt(0).toUpperCase()}
+            </div>
+            <div className="hidden min-w-0 flex-1 md:block">
+              <div className="truncate whitespace-nowrap text-sm font-semibold text-slate-800 group-hover:text-teal-700">{displayName}</div>
+              <div className="text-xs font-medium text-teal-500">{roleDisplay}</div>
+            </div>
+          </button>
           <button className="flex shrink-0 items-center justify-center rounded-lg p-2 text-slate-400 transition hover:bg-red-100 hover:text-red-500" onClick={handleLogout} title="Logout">
             <FaSignOutAlt size={16} />
           </button>
         </div>
       </div>
+
+      {isProfileOpen && (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white shadow-xl">
+            <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+              <div className="flex items-center gap-2 text-slate-800">
+                <FaUserEdit className="text-teal-600" />
+                <h2 className="text-lg font-bold">Profile Management</h2>
+              </div>
+              <button
+                type="button"
+                onClick={handleCloseProfile}
+                className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                title="Close"
+              >
+                <FaTimes size={14} />
+              </button>
+            </div>
+
+            <form onSubmit={handleProfileSave} className="space-y-4 px-5 py-5">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="firstName" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    First Name
+                  </label>
+                  <input
+                    id="firstName"
+                    name="firstName"
+                    value={profileForm.firstName}
+                    onChange={handleProfileFieldChange}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200"
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="lastName" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    Last Name
+                  </label>
+                  <input
+                    id="lastName"
+                    name="lastName"
+                    value={profileForm.lastName}
+                    onChange={handleProfileFieldChange}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Email</label>
+                <input
+                  value={user?.email || ''}
+                  disabled
+                  className="w-full cursor-not-allowed rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Role</label>
+                  <input
+                    value={user?.role || 'USER'}
+                    disabled
+                    className="w-full cursor-not-allowed rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-500"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">User ID</label>
+                  <input
+                    value={user?.displayId || '-'}
+                    disabled
+                    className="w-full cursor-not-allowed rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-500"
+                  />
+                </div>
+              </div>
+
+              {profileError && (
+                <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-600">
+                  {profileError}
+                </p>
+              )}
+
+              <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-4">
+                <button
+                  type="button"
+                  onClick={handleCloseProfile}
+                  className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-700"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </aside>
   );
 };
