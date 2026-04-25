@@ -60,3 +60,7 @@ logging:
     "[com.smartcampus.backend.service.NotificationService]": WARN
     "[com.smartcampus.backend.service.JwtTokenProvider]": WARN
     "[com.smartcampus.backend.config.JwtAuthenticationFilter]": WARN
+
+    
+  upload:
+    dir: uploads
