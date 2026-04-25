@@ -22,9 +22,11 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
-
- * Core business logic and workflow management for handling resource reservations.
- * Enforces anti-overlapping logic, manages status transitions, and interfaces with the Notification Service.
+ * 
+ * Core business logic and workflow management for handling resource
+ * reservations.
+ * Enforces anti-overlapping logic, manages status transitions, and interfaces
+ * with the Notification Service.
  */
 @Slf4j
 @Service
@@ -43,11 +45,12 @@ public class BookingService {
 
     /**
      * Initializes a new booking request.
-     * Prevents conflicts for the same resource by evaluating overlapping time ranges against APPROVED or CHECKED_IN bookings.
+     * Prevents conflicts for the same resource by evaluating overlapping time
+     * ranges against APPROVED or CHECKED_IN bookings.
      */
     public Booking createBooking(BookingRequestDto dto) {
         log.info("Booking create requested: userId={}, resource={}, date={}, time={} - {}",
-            dto.getUserId(), dto.getResourceName(), dto.getBookingDate(), dto.getStartTime(), dto.getEndTime());
+                dto.getUserId(), dto.getResourceName(), dto.getBookingDate(), dto.getStartTime(), dto.getEndTime());
 
         LocalDate date = LocalDate.parse(dto.getBookingDate());
         LocalTime start = LocalTime.parse(dto.getStartTime());
@@ -60,8 +63,10 @@ public class BookingService {
         // Fetch all bookings for the requested resource and date
         List<Booking> existingBookings = repository.findByResourceNameAndBookingDate(dto.getResourceName(), date);
 
-        // Core Conflict Logic: Check if any existing APPROVED or CHECKED_IN booking overlaps with the requested time.
-        // PENDING requests are intentionally ignored to avoid unnecessarily blocking a user up-front.
+        // Core Conflict Logic: Check if any existing APPROVED or CHECKED_IN booking
+        // overlaps with the requested time.
+        // PENDING requests are intentionally ignored to avoid unnecessarily blocking a
+        // user up-front.
         boolean hasConflict = existingBookings.stream()
                 .filter(b -> b.getStatus() == BookingStatus.APPROVED || b.getStatus() == BookingStatus.CHECKED_IN)
                 .anyMatch(b -> start.isBefore(b.getEndTime()) && end.isAfter(b.getStartTime()));
@@ -85,10 +90,10 @@ public class BookingService {
                 .updatedAt(LocalDateTime.now())
                 .build();
 
-            Booking saved = repository.save(booking);
-            log.info("Booking created successfully: bookingId={}, status={}, userId={}",
+        Booking saved = repository.save(booking);
+        log.info("Booking created successfully: bookingId={}, status={}, userId={}",
                 saved.getId(), saved.getStatus(), saved.getUserId());
-            return saved;
+        return saved;
     }
 
     public List<Booking> getAllBookings() {
@@ -108,7 +113,8 @@ public class BookingService {
     }
 
     /**
-     * Admin action to approve a booking request. Only PENDING requests can be approved.
+     * Admin action to approve a booking request. Only PENDING requests can be
+     * approved.
      * Fires a notification off to the user who requested the booking.
      */
     public Booking approveBooking(String id) {
@@ -120,27 +126,28 @@ public class BookingService {
         }
 
         List<Booking> sameResourceSameDate = repository.findByResourceNameAndBookingDate(
-            booking.getResourceName(),
-            booking.getBookingDate());
+                booking.getResourceName(),
+                booking.getBookingDate());
 
         List<Booking> approvedOverlaps = sameResourceSameDate.stream()
-            .filter(b -> !b.getId().equals(booking.getId()))
-            .filter(b -> b.getStatus() == BookingStatus.APPROVED || b.getStatus() == BookingStatus.CHECKED_IN)
-            .filter(b -> booking.getStartTime().isBefore(b.getEndTime()) && booking.getEndTime().isAfter(b.getStartTime()))
-            .toList();
+                .filter(b -> !b.getId().equals(booking.getId()))
+                .filter(b -> b.getStatus() == BookingStatus.APPROVED || b.getStatus() == BookingStatus.CHECKED_IN)
+                .filter(b -> booking.getStartTime().isBefore(b.getEndTime())
+                        && booking.getEndTime().isAfter(b.getStartTime()))
+                .toList();
 
         if (!approvedOverlaps.isEmpty()) {
             String conflictDetails = approvedOverlaps.stream()
-                .map(b -> String.format("%s to %s (user: %s, status: %s)",
-                    b.getStartTime(),
-                    b.getEndTime(),
-                    b.getUserId(),
-                    b.getStatus()))
-                .collect(Collectors.joining("; "));
+                    .map(b -> String.format("%s to %s (user: %s, status: %s)",
+                            b.getStartTime(),
+                            b.getEndTime(),
+                            b.getUserId(),
+                            b.getStatus()))
+                    .collect(Collectors.joining("; "));
 
             throw new BookingConflictException(
-                "Cannot approve this request. This resource already has approved booking(s) for the selected time: "
-                    + conflictDetails);
+                    "Cannot approve this request. This resource already has approved booking(s) for the selected time: "
+                            + conflictDetails);
         }
 
         booking.setStatus(BookingStatus.APPROVED);
@@ -168,8 +175,10 @@ public class BookingService {
     }
 
     /**
-     * Admin action to reject a booking request. Only PENDING requests can be rejected.
-     * Requires a rejection reason from the admin and fires an email notification to the user.
+     * Admin action to reject a booking request. Only PENDING requests can be
+     * rejected.
+     * Requires a rejection reason from the admin and fires an email notification to
+     * the user.
      */
     public Booking rejectBooking(String id, String reason) {
         log.info("Booking rejection requested: bookingId={}, reason={}", id, reason);
@@ -227,7 +236,9 @@ public class BookingService {
     }
 
     /**
-     * Updates an approved booking to indicate the user has successfully checked in to their reservation in real life.
+     * Updates an approved booking to indicate the user has successfully checked in
+     * to their reservation in real life.
+     * QR...
      */
     public Booking checkInBooking(String id) {
         log.info("Booking check-in requested: bookingId={}", id);
@@ -246,7 +257,8 @@ public class BookingService {
     }
 
     /**
-     * Admin action to completely erase a booking log off the database, sending a final notification to the user if requested.
+     * Admin action to completely erase a booking log off the database, sending a
+     * final notification to the user if requested.
      */
     public void deleteBooking(String id, String reason) {
         log.info("Booking deletion requested: bookingId={}, reason={}", id, reason);
@@ -261,13 +273,14 @@ public class BookingService {
                     recipientId -> notificationService.sendNotification(
                             recipientId,
                             msg,
-                            NotificationType.BOOKING_REJECTED, 
+                            NotificationType.BOOKING_REJECTED,
                             booking.getId(),
                             "BOOKING"),
                     () -> log.warn("No user found for booking userId '{}' — deletion notification skipped",
                             booking.getUserId()));
         } catch (Exception e) {
-            log.error("Failed to send booking deleted notification for booking {}: {}", booking.getId(), e.getMessage());
+            log.error("Failed to send booking deleted notification for booking {}: {}", booking.getId(),
+                    e.getMessage());
         }
 
         repository.delete(booking);
