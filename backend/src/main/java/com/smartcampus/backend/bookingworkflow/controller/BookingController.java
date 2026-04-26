@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
-
+ * 
  * REST API Controller for handling all facility and asset booking workflows.
  * Implements RESTful best practices with GET, POST, PATCH, and DELETE methods.
  */
@@ -29,7 +29,9 @@ public class BookingController {
 
     /**
      * Creates a new booking request.
-     * @param dto Data Transfer Object containing booking details (date, times, purpose).
+     * 
+     * @param dto Data Transfer Object containing booking details (date, times,
+     *            purpose).
      * @return The created Booking object.
      */
     @PostMapping
@@ -74,11 +76,12 @@ public class BookingController {
 
     /**
      * Partially updates a booking's status to REJECTED.
+     * 
      * @param dto Contains the admin's mandatory rejection reason.
      */
     @PatchMapping("/{id}/reject")
     public Booking reject(@PathVariable String id,
-                          @Valid @RequestBody BookingDecisionDto dto) {
+            @Valid @RequestBody BookingDecisionDto dto) {
         return service.rejectBooking(id, dto.getReason());
     }
 
@@ -87,12 +90,12 @@ public class BookingController {
      */
     @PatchMapping("/{id}/cancel")
     public Booking cancel(@PathVariable String id,
-                          @RequestBody(required = false) BookingCancelDto dto) {
+            @RequestBody(required = false) BookingCancelDto dto) {
         return service.cancelBooking(id, dto);
     }
 
     /**
-     * Partially updates a booking's status to CHECKED_IN.
+     * Partially updates a booking's status to CHECKED_IN. QR
      */
     @PatchMapping("/{id}/checkin")
     public Booking checkIn(@PathVariable String id) {
